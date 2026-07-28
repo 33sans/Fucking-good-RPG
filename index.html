@@ -833,17 +833,26 @@ const EVENTS = [
     ]},
   {id:'crossroad', title:'岔路口', text:'前方出現三條岔路，各自通往未知的方向。',
     choices:[
-      {label:'走左邊小徑',act:()=>Math.random()<0.5?'小徑平淡無奇，你順利通過。':'你在小徑上撿到了一些散落的金幣（+'+rint(Math.random,5,15)+'）。'},
+      {label:'走左邊小徑',act:(s)=>{
+        if(Math.random()<0.5) return '小徑平淡無奇，你順利通過。';
+        const gold=rint(Math.random,5,15); s.hero.gold+=gold;
+        return '你在小徑上撿到了一些散落的金幣（+'+gold+'）。';
+      }},
       {label:'走中間大路',act:(s)=>{ const dmg=rint(Math.random,0,10); if(dmg>0){ s.hero.hp=clamp(s.hero.hp-dmg,1,s.hero.maxHp); return '大路上遭遇小規模落石，損失 '+dmg+' HP。'; } return '大路暢通無阻。'; }},
       {label:'走右邊密林',act:(s)=>{ const item=rollEquip(Math.random,null,avgPartyLevel(s)); s.inventory.push(item); return '密林深處你發現了一件裝備：'+item.name+'。'; }}
     ]},
   {id:'fairy', title:'森林精靈的祝福', text:'一隻微小的光之精靈繞著你飛舞，似乎想幫助你。',
     choices:[
-      {label:'接受祝福',act:(s)=>{ s.hero.hp=s.hero.maxHp; s.hero.mp=s.hero.maxMp; return '精靈的祝福讓全隊HP與MP完全恢復！'; }}
+      {label:'接受祝福',act:(s)=>{
+        s.party.forEach(m=>{ m.hp=m.maxHp; m.mp=m.maxMp; });
+        return '精靈的祝福讓全隊HP與MP完全恢復！';
+      }}
     ]}
 ];
 function dealTrapDamage(s,dmg){ s.hero.hp=clamp(s.hero.hp-dmg,1,s.hero.maxHp); return '陷阱造成了 '+dmg+' 點傷害！'; }
 function healParty(s,amt){ s.party.forEach(m=>{ if(m.hp>0) m.hp=clamp(m.hp+amt,0,m.maxHp); }); }
+// 全隊滿血滿魔（含倒地隊友，用於休息／特殊事件）
+function restorePartyFull(s){ s.party.forEach(m=>{ m.hp=m.maxHp; m.mp=m.maxMp; }); }
 
 /* ============ NPC 隊友池 ============ */
 const NPC_NAMES = ['艾莉絲','凱因','露娜','托爾加','薇拉','布蘭登','希兒','葛瑞姆','喬治','史丹利','喬','羅傑','惡魔貓','比利','西薩','熊信寬','Toyz','謝欣達','jay chou','陳美蘭','BR','謝金燕','山豬','蝦味先','蛋頭','禁藥王','陳老師','潮州土狗','godone','majin','栗子','玉麟','天峰','葉玫瑰','王希銘','迪拉胖','YOUND LEE','潤少',,'gummy B(他說要大寫)','趙翊帆','春艷','李權哲','YB','有錢人','前人','不公們','沒人能殺死的鬼','費玉清','阿兄喬治','小卡比','QUANZO','O.DKIZZYA','REX','macdella','eyeballray','SheATH','yappy','drew','呂士軒','ANBA','林聖夫','約翰','rgry','吳卓源','Barry chen','熱狗','大隻','小人','陳星翰','KITCAT','朱軒羊','公園','凡尼師男孩','馬英九','蔡英文','消防隊的楊先生','水哥DJDIDILONG','DIE4REALLL','NGKE配菜','KAPPERKIRA','LOKI LU','芋比','JIMMY','玫','33','厚片女孩','女拳主義者','死肥胖哥','修斗','林萌','駱楓','林俊傑','6YI7'];
@@ -864,13 +873,20 @@ function computeStats(m){
   let spd = COMMONER.base.spd + COMMONER.grow.spd*(lv-1);
 
   const layers = [];
-  if(m.professionId) layers.push({def:PROFESSIONS.find(p=>p.id===m.professionId), atLevel:m.professionLevel});
-  if(m.classId) layers.push({def:CLASSES.find(c=>c.id===m.classId), atLevel:m.classLevel});
-  if(m.classId && m.advId){
-    const cls = CLASSES.find(c=>c.id===m.classId);
-    layers.push({def:cls.advancements.find(a=>a.id===m.advId), atLevel:m.advLevel});
+  if(m.professionId){
+    const p = PROFESSIONS.find(x=>x.id===m.professionId);
+    if(p) layers.push({def:p, atLevel:m.professionLevel||lv});
+  }
+  if(m.classId){
+    const c = CLASSES.find(x=>x.id===m.classId);
+    if(c) layers.push({def:c, atLevel:m.classLevel||lv});
+    if(c && m.advId){
+      const a = c.advancements.find(x=>x.id===m.advId);
+      if(a) layers.push({def:a, atLevel:m.advLevel||lv});
+    }
   }
   layers.forEach(({def:d, atLevel})=>{
+    if(!d || !d.statBonus || !d.growBonus) return;
     const since = Math.max(0, lv-atLevel);
     maxHp += d.statBonus.hp + d.growBonus.hp*since;
     maxMp += d.statBonus.mp + d.growBonus.mp*since;
@@ -909,16 +925,16 @@ function setAdvancement(m, advId){
 function classPassive(m){
   if(!m.classId) return null;
   const cls = CLASSES.find(c=>c.id===m.classId);
-  return cls.passive || null;
+  return (cls && cls.passive) || null;
 }
 function hasPassive(m, id){
   const p = classPassive(m);
   return !!(p && p.id===id);
 }
 function displayClassName(m){
-  if(m.advId){
+  if(m.advId && m.classId){
     const cls = CLASSES.find(c=>c.id===m.classId);
-    const adv = cls.advancements.find(a=>a.id===m.advId);
+    const adv = cls && cls.advancements ? cls.advancements.find(a=>a.id===m.advId) : null;
     if(adv) return adv.name;
   }
   if(m.classId){
@@ -933,12 +949,17 @@ function displayClassName(m){
 }
 function getSkills(m){
   let skills = COMMONER.skills.slice();
-  if(m.professionId) skills.push(PROFESSIONS.find(p=>p.id===m.professionId).skill);
-  if(m.classId) skills = skills.concat(CLASSES.find(c=>c.id===m.classId).skills);
-  if(m.classId && m.advId){
+  if(m.professionId){
+    const prof = PROFESSIONS.find(p=>p.id===m.professionId);
+    if(prof && prof.skill) skills.push(prof.skill);
+  }
+  if(m.classId){
     const cls = CLASSES.find(c=>c.id===m.classId);
-    const adv = cls.advancements.find(a=>a.id===m.advId);
-    if(adv) skills.push(adv.skill);
+    if(cls && cls.skills) skills = skills.concat(cls.skills);
+    if(cls && m.advId){
+      const adv = cls.advancements.find(a=>a.id===m.advId);
+      if(adv && adv.skill) skills.push(adv.skill);
+    }
   }
   return skills;
 }
@@ -960,8 +981,14 @@ function buildMember(name, level){
   return m;
 }
 function memberPalette(m){
-  if(m.classId) return CLASSES.find(c=>c.id===m.classId).palette;
-  if(m.professionId) return PROFESSIONS.find(p=>p.id===m.professionId).palette;
+  if(m.classId){
+    const cls = CLASSES.find(c=>c.id===m.classId);
+    if(cls) return cls.palette;
+  }
+  if(m.professionId){
+    const prof = PROFESSIONS.find(p=>p.id===m.professionId);
+    if(prof) return prof.palette;
+  }
   return COMMONER.palette;
 }
 function expForLevel(lv){ return Math.round(30 * Math.pow(lv,1.5)); }
@@ -988,16 +1015,22 @@ function autoEvolveAll(m, log){
   }
   if(m.level>=CLASS_LEVEL && m.professionId && !m.classId){
     const prof = PROFESSIONS.find(p=>p.id===m.professionId);
-    const opts = CLASSES.filter(c=>prof.leadsTo.includes(c.id));
-    const cls = choice(Math.random, opts);
-    setClass(m, cls.id);
-    log.push(m.name+' 覺醒為 ['+cls.name+']！');
+    if(prof && prof.leadsTo){
+      const opts = CLASSES.filter(c=>prof.leadsTo.includes(c.id));
+      if(opts.length){
+        const cls = choice(Math.random, opts);
+        setClass(m, cls.id);
+        log.push(m.name+' 覺醒為 ['+cls.name+']！');
+      }
+    }
   }
   if(m.level>=BRANCH_LEVEL && m.classId && !m.advId){
     const cls = CLASSES.find(c=>c.id===m.classId);
-    const adv = choice(Math.random, cls.advancements);
-    setAdvancement(m, adv.id);
-    log.push(m.name+' 進一步覺醒為 ['+adv.name+']！');
+    if(cls && cls.advancements && cls.advancements.length){
+      const adv = choice(Math.random, cls.advancements);
+      setAdvancement(m, adv.id);
+      log.push(m.name+' 進一步覺醒為 ['+adv.name+']！');
+    }
   }
 }
 function gainExp(m, amt, log){
@@ -1041,6 +1074,8 @@ function newGame(){
   render();
 }
 function routeHome(){
+  // 修復：每次回營地重算轉職，避免 pendingStage 遺失後卡死
+  if(S.hero) evaluateEvolution(S.hero);
   if(S.pendingStage==='profession') S.screen='evolve-profession';
   else if(S.pendingStage==='class') S.screen='evolve-class';
   else if(S.pendingStage==='branch') S.screen='evolve-branch';
@@ -1061,7 +1096,10 @@ function startBattle(){
   const count = bossRoll?1:rint(rng,1,3);
   const monsters=[];
   for(let i=0;i<count;i++) monsters.push(makeMonster(choice(rng,pool), avgLevel, rng));
-  S.party.forEach(m=> m.usedGuardianAngel=false);
+  S.party.forEach(m=>{
+    m.usedGuardianAngel=false;
+    m.taunting=false; m.buffDef=0; m.buffTurns=0;
+  });
   S.battle = {
     monsters, turnLog:[], selectedActor:null, selectedAction:null, over:false, win:null,
     order: buildTurnOrder(monsters), turnIndex:0, roundNum:1
@@ -1184,6 +1222,7 @@ function playerAction(actorUid, action, targetIdx, skillIdx, potionUid){
     if(target.hp===0) b.turnLog.unshift(target.name+' 被擊敗了！');
   } else if(action==='skill'){
     const sk = getSkills(actor)[skillIdx];
+    if(!sk){ render(); return; }
     if(actor.mp < sk.mp){ b.turnLog.unshift(actor.name+' 的MP不足以使用 '+sk.name+'！'); render(); return; }
     actor.mp -= sk.mp;
     applySkill(actor, sk, targetIdx, b);
@@ -1301,7 +1340,8 @@ function checkKillReward(mon, b){
   const exp = Math.round(mon.exp*mult);
   const gold = Math.round(mon.gold*mult);
   const log=[];
-  S.party.filter(m=>m.hp>0).forEach(m=> gainExp(m, exp, log));
+  // 修復：主角倒地仍拿經驗，避免卡在轉職門檻
+  S.party.forEach(m=>{ if(m.isHero || m.hp>0) gainExp(m, exp, log); });
   S.hero.gold += gold;
   b.turnLog.unshift('獲得 '+exp+' 經驗值與 '+gold+' 金幣。'+(affixCount>0?'（詞綴加成 x'+mult.toFixed(1)+'）':''));
   log.forEach(l=> b.turnLog.unshift(l));
@@ -1407,8 +1447,57 @@ function loadGame(){
     const raw = localStorage.getItem(SAVE_KEY);
     if(!raw) return false;
     S = JSON.parse(raw);
+    if(!S || !S.party || !S.party.length){ S=null; return false; }
+    // 致命修復：JSON.parse 後 S.hero 與 party[] 變成兩個獨立物件
+    // 戰鬥升等改 party，花金幣改 S.hero → 必須合併後綁回同一參考
+    const parsedHero = S.hero;
+    let hero = S.party.find(m=>m.isHero)
+      || (parsedHero && S.party.find(m=>m.uid===parsedHero.uid))
+      || S.party[0];
+    if(parsedHero && hero){
+      if(typeof parsedHero.gold === 'number') hero.gold = parsedHero.gold;
+      if(parsedHero.professionId && !hero.professionId){
+        hero.professionId = parsedHero.professionId;
+        hero.professionLevel = parsedHero.professionLevel;
+      }
+      if(parsedHero.classId && !hero.classId){
+        hero.classId = parsedHero.classId;
+        hero.classLevel = parsedHero.classLevel;
+      }
+      if(parsedHero.advId && !hero.advId){
+        hero.advId = parsedHero.advId;
+        hero.advLevel = parsedHero.advLevel;
+      }
+      if((parsedHero.level||0) > (hero.level||0)){
+        hero.level = parsedHero.level;
+        hero.exp = parsedHero.exp;
+        hero.nextExp = parsedHero.nextExp;
+        hero.maxHp = parsedHero.maxHp; hero.hp = parsedHero.hp;
+        hero.maxMp = parsedHero.maxMp; hero.mp = parsedHero.mp;
+        hero.atk = parsedHero.atk; hero.def = parsedHero.def; hero.spd = parsedHero.spd;
+        if(parsedHero.equip) hero.equip = parsedHero.equip;
+      }
+    }
+    hero.isHero = true;
+    if(typeof hero.gold !== 'number') hero.gold = 0;
+    S.hero = hero;
+    const idx = S.party.findIndex(m=>m.uid===hero.uid);
+    if(idx>=0) S.party[idx] = hero; else S.party.unshift(hero);
+    if(!S.inventory) S.inventory = [];
+    if(!S.log) S.log = [];
+    if(S.pendingStage==null) S.pendingStage = null;
+    // 戰鬥／事件畫面讀檔不安全 → 強制回營地
+    if(S.screen==='battle' || S.screen==='event' || !S.screen){
+      S.battle = null;
+      S.event = null;
+      S.screen = 'hub';
+    }
+    evaluateEvolution(S.hero);
+    if(S.pendingStage==='profession') S.screen='evolve-profession';
+    else if(S.pendingStage==='class') S.screen='evolve-class';
+    else if(S.pendingStage==='branch') S.screen='evolve-branch';
     return true;
-  }catch(e){ return false; }
+  }catch(e){ S=null; return false; }
 }
 function hasSaveGame(){
   try{ return !!localStorage.getItem(SAVE_KEY); }catch(e){ return false; }
@@ -2138,7 +2227,15 @@ function bindEvolveProfession(){
 function renderEvolveClass(){
   const hero = S.hero;
   const prof = PROFESSIONS.find(p=>p.id===hero.professionId);
+  if(!prof || !prof.leadsTo){
+    setTimeout(()=>{ S.pendingStage=null; S.screen='hub'; render(); }, 0);
+    return `<div class="panel"><p class="event-text">職業資料異常，正在返回營地…</p></div>`;
+  }
   const opts = CLASSES.filter(c=>prof.leadsTo.includes(c.id));
+  if(!opts.length){
+    setTimeout(()=>{ S.pendingStage=null; S.screen='hub'; render(); }, 0);
+    return `<div class="panel"><p class="event-text">無可用職業路線，正在返回營地…</p></div>`;
+  }
   const cards = opts.map((c,i)=>`
     <div class="class-card" data-cls="${c.id}">
       <canvas class="sprite" id="clschoice-${i}" width="64" height="64"></canvas>
@@ -2159,6 +2256,7 @@ function renderEvolveClass(){
 function bindEvolveClass(){
   const hero = S.hero;
   const prof = PROFESSIONS.find(p=>p.id===hero.professionId);
+  if(!prof || !prof.leadsTo) return;
   const opts = CLASSES.filter(c=>prof.leadsTo.includes(c.id));
   opts.forEach((c,i)=> queueSprite('clschoice-'+i, 'class_'+c.id, c.palette, 14));
   document.querySelectorAll('[data-cls]').forEach(card=>{
@@ -2177,6 +2275,10 @@ function bindEvolveClass(){
 function renderEvolveBranch(){
   const hero = S.hero;
   const cls = CLASSES.find(c=>c.id===hero.classId);
+  if(!cls || !cls.advancements){
+    setTimeout(()=>{ S.pendingStage=null; S.screen='hub'; render(); }, 0);
+    return `<div class="panel"><p class="event-text">職業資料異常，正在返回營地…</p></div>`;
+  }
   const cards = cls.advancements.map((adv,i)=>`
     <div class="class-card" data-adv="${adv.id}">
       <canvas class="sprite" id="adv-${i}" width="64" height="64"></canvas>
@@ -2196,6 +2298,7 @@ function renderEvolveBranch(){
 function bindEvolveBranch(){
   const hero = S.hero;
   const cls = CLASSES.find(c=>c.id===hero.classId);
+  if(!cls || !cls.advancements) return;
   cls.advancements.forEach((adv,i)=> queueSprite('adv-'+i, 'adv_'+adv.id, cls.palette, 14));
   document.querySelectorAll('[data-adv]').forEach(card=>{
     card.addEventListener('click', ()=>{
