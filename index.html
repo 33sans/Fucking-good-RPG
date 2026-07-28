@@ -2,6 +2,11 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0c0a09">
 <title>灰燼紀元 - 像素文字RPG</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Noto+Serif+TC:wght@400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -23,18 +28,24 @@
   --epic:#a565d6;
   --legend:#ff6a35;
   --mythic:#ff4fa3;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --touch-min: 44px;
 }
-*{box-sizing:border-box;}
-html{background:var(--bg-deep);}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{background:var(--bg-deep);-webkit-text-size-adjust:100%;}
 body{
   margin:0;
   background:radial-gradient(ellipse at 50% -10%, #241a13 0%, #0c0a09 62%);
   color:var(--text);
   font-family:'Noto Serif TC',serif;
   min-height:100vh;
+  min-height:100dvh;
   display:flex;
   justify-content:center;
   padding:18px 10px;
+  padding-top:calc(12px + var(--safe-top));
+  padding-bottom:calc(18px + var(--safe-bottom));
   position:relative;
   overflow-x:hidden;
 }
@@ -74,6 +85,7 @@ body{
   box-shadow:0 10px 24px -12px rgba(0,0,0,.6);
   padding:14px;
   margin-bottom:12px;
+  border-radius:4px;
 }
 .btn{
   font-family:'Noto Serif TC',serif;
@@ -82,6 +94,7 @@ body{
   border:1px solid var(--line);
   color:var(--text);
   padding:10px 14px;
+  min-height:var(--touch-min);
   cursor:pointer;
   font-size:14px;
   transition:transform .08s, background .15s, box-shadow .1s;
@@ -89,6 +102,9 @@ body{
     inset 0 1px 0 rgba(255,255,255,.06),
     inset 0 -2px 0 rgba(0,0,0,.35),
     0 1px 0 rgba(0,0,0,.4);
+  touch-action:manipulation;
+  -webkit-user-select:none;user-select:none;
+  border-radius:4px;
 }
 .btn:hover{background:#33291f;transform:translateY(-1px);}
 .btn:active{transform:translateY(1px);box-shadow:inset 0 2px 0 rgba(0,0,0,.4);}
@@ -96,28 +112,50 @@ body{
 .btn.danger{border-color:#7a2c34;color:#e0655f;}
 .btn:disabled{opacity:.35;cursor:not-allowed;transform:none;}
 .grid{display:grid;gap:10px;}
+.party-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));}
 .class-grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));}
 .class-card{
   background:var(--bg-panel-2);border:1px solid var(--line);border-top:2px solid transparent;
-  padding:10px;text-align:center;cursor:pointer;transition:border-color .12s;
+  padding:12px;text-align:center;cursor:pointer;transition:border-color .12s, background .12s;
+  border-radius:4px;touch-action:manipulation;
 }
 .class-card:hover{border-top-color:var(--gold-dim);}
+.class-card:active{background:#33291f;}
 .class-card.selected{border-top-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset;}
 .class-card h3{margin:6px 0 2px;font-size:14px;color:var(--gold);font-weight:700;}
 .class-card p{margin:0;font-size:11px;color:var(--text-dim);line-height:1.5;}
-canvas.sprite{image-rendering:pixelated;background:#0a0807;border:1px solid var(--line);}
-.statline{display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim);margin-top:6px;font-family:'Space Mono','Noto Serif TC',serif;}
-.bar-wrap{background:#0a0807;border:1px solid var(--line);height:9px;overflow:hidden;margin:3px 0;}
+canvas.sprite{image-rendering:pixelated;background:#0a0807;border:1px solid var(--line);flex-shrink:0;}
+.statline{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 8px;font-size:11px;color:var(--text-dim);margin-top:6px;font-family:'Space Mono','Noto Serif TC',serif;}
+.bar-wrap{background:#0a0807;border:1px solid var(--line);height:9px;overflow:hidden;margin:3px 0;border-radius:2px;}
 .bar{height:100%;}
-.topbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:10px;}
+.topbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center;margin-bottom:10px;}
 .member-card{
   background:var(--bg-panel-2);border:1px solid var(--line);border-left:3px solid var(--line);
-  padding:8px;display:flex;gap:8px;align-items:center;transition:border-color .12s;
+  padding:10px;display:flex;gap:10px;align-items:center;transition:border-color .12s;
+  border-radius:4px;
 }
-.member-card.active-turn{border-left-color:var(--gold);}
+.member-card.active-turn{border-left-color:var(--gold);box-shadow:0 0 8px rgba(255,106,53,.15);}
 .member-card.dead{opacity:.4;}
 .member-info{flex:1;min-width:0;}
-.member-name{font-size:12px;font-weight:700;display:flex;justify-content:space-between;}
+.member-name{font-size:13px;font-weight:700;display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;}
+/* 戰鬥精簡角色卡 — 縮小佔位，留給技能與怪物 */
+.member-card-compact{
+  padding:5px 8px;gap:6px;border-left-width:2px;
+}
+.member-card-compact .member-name{font-size:11px;line-height:1.25;margin-bottom:1px;}
+.member-card-compact .bar-wrap{height:6px;margin:2px 0;}
+.member-card-compact .bar-wrap-mp{height:4px;}
+.member-card-compact .compact-stats{
+  display:flex;justify-content:space-between;gap:6px;
+  font-size:10px;color:var(--text-dim);font-family:'Space Mono','Noto Serif TC',serif;
+  line-height:1.2;
+}
+.member-card-compact canvas.sprite{width:32px;height:32px;}
+.battle-party-grid{
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:6px;margin:6px 0 2px;
+}
+.battle-log-box{height:96px;}
 .rarity-common{color:var(--common);}
 .rarity-rare{color:var(--rare);}
 .rarity-epic{color:var(--epic);}
@@ -127,50 +165,224 @@ canvas.sprite{image-rendering:pixelated;background:#0a0807;border:1px solid var(
   background:#0a0807;border:1px solid var(--line);
   padding:10px;font-size:12px;height:130px;overflow-y:auto;line-height:1.7;
   font-family:'Space Mono','Noto Serif TC',serif;
+  border-radius:4px;-webkit-overflow-scrolling:touch;
 }
 .log-box div{border-bottom:1px dashed #2a2119;padding-bottom:3px;margin-bottom:3px;}
-.monster-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:10px 0;}
-.monster-box{text-align:center;cursor:pointer;padding:6px;border:1px solid transparent;}
-.monster-box.target-selectable:hover{border-color:var(--hp);}
+.monster-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0;}
+.monster-box{
+  text-align:center;cursor:pointer;padding:8px 10px;border:2px solid transparent;
+  border-radius:6px;touch-action:manipulation;min-width:88px;
+  transition:border-color .12s, background .12s;
+}
+.monster-box.target-selectable:hover,
+.monster-box.target-selectable:active{border-color:var(--hp);background:rgba(212,69,63,.08);}
 .monster-box.dead{opacity:.25;pointer-events:none;}
-.monster-name{font-size:11px;margin-top:4px;}
+.monster-name{font-size:12px;margin-top:4px;font-weight:600;}
 .action-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 /* --- 按鍵層級系統 --- */
-.btn-primary{width:100%;padding:14px;font-size:15px;letter-spacing:1px;margin-bottom:2px;}
+.btn-primary{width:100%;padding:16px;font-size:16px;letter-spacing:1px;margin-bottom:2px;min-height:52px;}
 .nav-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
-.btn-nav{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:12px 4px;font-size:11px;white-space:nowrap;}
-.btn-nav .nav-icon{font-size:20px;line-height:1;}
-.btn-compact{padding:8px 10px;font-size:12px;}
-.segmented{display:flex;border:1px solid var(--line);width:fit-content;margin-bottom:10px;}
-.segmented .btn{border:none;box-shadow:none;padding:8px 18px;font-size:12px;background:transparent;}
+.nav-grid-4{grid-template-columns:repeat(4,1fr);}
+.btn-nav{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;padding:14px 6px;font-size:12px;white-space:nowrap;min-height:64px;
+}
+.btn-nav .nav-icon{font-size:22px;line-height:1;}
+.btn-compact{padding:10px 12px;font-size:13px;min-height:var(--touch-min);}
+.segmented{display:flex;border:1px solid var(--line);width:fit-content;max-width:100%;margin-bottom:10px;border-radius:4px;overflow:hidden;}
+.segmented .btn{border:none;box-shadow:none;padding:10px 18px;font-size:13px;background:transparent;border-radius:0;min-height:var(--touch-min);}
 .segmented .btn+.btn{border-left:1px solid var(--line);}
 .segmented .btn.active{background:var(--gold-dim);color:var(--bg-deep);}
 .action-label{font-family:'Silkscreen',monospace;font-size:9px;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;margin:12px 0 6px;border-bottom:1px dashed var(--line);padding-bottom:4px;}
 .skill-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;}
-.skill-btn{display:flex;flex-direction:column;align-items:stretch;gap:3px;text-align:left;padding:8px 10px;white-space:normal;}
-.skill-btn-head{display:flex;justify-content:space-between;align-items:center;font-weight:700;}
-.skill-btn-desc{color:var(--text-dim);line-height:1.4;}
-.skill-btn-est{color:var(--gold);}
-.skill-btn .mp-cost{font-family:'Space Mono','Noto Serif TC',serif;color:var(--mp);font-size:10px;white-space:nowrap;}
-.utility-row{display:flex;gap:8px;}
-.flee-link{background:none;border:none;box-shadow:none;color:var(--text-dim);font-size:11px;text-decoration:underline;cursor:pointer;padding:6px 2px;margin:8px 0 0 auto;display:block;}
-.flee-link:hover{color:var(--hp);}
-.choice-list{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
-.choice-list .btn{text-align:left;}
+.skill-btn{display:flex;flex-direction:column;align-items:stretch;gap:3px;text-align:left;padding:10px 12px;white-space:normal;min-height:var(--touch-min);}
+.skill-btn-head{display:flex;justify-content:space-between;align-items:center;font-weight:700;gap:8px;}
+.skill-btn-desc{color:var(--text-dim);line-height:1.4;font-size:12px;}
+.skill-btn-est{color:var(--gold);font-size:12px;}
+.skill-btn .mp-cost{font-family:'Space Mono','Noto Serif TC',serif;color:var(--mp);font-size:11px;white-space:nowrap;}
+.utility-row{display:flex;gap:8px;flex-wrap:wrap;}
+.utility-row .btn{flex:1;min-width:0;}
+.flee-link{background:none;border:none;box-shadow:none;color:var(--text-dim);font-size:13px;text-decoration:underline;cursor:pointer;padding:12px 8px;margin:8px 0 0 auto;display:block;min-height:var(--touch-min);touch-action:manipulation;}
+.flee-link:hover,.flee-link:active{color:var(--hp);}
+.choice-list{display:flex;flex-direction:column;gap:10px;margin-top:10px;}
+.choice-list .btn{text-align:left;width:100%;padding:14px 16px;font-size:15px;}
 .item-row{
   display:flex;justify-content:space-between;align-items:center;gap:10px;
-  background:var(--bg-panel-2);border:1px solid var(--line);padding:8px;margin-bottom:6px;
+  background:var(--bg-panel-2);border:1px solid var(--line);padding:10px;margin-bottom:8px;
+  border-radius:4px;
 }
 .item-row .meta{font-size:11px;color:var(--text-dim);font-family:'Space Mono','Noto Serif TC',serif;}
+.item-row .btn{flex-shrink:0;white-space:nowrap;}
 .small{font-size:11px;color:var(--text-dim);font-family:'Space Mono','Noto Serif TC',serif;}
-.event-text{font-size:13px;line-height:1.8;margin:10px 0;}
+.event-text{font-size:14px;line-height:1.8;margin:10px 0;}
 .hidden{display:none !important;}
-.hero-slot{display:flex;align-items:center;gap:10px;background:var(--bg-panel-2);border:1px solid var(--line);padding:8px;margin-bottom:6px;}
+.hero-slot{display:flex;align-items:center;gap:10px;background:var(--bg-panel-2);border:1px solid var(--line);padding:10px;margin-bottom:8px;border-radius:4px;}
 .section-title{font-family:'Silkscreen',monospace;font-size:11px;color:var(--gold);letter-spacing:1px;margin:0 0 8px;}
 .divider{border:none;border-top:1px dashed var(--line);margin:10px 0;}
+
+/* ========== 平板 / 中等螢幕 ========== */
+@media (max-width:768px){
+  body{padding:12px 8px;padding-top:calc(10px + var(--safe-top));padding-bottom:calc(16px + var(--safe-bottom));}
+  .panel{padding:12px;margin-bottom:10px;}
+  .class-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));}
+  .skill-grid{grid-template-columns:1fr 1fr;}
+  .nav-grid{gap:6px;}
+}
+
+/* ========== 手機主適配 ========== */
 @media (max-width:640px){
+  body{
+    padding:8px 6px;
+    padding-top:calc(6px + var(--safe-top));
+    padding-bottom:calc(12px + var(--safe-bottom));
+  }
+  .title-bar{margin-bottom:8px;}
+  .title-bar h1{font-size:15px;letter-spacing:2px;}
+  .title-bar p{font-size:10px;}
+
+  .panel{padding:12px 10px;margin-bottom:8px;border-radius:6px;}
+
+  /* 觸控按鈕加大 */
+  .btn{padding:12px 14px;font-size:15px;min-height:48px;}
+  .btn-primary{padding:16px;font-size:17px;min-height:54px;border-radius:6px;}
+  .btn-compact{padding:12px 10px;font-size:14px;min-height:48px;}
+
+  /* 營地導航：2x2 大按鈕 */
+  .nav-grid,
+  .nav-grid-4{
+    grid-template-columns:1fr 1fr !important;
+    gap:8px;
+    margin-top:10px;
+  }
+  .btn-nav{
+    padding:16px 8px;
+    font-size:13px;
+    min-height:72px;
+    border-radius:6px;
+  }
+  .btn-nav .nav-icon{font-size:26px;}
+
+  /* 隊伍卡片單欄（營地） */
+  .party-grid,
+  .grid[style*="minmax(220px"],
+  .grid[style*="minmax(200px"]{
+    grid-template-columns:1fr !important;
+  }
+  /* 戰鬥角色卡：2 欄緊湊 */
+  .battle-party-grid{
+    grid-template-columns:1fr 1fr !important;
+    gap:4px;margin:4px 0 2px;
+  }
+  .member-card-compact{padding:4px 6px;gap:5px;}
+  .member-card-compact canvas.sprite{width:26px;height:26px;}
+  .member-card-compact .member-name{font-size:10px;}
+  .member-card-compact .compact-stats{font-size:9px;}
+  .member-card-compact .bar-wrap{height:5px;margin:1px 0;}
+  .member-card-compact .bar-wrap-mp{height:3px;}
+  .battle-log-box{height:80px;}
+  .battle-log-panel{padding:8px 10px;}
+  .battle-log-panel .section-title{margin-bottom:4px;}
+
+  /* 轉職卡片：直向單欄，更好點 */
+  .class-grid{grid-template-columns:1fr;}
+  .class-card{
+    display:flex;flex-direction:row;align-items:center;gap:12px;
+    text-align:left;padding:14px 12px;min-height:72px;
+  }
+  .class-card canvas.sprite{width:56px;height:56px;flex-shrink:0;}
+  .class-card h3{margin:0 0 2px;font-size:15px;}
+  .class-card p{font-size:12px;line-height:1.45;}
+  .class-card .divider{display:none;}
+  .class-card > div.small{font-size:12px;}
+
+  /* 戰鬥：怪物橫向可滑 */
+  .monster-row{
+    gap:8px;justify-content:flex-start;
+    overflow-x:auto;-webkit-overflow-scrolling:touch;
+    padding-bottom:6px;flex-wrap:nowrap;
+    margin:8px -4px;padding-left:4px;padding-right:4px;
+  }
+  .monster-box{
+    min-width:100px;flex:0 0 auto;padding:10px 8px;
+  }
+  .monster-box canvas.sprite{width:64px !important;height:64px !important;}
+  .monster-name{font-size:12px;}
+
+  /* 技能全寬單欄，好按 */
+  .skill-grid{grid-template-columns:1fr;gap:8px;}
+  .skill-btn{padding:12px 14px;min-height:56px;}
+  .skill-btn-head{font-size:15px;}
+  .skill-btn-desc{font-size:12px;}
+  .skill-btn-est{font-size:12px;}
+
+  /* 道具列：窄螢幕按鈕換行 */
+  .item-row{
+    flex-wrap:wrap;padding:12px;gap:8px;
+  }
+  .item-row > div:first-child{flex:1 1 140px;min-width:0;}
+  .item-row .btn{flex:1 1 auto;min-width:88px;text-align:center;}
+
+  /* 隊伍管理 */
+  .hero-slot{flex-wrap:wrap;padding:12px;gap:10px;}
+  .hero-slot .btn{width:100%;}
+
+  /* 分段切換滿寬 */
+  .segmented{width:100%;display:flex;}
+  .segmented .btn{flex:1;text-align:center;padding:12px 8px;font-size:14px;}
+
+  /* 日誌區適中高度 */
+  .log-box{height:110px;font-size:12px;padding:8px;}
+
+  /* 事件選項大按鈕 */
+  .choice-list{gap:10px;}
+  .choice-list .btn{padding:16px;font-size:15px;min-height:52px;}
+
+  .event-text{font-size:14px;line-height:1.75;}
+  .section-title{font-size:12px;margin-bottom:10px;}
+  .member-name{font-size:13px;}
+  .statline{font-size:12px;gap:6px 10px;}
+  .bar-wrap{height:10px;}
+
+  /* 工具列（回HP/MP）並排但夠大 */
+  .utility-row{gap:8px;}
+  .utility-row .btn{flex:1;min-height:48px;}
+
+  /* 商店/酒館頂部 */
+  .topbar{gap:10px;margin-bottom:12px;}
+  .topbar .pixel-font{font-size:13px !important;}
+
+  /* 精靈圖略縮 */
+  canvas.sprite{max-width:100%;}
+
+  /* 行動面板底部間距，避免被瀏覽器工具列擋 */
+  #action-panel{padding-bottom:4px;}
+  .flee-link{width:100%;text-align:center;margin:10px 0 0;padding:14px;}
+
+  /* 減少手機效能負擔：隱藏部分餘燼粒子 */
+  .ember-particle:nth-child(n+8){display:none;}
+}
+
+/* ========== 極窄螢幕（小手機） ========== */
+@media (max-width:380px){
+  .btn-nav{font-size:12px;padding:12px 4px;min-height:68px;}
+  .btn-nav .nav-icon{font-size:22px;}
+  .monster-box{min-width:88px;}
+  .class-card{padding:12px 10px;gap:10px;}
+  .class-card canvas.sprite{width:48px;height:48px;}
   .title-bar h1{font-size:13px;}
-  canvas.sprite{width:56px;height:56px;}
+}
+
+/* 橫向手機：壓縮垂直空間 */
+@media (max-width:900px) and (max-height:480px) and (orientation:landscape){
+  .title-bar{margin-bottom:4px;}
+  .title-bar h1{font-size:13px;}
+  .panel{padding:8px;margin-bottom:6px;}
+  .log-box{height:72px;}
+  .btn-primary{min-height:44px;padding:10px;font-size:14px;}
+  .nav-grid{grid-template-columns:repeat(4,1fr) !important;}
+  .btn-nav{min-height:52px;padding:8px 4px;font-size:11px;}
+  .btn-nav .nav-icon{font-size:18px;}
+  .monster-row{flex-wrap:wrap;justify-content:center;}
 }
 </style>
 </head>
@@ -577,13 +789,13 @@ function equipPrice(item){
 
 /* ============ 資料：隨機事件 ============ */
 const EVENTS = [
-  {id:'well', title:'神秘的許願井', text:'你在林間發現一口佈滿符文的古井，井水泛著微光，有點臭臭ㄉ。',
+  {id:'well', title:'神秘的許願井', text:'你在林間發現一口佈滿符文的古井，井水泛著微光。',
     choices:[
       {label:'投入金幣許願',act:(s)=>{ if(s.hero.gold>=15){ s.hero.gold-=15; if(Math.random()<0.6){ const heal=Math.round(s.hero.maxHp*0.4); healParty(s,heal); return '井水湧出溫暖的光，隊伍恢復了 '+heal+' 點HP。'; } else { return '井水泛起漣漪，卻什麼都沒發生……或許只是傳說。'; } } return '你的金幣不夠支付許願的代價。'; }},
       {label:'直接飲用井水',act:(s)=>{ if(Math.random()<0.5){ const heal=Math.round(s.hero.maxHp*0.25); s.hero.hp=clamp(s.hero.hp+heal,0,s.hero.maxHp); return '井水清涼甘甜，你恢復了 '+heal+' 點HP。'; } else { const dmg=Math.round(s.hero.maxHp*0.15); s.hero.hp=clamp(s.hero.hp-dmg,1,s.hero.maxHp); return '井水竟是詛咒之泉！你損失了 '+dmg+' 點HP。'; } }},
       {label:'離開',act:()=> '你選擇不理會這口古井，繼續趕路。'}
     ]},
-  {id:'trap', title:'隱藏的陷阱', text:'地面突然塌陷，一張佈滿尖刺的陷阱網彈起，你大喊了一聲，幹你娘！',
+  {id:'trap', title:'隱藏的陷阱', text:'地面突然塌陷，一張佈滿尖刺的陷阱網彈起！',
     choices:[
       {label:'向後翻滾閃避',act:(s)=>{ if(Math.random()<0.55){ return '你身手矯健地避開了陷阱，毫髮無傷。'; } else { const dmg=rint(Math.random,8,20); return dealTrapDamage(s,dmg); } }},
       {label:'硬扛過去',act:(s)=>{ const dmg=rint(Math.random,15,28); return dealTrapDamage(s,dmg); }}
@@ -591,7 +803,7 @@ const EVENTS = [
   {id:'chest', title:'廢棄的寶箱', text:'你發現一個佈滿灰塵的寶箱，鎖已經鏽蝕。',
     choices:[
       {label:'開啟寶箱',act:(s)=>{ const rng=Math.random; if(rng()<0.15){ const dmg=rint(Math.random,5,15); s.hero.hp=clamp(s.hero.hp-dmg,1,s.hero.maxHp); return '寶箱是陷阱！你中了毒針，損失 '+dmg+' HP。'; } const gold=rint(Math.random,20,60); s.hero.gold+=gold; let msg='寶箱裡有 '+gold+' 金幣。'; if(rng()<0.4){ const item=rollEquip(Math.random,null,avgPartyLevel(s)); s.inventory.push(item); msg+=' 還發現了一件裝備：'+item.name+'！'; } return msg; }},
-      {label:'謹慎離開',act:()=>'你懷疑這是個陷阱，決定不冒險，羅傑說你是2486。'}
+      {label:'謹慎離開',act:()=>'你懷疑這是個陷阱，決定不冒險。'}
     ]},
   {id:'merchant', title:'流浪商人', text:'一位神秘商人推著小車，車上擺滿了奇怪的物品。',
     choices:[
@@ -603,7 +815,7 @@ const EVENTS = [
   {id:'shrine', title:'古老的祝福神龕', text:'一座斑駁的神龕靜靜矗立，散發著淡淡的聖光。',
     choices:[
       {label:'獻上祈禱',act:(s)=>{ const heal=Math.round(s.hero.maxHp*0.3); healParty(s,heal); return '神龕的光芒籠罩隊伍，全體恢復 '+heal+' 點HP。'; }},
-      {label:'略過',act:()=>'你雙手合十致意，感恩seafood。'}
+      {label:'略過',act:()=>'你雙手合十致意，繼續前行。'}
     ]},
   {id:'wanderer', title:'受傷的流浪者', text:'路邊倒著一位衣衫襤褸的旅人，看起來身懷絕技。',
     choices:[
@@ -634,7 +846,7 @@ function dealTrapDamage(s,dmg){ s.hero.hp=clamp(s.hero.hp-dmg,1,s.hero.maxHp); r
 function healParty(s,amt){ s.party.forEach(m=>{ if(m.hp>0) m.hp=clamp(m.hp+amt,0,m.maxHp); }); }
 
 /* ============ NPC 隊友池 ============ */
-const NPC_NAMES = ['艾莉絲','凱因','露娜','托爾加','薇拉','布蘭登','希兒','葛瑞姆','喬治','史丹利','喬','羅傑','惡魔貓','比利','西薩','熊信寬','Toyz','謝欣達','jay chou','陳美蘭','BR','謝金燕','山豬','蝦味先','蛋頭','禁藥王','陳老師','潮州土狗','godone','majin','栗子','玉麟','天峰','葉玫瑰','王希銘','迪拉胖','YOUND LEE','潤少',,'gummy B(他說要大寫)','趙翊帆','春艷','李權哲','YB','有錢人','前人','不公們','沒人能殺死的鬼','費玉清','阿兄喬治','小卡比','QUANZO','O.DKIZZYA','REX','macdella','eyeballray','SheATH','yappy','drew','呂士軒','ANBA','林聖夫','約翰','rgry','吳卓源','Barry chen','熱狗','大隻','小人','陳星翰','KITCAT','朱軒羊','公園','凡尼師男孩','馬英九','蔡英文','消防隊的楊先生','水哥DJDIDILONG','DIE4REALLL','NGKE配菜','KAPPERKIRA','LOKI LU','芋比','JIMMY','玫','33','厚片女孩','女拳主義者','死肥胖哥','修斗','林萌','駱楓','林俊傑','6YI7'];
+const NPC_NAMES = ['艾莉絲','凱因','露娜','托爾加','薇拉','布蘭登','希兒','葛瑞姆'];
 function makeRandomAlly(){
   const name = choice(Math.random, NPC_NAMES);
   const m = buildMember(name, 1);
@@ -1267,6 +1479,18 @@ function memberCardHtml(m, idx, opts){
   const mpPct = m.maxMp? Math.round(m.mp/m.maxMp*100):0;
   const expPct = Math.round(m.exp/m.nextExp*100);
   const spriteId = (opts.prefix||'pc')+'-'+idx;
+  if(opts.compact){
+    return `
+    <div class="member-card member-card-compact ${m.hp<=0?'dead':''} ${opts.activeClass||''}" data-uid="${m.uid}">
+      <canvas class="sprite" id="${spriteId}" width="32" height="32"></canvas>
+      <div class="member-info">
+        <div class="member-name"><span>${esc(m.name)}${m.isHero?'★':''} <span class="small">Lv.${m.level}</span></span><span class="small">${esc(displayClassName(m))}</span></div>
+        <div class="bar-wrap"><div class="bar" style="width:${hpPct}%;background:var(--hp)"></div></div>
+        <div class="compact-stats"><span>HP ${m.hp}/${m.maxHp}</span>${m.maxMp? `<span>MP ${m.mp}/${m.maxMp}</span>`:''}</div>
+        ${m.maxMp? `<div class="bar-wrap bar-wrap-mp"><div class="bar" style="width:${mpPct}%;background:var(--mp)"></div></div>`:''}
+      </div>
+    </div>`;
+  }
   return `
   <div class="member-card ${m.hp<=0?'dead':''} ${opts.activeClass||''}" data-uid="${m.uid}">
     <canvas class="sprite" id="${spriteId}" width="48" height="48"></canvas>
@@ -1320,18 +1544,18 @@ function renderHub(){
       <span class="pixel-font" style="font-size:11px;color:var(--gold);">💰 ${hero.gold} 金幣</span>
       <span class="small">已探索 ${S.daysSurvived} 次</span>
     </div>
-    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));">${partyHtml}</div>
+    <div class="grid party-grid">${partyHtml}</div>
     <hr class="divider">
     <button class="btn gold btn-primary" id="explore-btn">🧭 前往探索</button>
-    <div class="nav-grid" style="grid-template-columns:repeat(4,1fr);">
-      <button class="btn btn-nav" id="inv-btn"><span class="nav-icon">🎒</span>背包裝備</button>
+    <div class="nav-grid nav-grid-4">
+      <button class="btn btn-nav" id="inv-btn"><span class="nav-icon">🎒</span>背包</button>
       <button class="btn btn-nav" id="shop-btn"><span class="nav-icon">🏪</span>商店</button>
       <button class="btn btn-nav" id="tavern-btn"><span class="nav-icon">🍺</span>酒館</button>
-      <button class="btn btn-nav" id="party-btn"><span class="nav-icon">👥</span>隊伍管理</button>
+      <button class="btn btn-nav" id="party-btn"><span class="nav-icon">👥</span>隊伍</button>
     </div>
-    <div class="utility-row" style="margin-top:8px;">
-      <button class="btn btn-compact ${canAffordHP?'gold':'danger'}" id="rest-hp-btn" style="flex:1;" ${canAffordHP?'':'disabled'}>💗 回HP（${costHP}）</button>
-      <button class="btn btn-compact ${canAffordMP?'gold':'danger'}" id="rest-mp-btn" style="flex:1;" ${canAffordMP?'':'disabled'}>💧 回MP（${costMP}）</button>
+    <div class="utility-row" style="margin-top:10px;">
+      <button class="btn btn-compact ${canAffordHP?'gold':'danger'}" id="rest-hp-btn" ${canAffordHP?'':'disabled'}>💗 回HP（${costHP}）</button>
+      <button class="btn btn-compact ${canAffordMP?'gold':'danger'}" id="rest-mp-btn" ${canAffordMP?'':'disabled'}>💧 回MP（${costMP}）</button>
     </div>
   </div>
   <div class="panel">
@@ -1390,13 +1614,13 @@ function renderBattle(){
 
   const partyHtml = S.party.map((m,i)=>{
     const active = actor && actor.uid===m.uid;
-    return memberCardHtml(m,i,{prefix:'bp',activeClass:active?'active-turn':''});
+    return memberCardHtml(m,i,{prefix:'bp',activeClass:active?'active-turn':'', compact:true});
   }).join('');
 
   let actionPanel='';
   if(b.over){
     let msg = b.win===true ? '🎉 戰鬥勝利！' : (b.win==='flee' ? '你們逃離了戰鬥。' : '💀 隊伍全滅，狼狽撤退……');
-    actionPanel = `<div style="text-align:center;"><p class="pixel-font" style="font-size:12px;color:var(--gold);">${msg}</p><button class="btn gold" id="back-hub">返回營地</button></div>`;
+    actionPanel = `<div style="text-align:center;"><p class="pixel-font" style="font-size:13px;color:var(--gold);margin-bottom:10px;">${msg}</p><button class="btn gold btn-primary" id="back-hub">返回營地</button></div>`;
   } else if(isPlayerTurn){
     const skillBtns = getSkills(actor).map((sk,i)=>{
       const est = skillEstimate(actor, sk);
@@ -1433,14 +1657,13 @@ function renderBattle(){
   <div class="panel">
     <p class="section-title">第 ${b.roundNum} 回合 ${b.monsters[0]&&b.monsters[0].boss?'— ⚠️ BOSS戰':''}</p>
     <div class="monster-row">${monsterHtml}</div>
-    <hr class="divider">
-    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr));">${partyHtml}</div>
+    <div class="grid battle-party-grid">${partyHtml}</div>
     <hr class="divider">
     <div id="action-panel">${actionPanel}</div>
   </div>
-  <div class="panel">
+  <div class="panel battle-log-panel">
     <p class="section-title">戰鬥紀錄</p>
-    <div class="log-box">${logHtml}</div>
+    <div class="log-box battle-log-box">${logHtml}</div>
   </div>`;
 }
 let pendingAction=null;
