@@ -454,12 +454,27 @@ const MONSTER_TYPES = [
   {n:'暗夜領主',type:'shadow',tier:4},
   {n:'灰燼龍王',type:'fire',tier:5,boss:true},{n:'虛空吞噬者',type:'shadow',tier:5,boss:true},{n:'永眠死神',type:'undead',tier:5,boss:true}
 ];
+const MONSTER_AFFIXES = [
+  {id:'armored', name:'堅甲', desc:'防禦大幅提升', apply:(m)=>{ m.def = Math.round(m.def*1.5); }},
+  {id:'bloodrage', name:'血怒', desc:'攻擊大幅提升，但防禦降低', apply:(m)=>{ m.atk = Math.round(m.atk*1.5); m.def = Math.round(m.def*0.7); }},
+  {id:'giant', name:'巨體', desc:'生命大幅提升', apply:(m)=>{ m.maxHp = Math.round(m.maxHp*1.4); m.hp = m.maxHp; }},
+  {id:'swift', name:'疾速', desc:'速度大幅提升', apply:(m)=>{ m.spd = Math.round(m.spd*1.5); }},
+  {id:'regenerating', name:'再生', desc:'每回合自動回復生命', apply:(m)=>{ m.hasRegen = true; }}
+];
+function rollAffixCount(tier, boss, playerLevel){
+  let base = 0;
+  if(boss) base = weightedChoice(Math.random, [{item:1,w:50},{item:2,w:35},{item:3,w:15}]);
+  else if(tier>=3 && Math.random()<0.55) base = 1;
+  if(base===0) return 0; // 一般小怪不會被拉高等級的規則波及
+  const bonus = Math.floor(Math.max(0, playerLevel-20)/10); // Lv20後每10等，詞綴+1
+  return Math.min(base+bonus, 5);
+}
 function makeMonster(tmpl, playerLevel, rng){
   const tier = tmpl.tier;
   const lvl = clamp(playerLevel + rint(rng,-1,1), 1, 60);
   const scale = (1 + (tier-1)*0.5) * (1 + lvl*0.09 + lvl*lvl*0.0028);
   const boss = !!tmpl.boss;
-  return {
+  const mon = {
     name: tmpl.n,
     type: tmpl.type,
     tier, boss,
@@ -472,8 +487,15 @@ function makeMonster(tmpl, playerLevel, rng){
     exp: Math.round((boss?400:40) * scale),
     gold: Math.round((boss?300:25) * scale * (0.7+rng()*0.6)),
     seed: tmpl.n + '_' + lvl + '_' + Math.floor(rng()*9999),
-    status:null, statusTurns:0, rewarded:false
+    status:null, statusTurns:0, rewarded:false, hasRegen:false, affixes:[]
   };
+  const affixCount = rollAffixCount(tier, boss, playerLevel);
+  if(affixCount>0){
+    const shuffled = MONSTER_AFFIXES.slice().sort(()=>rng()-0.5);
+    const chosen = shuffled.slice(0, Math.min(affixCount, MONSTER_AFFIXES.length));
+    chosen.forEach(aff=>{ aff.apply(mon); mon.affixes.push(aff.id); });
+  }
+  return mon;
 }
 
 /* ============ 資料：裝備 ============ */
@@ -881,6 +903,11 @@ function advanceBattleTurn(first){
 }
 function tickMonsterStatus(mon){
   const b=S.battle;
+  if(mon.hasRegen && mon.hp>0 && mon.hp<mon.maxHp){
+    const heal = Math.max(1, Math.round(mon.maxHp*0.05));
+    mon.hp = clamp(mon.hp+heal, 0, mon.maxHp);
+    b.turnLog.unshift(mon.name+' 的傷口迅速再生，恢復 '+heal+' HP。');
+  }
   if(mon.status==='poison' && mon.statusTurns>0){
     const dmg = Math.max(1, Math.round(mon.maxHp*0.06));
     mon.hp = clamp(mon.hp-dmg,0,mon.maxHp);
@@ -1057,10 +1084,14 @@ function applySkill(actor, sk, targetIdx, b){
 function checkKillReward(mon, b){
   if(mon.hp>0 || mon.rewarded) return;
   mon.rewarded = true;
+  const affixCount = mon.affixes ? mon.affixes.length : 0;
+  const mult = 1 + affixCount*0.2;
+  const exp = Math.round(mon.exp*mult);
+  const gold = Math.round(mon.gold*mult);
   const log=[];
-  S.party.filter(m=>m.hp>0).forEach(m=> gainExp(m, mon.exp, log));
-  S.hero.gold += mon.gold;
-  b.turnLog.unshift('獲得 '+mon.exp+' 經驗值與 '+mon.gold+' 金幣。');
+  S.party.filter(m=>m.hp>0).forEach(m=> gainExp(m, exp, log));
+  S.hero.gold += gold;
+  b.turnLog.unshift('獲得 '+exp+' 經驗值與 '+gold+' 金幣。'+(affixCount>0?'（詞綴加成 x'+mult.toFixed(1)+'）':''));
   log.forEach(l=> b.turnLog.unshift(l));
 }
 function checkBattleEnd(){
@@ -1071,9 +1102,14 @@ function checkBattleEnd(){
       b.turnLog.unshift('=== 戰鬥勝利！ ===');
       let dropped=[];
       b.monsters.forEach(m=>{
-        const dropChance = m.boss?1:(m.tier>=3?0.5:0.28);
+        const affixCount = m.affixes ? m.affixes.length : 0;
+        const dropChance = m.boss?1:(m.tier>=3?0.5:0.28) + affixCount*0.1;
         if(Math.random()<dropChance){
-          const item = rollEquip(Math.random, m.boss?'epic':null, m.level);
+          let floor = m.boss ? 'epic' : null;
+          if(affixCount>=3) floor='legend';
+          else if(affixCount>=2) floor='epic';
+          else if(affixCount>=1 && !floor) floor='rare';
+          const item = rollEquip(Math.random, floor, m.level);
           S.inventory.push(item);
           dropped.push(item.name);
         }
@@ -1189,7 +1225,10 @@ function render(){
   else if(S.screen==='evolve-class') { root.innerHTML = renderEvolveClass(); bindEvolveClass(); }
   else if(S.screen==='evolve-branch') { root.innerHTML = renderEvolveBranch(); bindEvolveBranch(); }
   requestAnimationFrame(paintSprites);
-  if(S.screen==='hub') saveGame();
+  // 存檔安全範圍：除了「戰鬥中」(battle.order[].ref 需要維持物件參照一致性)
+  // 跟「事件選擇中」(event.choices[].act 是函式，無法被JSON序列化)以外，
+  // 其他畫面（包含職業覺醒畫面）都是安全的存檔時機。
+  if(S.screen!=='battle' && S.screen!=='event') saveGame();
 }
 let pendingSprites = [];
 function queueSprite(id, seed, palette, size){ pendingSprites.push({id,seed,palette,size}); }
@@ -1334,10 +1373,12 @@ function renderBattle(){
   const monsterHtml = b.monsters.map((m,i)=>{
     const dead = m.hp<=0;
     const hpPct = Math.round(m.hp/m.maxHp*100);
+    const affixTags = (m.affixes&&m.affixes.length) ? `<div class="small" style="color:var(--epic);">${m.affixes.map(id=>esc(MONSTER_AFFIXES.find(a=>a.id===id).name)).join(' · ')}</div>` : '';
     return `
     <div class="monster-box ${dead?'dead':'target-selectable'}" data-tidx="${i}">
       <canvas class="sprite" id="mon-${i}" width="72" height="72"></canvas>
       <div class="monster-name">${m.boss?'👑 ':''}${esc(m.name)} Lv.${m.level}</div>
+      ${affixTags}
       <div class="bar-wrap" style="width:70px;margin:2px auto;"><div class="bar" style="width:${hpPct}%;background:var(--hp)"></div></div>
       <div class="small">${m.hp}/${m.maxHp}</div>
     </div>`;
