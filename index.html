@@ -846,7 +846,7 @@ function dealTrapDamage(s,dmg){ s.hero.hp=clamp(s.hero.hp-dmg,1,s.hero.maxHp); r
 function healParty(s,amt){ s.party.forEach(m=>{ if(m.hp>0) m.hp=clamp(m.hp+amt,0,m.maxHp); }); }
 
 /* ============ NPC 隊友池 ============ */
-const NPC_NAMES = ['艾莉絲','凱因','露娜','托爾加','薇拉','布蘭登','希兒','葛瑞姆'];
+const NPC_NAMES = ['艾莉絲','凱因','露娜','托爾加','薇拉','布蘭登','希兒','葛瑞姆','喬治','史丹利','喬','羅傑','惡魔貓','比利','西薩','熊信寬','Toyz','謝欣達','jay chou','陳美蘭','BR','謝金燕','山豬','蝦味先','蛋頭','禁藥王','陳老師','潮州土狗','godone','majin','栗子','玉麟','天峰','葉玫瑰','王希銘','迪拉胖','YOUND LEE','潤少',,'gummy B(他說要大寫)','趙翊帆','春艷','李權哲','YB','有錢人','前人','不公們','沒人能殺死的鬼','費玉清','阿兄喬治','小卡比','QUANZO','O.DKIZZYA','REX','macdella','eyeballray','SheATH','yappy','drew','呂士軒','ANBA','林聖夫','約翰','rgry','吳卓源','Barry chen','熱狗','大隻','小人','陳星翰','KITCAT','朱軒羊','公園','凡尼師男孩','馬英九','蔡英文','消防隊的楊先生','水哥DJDIDILONG','DIE4REALLL','NGKE配菜','KAPPERKIRA','LOKI LU','芋比','JIMMY','玫','33','厚片女孩','女拳主義者','死肥胖哥','修斗','林萌','駱楓','林俊傑','6YI7'];
 function makeRandomAlly(){
   const name = choice(Math.random, NPC_NAMES);
   const m = buildMember(name, 1);
