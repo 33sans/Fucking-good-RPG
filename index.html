@@ -28,6 +28,19 @@
   --epic:#a565d6;
   --legend:#ff6a35;
   --mythic:#ff4fa3;
+  /* 裝備稀有度色 */
+  --r-crude:#6b6358;
+  --r-normal:#9c8f7c;
+  --r-handy:#a8a090;
+  --r-common:#b7c49a;
+  --r-uncommon:#5b93a8;
+  --r-rare:#4a9fd8;
+  --r-scarce:#6b8cff;
+  --r-epic:#a565d6;
+  --r-legend:#ff6a35;
+  --r-mythic:#ff4fa3;
+  --r-ancient:#ffd24a;
+  --r-unique:#ff3b3b;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
   --touch-min: 44px;
@@ -156,11 +169,18 @@ canvas.sprite{image-rendering:pixelated;background:#0a0807;border:1px solid var(
   gap:6px;margin:6px 0 2px;
 }
 .battle-log-box{height:96px;}
-.rarity-common{color:var(--common);}
-.rarity-rare{color:var(--rare);}
-.rarity-epic{color:var(--epic);}
-.rarity-legend{color:var(--legend);}
-.rarity-mythic{color:var(--mythic);text-shadow:0 0 4px rgba(255,79,163,.6);}
+.rarity-crude{color:var(--r-crude);}
+.rarity-normal{color:var(--r-normal);}
+.rarity-handy{color:var(--r-handy);}
+.rarity-common{color:var(--r-common);}
+.rarity-uncommon{color:var(--r-uncommon);}
+.rarity-rare{color:var(--r-rare);}
+.rarity-scarce{color:var(--r-scarce);}
+.rarity-epic{color:var(--r-epic);}
+.rarity-legend{color:var(--r-legend);}
+.rarity-mythic{color:var(--r-mythic);text-shadow:0 0 4px rgba(255,79,163,.6);}
+.rarity-ancient{color:var(--r-ancient);text-shadow:0 0 6px rgba(255,210,74,.5);}
+.rarity-unique{color:var(--r-unique);text-shadow:0 0 8px rgba(255,59,59,.7);font-weight:900;}
 .log-box{
   background:#0a0807;border:1px solid var(--line);
   padding:10px;font-size:12px;height:130px;overflow-y:auto;line-height:1.7;
@@ -213,6 +233,41 @@ canvas.sprite{image-rendering:pixelated;background:#0a0807;border:1px solid var(
 }
 .item-row .meta{font-size:11px;color:var(--text-dim);font-family:'Space Mono','Noto Serif TC',serif;}
 .item-row .btn{flex-shrink:0;white-space:nowrap;}
+/* 背包重做 */
+.inv-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
+  background:var(--bg-panel-2);border:1px solid var(--line);border-radius:6px;
+  padding:10px;margin-bottom:10px;font-size:12px;
+}
+.inv-stats span{color:var(--text-dim);}
+.inv-stats b{color:var(--text);font-weight:700;}
+.equip-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;
+}
+.equip-slot{
+  background:var(--bg-panel-2);border:1px solid var(--line);border-radius:6px;
+  padding:10px;min-height:88px;display:flex;flex-direction:column;gap:6px;
+}
+.equip-slot.empty{border-style:dashed;opacity:0.85;}
+.equip-slot-label{font-size:10px;color:var(--gold);letter-spacing:1px;font-family:'Silkscreen',monospace;}
+.equip-slot-body{display:flex;align-items:flex-start;gap:8px;flex:1;}
+.equip-slot-body .meta{font-size:11px;color:var(--text-dim);line-height:1.35;}
+.equip-slot .btn{width:100%;margin-top:auto;}
+.inv-filter{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.inv-filter .btn{padding:8px 12px;font-size:12px;}
+.inv-filter .btn.active{background:var(--gold-dim);color:var(--bg-deep);border-color:var(--gold);}
+.inv-card{
+  background:var(--bg-panel-2);border:1px solid var(--line);border-radius:6px;
+  padding:10px;margin-bottom:8px;
+}
+.inv-card-top{display:flex;align-items:flex-start;gap:10px;}
+.inv-card-top > div:first-of-type{flex:1;min-width:0;}
+.inv-card-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.inv-card-actions .btn{flex:1;min-width:90px;text-align:center;}
+.delta-up{color:#7dcea0;}
+.delta-down{color:#e07a7a;}
+.delta-same{color:var(--text-dim);}
+.inv-compare{font-size:11px;margin-top:4px;line-height:1.4;font-family:'Space Mono','Noto Serif TC',serif;}
 .small{font-size:11px;color:var(--text-dim);font-family:'Space Mono','Noto Serif TC',serif;}
 .event-text{font-size:14px;line-height:1.8;margin:10px 0;}
 .hidden{display:none !important;}
@@ -427,7 +482,16 @@ function hashStr(str){
   for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
   return h >>> 0;
 }
-function rint(rng,min,max){ return Math.floor(rng()*(max-min+1))+min; }
+function rint(rng,min,max){
+  const a = Number(min), b = Number(max);
+  if(!Number.isFinite(a) || !Number.isFinite(b)) return 0;
+  return Math.floor(rng()*(b-a+1))+a;
+}
+/** 把值轉成有限數字，失敗則回 fallback（防 NaN 污染） */
+function num(v, fallback){
+  const n = Number(v);
+  return Number.isFinite(n) ? n : (fallback != null ? fallback : 0);
+}
 function choice(rng, arr){ return arr[Math.floor(rng()*arr.length)]; }
 function weightedChoice(rng, entries){ // entries: [{item,w}]
   const total = entries.reduce((s,e)=>s+e.w,0);
@@ -435,7 +499,10 @@ function weightedChoice(rng, entries){ // entries: [{item,w}]
   for(const e of entries){ if(r < e.w) return e.item; r -= e.w; }
   return entries[entries.length-1].item;
 }
-function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+function clamp(v,a,b){
+  const x = num(v, a), lo = num(a, 0), hi = num(b, lo);
+  return Math.max(lo, Math.min(hi, x));
+}
 function esc(s){ return (s+'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 
 /* ============ 像素精靈產生器 ============ */
@@ -507,26 +574,26 @@ const BRANCH_LEVEL = 20;
 const COMMONER = {
   name:'普通人', palette:PALETTES.metal,
   base:{hp:70,mp:15,atk:8,def:6,spd:8}, grow:{hp:6,mp:1,atk:0.8,def:0.6,spd:0.6},
-  skills:[{name:'拼命揮擊',mp:5,mult:1.1,type:'phys',desc:'尚未覺醒力量前的全力一擊'}]
+  skills:[{name:'拼命揮擊',mp:5,mult:1.15,type:'phys',desc:'物攻×1.15 − 防×0.5。尚未覺醒時的全力一擊'}]
 };
 
 /* 第1階（Lv.5）：4種生活職業，決定未來的成長方向 */
 const PROFESSIONS = [
   {id:'farmer', name:'農夫', tag:'刻苦耐勞，體魄強健 → 通往戰士／武僧', palette:PALETTES.beast,
     statBonus:{hp:25,mp:0,atk:3,def:5,spd:0}, growBonus:{hp:3,mp:0,atk:0.5,def:0.6,spd:0},
-    skill:{name:'咬牙硬撐',mp:6,type:'self_heal',heal:0.15,desc:'憑著農忙鍛鍊出的堅韌，恢復少量HP與體力'},
+    skill:{name:'咬牙硬撐',mp:6,type:'self_heal',heal:0.18,mpGain:8,desc:'恢復最大HP×18% + 8 MP'},
     leadsTo:['warrior','monk']},
   {id:'merchant', name:'商人', tag:'八面玲瓏，善於交涉 → 通往牧師／聖騎士', palette:PALETTES.holy,
     statBonus:{hp:15,mp:10,atk:1,def:4,spd:1}, growBonus:{hp:1.5,mp:1,atk:0.3,def:0.4,spd:0.2},
-    skill:{name:'精明議價',mp:6,type:'steal',desc:'與敵人「討價還價」，造成傷害並拿到一些賠償金'},
+    skill:{name:'精明議價',mp:6,type:'steal',mult:1.0,stealMin:8,stealMax:18,desc:'物攻×1.0 的傷害，並偷取 8~18 金幣'},
     leadsTo:['cleric','paladin']},
   {id:'hunter', name:'獵人', tag:'身手矯健，眼光精準 → 通往弓箭手／盜賊', palette:PALETTES.nature,
     statBonus:{hp:10,mp:2,atk:4,def:1,spd:6}, growBonus:{hp:1,mp:0.2,atk:0.6,def:0.2,spd:0.8},
-    skill:{name:'追蹤標記',mp:6,mult:1.3,type:'phys',desc:'標記獵物弱點，使攻擊更精準'},
+    skill:{name:'追蹤標記',mp:6,type:'mark',markTurns:3,markMult:1.35,desc:'輔助：標記目標 3 回合，期間受到傷害 +35%（不造成直接傷害）'},
     leadsTo:['archer','rogue']},
   {id:'apprentice', name:'學徒', tag:'博覽群書，初窺門道 → 通往法師／死靈法師', palette:PALETTES.ice,
     statBonus:{hp:0,mp:20,atk:2,def:0,spd:1}, growBonus:{hp:0,mp:2,atk:0.3,def:0,spd:0.1},
-    skill:{name:'魔力衝擊',mp:8,mult:1.2,type:'magic',desc:'尚不熟練的魔法衝擊波'},
+    skill:{name:'魔力衝擊',mp:8,mult:1.25,type:'magic',desc:'魔攻×1.25 − 防×0.25 的魔法傷害'},
     leadsTo:['mage','necromancer']}
 ];
 
@@ -535,7 +602,7 @@ const CLASSES = [
   {id:'warrior', name:'戰士', tag:'前排肉盾，穩定物理輸出', palette:PALETTES.metal,
     statBonus:{hp:48,mp:5,atk:8,def:14,spd:0}, growBonus:{hp:10,mp:1,atk:1.6,def:2.2,spd:0.6},
     passive:{id:'block', name:'格擋', desc:'受到攻擊時有機率格擋，減少35%傷害'},
-    skills:[{name:'猛力斬',mp:8,mult:1.8,type:'phys',desc:'單體高倍物理傷害'},{name:'守護怒吼',mp:12,type:'buff',desc:'全隊防禦+20% 兩回合'},{name:'嘲諷怒吼',mp:10,type:'guard',desc:'嘲諷全體敵人，吸引攻擊並提升自身防禦'}],
+    skills:[{name:'猛力斬',mp:8,mult:1.85,type:'phys',desc:'物攻×1.85 − 防×0.5'},{name:'守護怒吼',mp:12,type:'buff',buffDefRatio:0.22,buffTurns:2,desc:'全隊防禦+22%，2 回合'},{name:'嘲諷怒吼',mp:10,type:'guard',buffDefRatio:0.55,buffTurns:2,desc:'嘲諷；自身防禦+55%，2 回合'}],
     advancements:[
       {id:'berserker', name:'狂戰士', desc:'捨棄防禦換取毀滅性輸出，越戰越狂暴。',
         statBonus:{hp:15,mp:0,atk:10,def:-3,spd:3}, growBonus:{hp:3,mp:0,atk:1.8,def:0.5,spd:0.3},
@@ -545,12 +612,12 @@ const CLASSES = [
         skill:{name:'不動堡壘',mp:14,type:'guard',desc:'嘲諷全體敵人並大幅提升自身防禦'}},
       {id:'holyblade', name:'聖鋒騎士', desc:'劍與信仰並重，攻防兼具的聖光戰士。',
         statBonus:{hp:18,mp:10,atk:8,def:6,spd:2}, growBonus:{hp:3,mp:1,atk:1.3,def:1,spd:0.3},
-        skill:{name:'聖輝斬',mp:16,mult:1.9,type:'magic',desc:'聖屬性魔法傷害，對邪惡系怪物有加成'}}
+        skill:{name:'聖輝斬',mp:16,mult:1.9,type:'magic',holy:true,desc:'魔攻×1.9；對亡靈／暗影再×1.25'}}
     ]},
   {id:'mage', name:'法師', tag:'高魔法輸出，血脆需保護', palette:PALETTES.fire,
     statBonus:{hp:5,mp:45,atk:4,def:1,spd:1}, growBonus:{hp:2,mp:6,atk:0.8,def:0.4,spd:0.6},
     passive:{id:'manaRegen', name:'魔力涌動', desc:'每回合開始自動回復少量MP'},
-    skills:[{name:'烈焰爆破',mp:16,mult:2.4,type:'magic',desc:'單體超高魔法傷害'},{name:'烈焰風暴',mp:26,mult:1.3,type:'magic_aoe',desc:'全體敵人魔法傷害'}],
+    skills:[{name:'烈焰爆破',mp:16,mult:2.45,type:'magic',desc:'魔攻×2.45 − 防×0.25'},{name:'烈焰風暴',mp:26,mult:1.35,type:'magic_aoe',desc:'魔攻×1.35／敵'}],
     advancements:[
       {id:'pyromancer', name:'烈焰宗師', desc:'將烈焰之力推向極致的毀滅法師。',
         statBonus:{hp:0,mp:15,atk:12,def:0,spd:0}, growBonus:{hp:0,mp:1.5,atk:1.8,def:0,spd:0},
@@ -565,7 +632,7 @@ const CLASSES = [
   {id:'archer', name:'弓箭手', tag:'高敏捷單體爆發，先手優勢', palette:PALETTES.nature,
     statBonus:{hp:18,mp:15,atk:13,def:2,spd:9}, growBonus:{hp:3.5,mp:1.5,atk:2.1,def:0.5,spd:1.3},
     passive:{id:'pierce', name:'破甲', desc:'普通攻擊與技能皆無視部分敵人防禦'},
-    skills:[{name:'精準射擊',mp:10,mult:2.2,type:'phys',desc:'必定命中的高倍傷害'},{name:'連射',mp:14,mult:1.05,type:'phys_multi',desc:'連續攻擊3次'}],
+    skills:[{name:'精準射擊',mp:10,mult:2.25,type:'phys',desc:'物攻×2.25 − 防×0.5（破甲另算）'},{name:'連射',mp:14,mult:1.05,type:'phys_multi',hits:3,desc:'3 連擊，每段物攻×1.05'}],
     advancements:[
       {id:'ranger', name:'遊俠', desc:'精通穿甲箭術，專職單體爆發。',
         statBonus:{hp:0,mp:0,atk:8,def:0,spd:6}, growBonus:{hp:0,mp:0,atk:1.5,def:0,spd:1.2},
@@ -580,29 +647,29 @@ const CLASSES = [
   {id:'rogue', name:'盜賊', tag:'暴擊與偷竊，機動性極高', palette:PALETTES.shadow,
     statBonus:{hp:15,mp:10,atk:9,def:1,spd:10}, growBonus:{hp:3,mp:1,atk:1.5,def:0.4,spd:1.4},
     passive:{id:'doubleStrike', name:'連攻', desc:'普通攻擊有機率觸發追加攻擊'},
-    skills:[{name:'背刺',mp:9,mult:2.2,type:'phys_crit',desc:'高暴擊率單體傷害'},{name:'掠奪',mp:8,type:'steal',desc:'攻擊並偷取少量金幣'}],
+    skills:[{name:'背刺',mp:9,mult:2.2,type:'phys_crit',crit:0.48,desc:'物攻×2.2，爆擊率 48%'},{name:'掠奪',mp:8,type:'steal',mult:1.15,stealMin:6,stealMax:16,desc:'物攻×1.15 + 偷 6~16 金'}],
     advancements:[
       {id:'assassin', name:'刺客', desc:'致命效率的殺戮專家。',
         statBonus:{hp:0,mp:0,atk:10,def:0,spd:5}, growBonus:{hp:0,mp:0,atk:1.8,def:0,spd:1},
-        skill:{name:'致命暗殺',mp:14,mult:2.5,type:'phys_crit',desc:'極高暴擊率的背後一擊'}},
+        skill:{name:'致命暗殺',mp:14,mult:2.55,type:'phys_crit',crit:0.55,desc:'物攻×2.55，爆擊率 55%'}},
       {id:'swashbuckler', name:'江湖遊俠', desc:'華麗多變的劍舞戰法，攻守兼備。',
         statBonus:{hp:10,mp:0,atk:6,def:0,spd:6}, growBonus:{hp:1.2,mp:0,atk:1.2,def:0,spd:1.2},
         skill:{name:'亂舞連斬',mp:12,mult:0.85,type:'phys_multi',desc:'華麗的連續劍舞'}},
       {id:'shadowthief', name:'影盜', desc:'專精於掠奪與逃脫的暗影盜賊。',
         statBonus:{hp:0,mp:0,atk:4,def:0,spd:8}, growBonus:{hp:0,mp:0,atk:0.8,def:0,spd:1.5},
-        skill:{name:'巨額掠奪',mp:10,type:'steal',desc:'攻擊並偷取大量金幣'}}
+        skill:{name:'巨額掠奪',mp:10,type:'steal',mult:1.2,stealMin:15,stealMax:35,desc:'物攻×1.2 + 偷 15~35 金'}}
     ]},
   {id:'cleric', name:'牧師', tag:'治療與淨化，隊伍續航核心', palette:PALETTES.holy,
     statBonus:{hp:25,mp:35,atk:2,def:3,spd:2}, growBonus:{hp:5,mp:4.5,atk:0.4,def:0.6,spd:0.4},
     passive:{id:'mercyHeal', name:'仁慈之心', desc:'治療目標HP過低時，治療量提升'},
-    skills:[{name:'治癒之光',mp:14,heal:1.6,type:'heal',desc:'恢復單一隊友大量HP'},{name:'群體祝福',mp:22,heal:0.9,type:'heal_aoe',desc:'恢復全隊HP'}],
+    skills:[{name:'治癒之光',mp:14,heal:1.6,type:'heal',desc:'治療＝魔攻×1.6＋智力×0.6＋Lv×2'},{name:'群體祝福',mp:22,heal:0.95,type:'heal_aoe',desc:'全隊治療＝魔攻×0.95＋智力×0.6＋Lv×2'}],
     advancements:[
       {id:'bishop', name:'聖光主教', desc:'掌握強大群體聖光術的教會高階聖職者。',
         statBonus:{hp:0,mp:20,atk:0,def:6,spd:0}, growBonus:{hp:0,mp:2,atk:0,def:1,spd:0},
         skill:{name:'神聖庇護',mp:25,heal:1.2,type:'heal_aoe',desc:'強力的全體治療術'}},
       {id:'warpriest', name:'戰鬥牧師', desc:'手持戰錘衝鋒陷陣的攻擊型聖職者。',
         statBonus:{hp:15,mp:0,atk:8,def:0,spd:0}, growBonus:{hp:2,mp:0,atk:1.3,def:0,spd:0},
-        skill:{name:'審判之錘',mp:16,mult:1.6,type:'magic',desc:'對邪惡系有加成的重擊'}},
+        skill:{name:'審判之錘',mp:16,mult:1.7,type:'magic',holy:true,desc:'魔攻×1.7；對邪惡×1.25'}},
       {id:'sagehealer', name:'治癒賢者', desc:'將治癒術鑽研至化境的療癒大師。',
         statBonus:{hp:10,mp:25,atk:0,def:0,spd:0}, growBonus:{hp:1.2,mp:2.5,atk:0,def:0,spd:0},
         skill:{name:'甘露之泉',mp:18,heal:2.2,type:'heal',desc:'對單一隊友的超強治療'}}
@@ -610,14 +677,14 @@ const CLASSES = [
   {id:'paladin', name:'聖騎士', tag:'攻防兼備的混合坦克', palette:PALETTES.holy,
     statBonus:{hp:42,mp:20,atk:5,def:12,spd:1}, growBonus:{hp:8,mp:2.5,atk:1,def:1.9,spd:0.5},
     passive:{id:'guardianAngel', name:'守護天使', desc:'每場戰鬥一次，隊友瀕死時保留1HP'},
-    skills:[{name:'聖光審判',mp:15,mult:1.7,type:'magic',desc:'對邪惡系有加成的傷害'},{name:'守護誓約',mp:16,type:'guard',desc:'嘲諷敵人並自身減傷'}],
+    skills:[{name:'聖光審判',mp:15,mult:1.75,type:'magic',holy:true,desc:'魔攻×1.75；對邪惡×1.25'},{name:'守護誓約',mp:16,type:'guard',buffDefRatio:0.65,buffTurns:2,desc:'嘲諷；自身防禦+65%，2 回合'}],
     advancements:[
       {id:'inquisitor', name:'審判者', desc:'專精聖光攻擊，追獵邪惡的裁決者。',
         statBonus:{hp:0,mp:10,atk:10,def:0,spd:0}, growBonus:{hp:0,mp:1,atk:1.6,def:0,spd:0},
-        skill:{name:'神罰審判',mp:20,mult:2.0,type:'magic',desc:'更強力的聖光審判'}},
+        skill:{name:'神罰審判',mp:20,mult:2.1,type:'magic',holy:true,desc:'魔攻×2.1；對邪惡×1.25'}},
       {id:'shieldbearer', name:'聖盾衛士', desc:'固若金湯的絕對防禦專家。',
         statBonus:{hp:20,mp:0,atk:0,def:14,spd:0}, growBonus:{hp:2.5,mp:0,atk:0,def:2,spd:0},
-        skill:{name:'絕對防禦',mp:18,type:'guard',desc:'極強的嘲諷與減傷效果'}},
+        skill:{name:'絕對防禦',mp:18,type:'guard',buffDefRatio:1.0,buffTurns:3,desc:'嘲諷；自身防禦+100%，3 回合'}},
       {id:'dawnbringer', name:'曙光騎士', desc:'兼顧輸出與治療的全能戰場核心。',
         statBonus:{hp:10,mp:10,atk:6,def:6,spd:0}, growBonus:{hp:1.2,mp:1,atk:1,def:1,spd:0},
         skill:{name:'曙光祝禱',mp:20,heal:1.0,type:'heal_aoe',desc:'戰場中的治癒之光'}}
@@ -625,7 +692,7 @@ const CLASSES = [
   {id:'monk', name:'武僧', tag:'連擊型輸出，恢復自身氣力', palette:PALETTES.beast,
     statBonus:{hp:26,mp:12,atk:7,def:4,spd:5}, growBonus:{hp:5,mp:1.2,atk:1.2,def:0.6,spd:1},
     passive:{id:'combatFlow', name:'氣勁循環', desc:'攻擊命中後回復少量MP'},
-    skills:[{name:'連環腿',mp:10,mult:1.5,type:'phys_multi2',desc:'連續攻擊2次'},{name:'內功調息',mp:0,heal:0.3,type:'self_heal',desc:'恢復自身HP與MP'}],
+    skills:[{name:'連環腿',mp:10,mult:1.15,type:'phys_multi2',hits:2,desc:'2 連擊，每段物攻×1.15'},{name:'內功調息',mp:0,heal:0.28,mpGain:14,type:'self_heal',desc:'最大HP×28% + 14 MP'}],
     advancements:[
       {id:'fistsaint', name:'拳聖', desc:'將連擊拳法練至巔峰的武學宗師。',
         statBonus:{hp:0,mp:0,atk:12,def:0,spd:4}, growBonus:{hp:0,mp:0,atk:2,def:0,spd:0.8},
@@ -640,7 +707,7 @@ const CLASSES = [
   {id:'necromancer', name:'死靈法師', tag:'詛咒與腐蝕，持續傷害流', palette:PALETTES.undead,
     statBonus:{hp:8,mp:40,atk:4,def:1,spd:0}, growBonus:{hp:2,mp:5,atk:0.7,def:0.3,spd:0.3},
     passive:{id:'virulence', name:'致病之息', desc:'普通攻擊有機率附加中毒效果'},
-    skills:[{name:'腐蝕詛咒',mp:15,mult:1.2,type:'magic_dot',desc:'魔法傷害並附加中毒'},{name:'亡者低語',mp:20,mult:1.6,type:'magic_aoe',desc:'全體敵人魔法傷害'}],
+    skills:[{name:'腐蝕詛咒',mp:15,mult:1.25,type:'magic_dot',poisonTurns:3,desc:'魔攻×1.25／敵 + 中毒 3 回合'},{name:'亡者低語',mp:20,mult:1.6,type:'magic_aoe',desc:'魔攻×1.6／敵'}],
     advancements:[
       {id:'plaguelord', name:'瘟疫使者', desc:'散播無盡瘟疫，讓戰場逐漸腐朽。',
         statBonus:{hp:0,mp:15,atk:6,def:0,spd:0}, growBonus:{hp:0,mp:1.8,atk:1,def:0,spd:0},
@@ -654,137 +721,587 @@ const CLASSES = [
     ]},
 ];
 
-/* ============ 資料：怪物 ============ */
+/* ============ 資料：怪物（C 系統） ============ */
+const MAX_PLAYER_LEVEL = 120;
+const MAX_MONSTER_PARTY = 6;
+
 const MONSTER_TYPES = [
+  /* Tier 1 雜兵 */
   {n:'史萊姆',type:'nature',tier:1},{n:'哥布林',type:'beast',tier:1},{n:'野狼',type:'beast',tier:1},
   {n:'巨蝠',type:'shadow',tier:1},{n:'骷髏兵',type:'undead',tier:1},{n:'毒蜘蛛',type:'nature',tier:1},
+  {n:'盜賊鼠人',type:'beast',tier:1},{n:'沼地蛙',type:'water',tier:1},{n:'炭火小鬼',type:'fire',tier:1},
+  {n:'碎石怪',type:'metal',tier:1},{n:'迷霧幽魂',type:'shadow',tier:1},{n:'鐵銹械',type:'metal',tier:1},
+  /* Tier 2 */
   {n:'沼澤鱷',type:'water',tier:2},{n:'火蜥蜴',type:'fire',tier:2},{n:'冰霜狼',type:'ice',tier:2},
   {n:'食屍鬼',type:'undead',tier:2},{n:'暗影刺客',type:'shadow',tier:2},{n:'鐵甲蟲',type:'metal',tier:2},
+  {n:'毒囊蠍',type:'nature',tier:2},{n:'血蝠群',type:'blood',tier:2},{n:'符文守衛',type:'metal',tier:2},
+  {n:'凍土熊',type:'ice',tier:2},{n:'腐木樹人',type:'nature',tier:2},{n:'鹽沼巫妖雛',type:'undead',tier:2},
+  /* Tier 3 */
   {n:'半獸人戰士',type:'blood',tier:3},{n:'幽靈法師',type:'shadow',tier:3},{n:'石像鬼',type:'metal',tier:3},
   {n:'血刃狂戰士',type:'blood',tier:3},{n:'深淵觸手',type:'shadow',tier:3},{n:'冰霜巨魔',type:'ice',tier:3},
+  {n:'熔核犬',type:'fire',tier:3},{n:'荊棘騎士',type:'nature',tier:3},{n:'深海祭司',type:'water',tier:3},
+  {n:'銅皮魔像',type:'metal',tier:3},{n:'骸骨弓手',type:'undead',tier:3},{n:'影刃雙生',type:'shadow',tier:3},
+  /* Tier 4 精英原型 */
   {n:'骸骨法王',type:'undead',tier:4},{n:'熔岩魔像',type:'fire',tier:4},{n:'劇毒女王',type:'nature',tier:4},
-  {n:'暗夜領主',type:'shadow',tier:4},
-  {n:'灰燼龍王',type:'fire',tier:5,boss:true},{n:'虛空吞噬者',type:'shadow',tier:5,boss:true},{n:'永眠死神',type:'undead',tier:5,boss:true}
+  {n:'暗夜領主',type:'shadow',tier:4},{n:'風暴獅鷲',type:'beast',tier:4},{n:'寒晶巨人',type:'ice',tier:4},
+  {n:'血潮督軍',type:'blood',tier:4},{n:'遠古石衛',type:'metal',tier:4},{n:'深淵海妖',type:'water',tier:4},
+  {n:'灰燼巫妖',type:'undead',tier:4},
+  /* Tier 5 Boss（僅 50 等後遭遇） */
+  {n:'灰燼龍王',type:'fire',tier:5,boss:true,mech:'inferno'},
+  {n:'虛空吞噬者',type:'shadow',tier:5,boss:true,mech:'void'},
+  {n:'永眠死神',type:'undead',tier:5,boss:true,mech:'reaper'},
+  {n:'潮汐女皇',type:'water',tier:5,boss:true,mech:'tide'},
+  {n:'荊棘古樹',type:'nature',tier:5,boss:true,mech:'roots'},
+  {n:'鋼鐵巨像',type:'metal',tier:5,boss:true,mech:'colossus'},
+  {n:'血月魔王',type:'blood',tier:5,boss:true,mech:'bloodmoon'},
+  {n:'永凍君王',type:'ice',tier:5,boss:true,mech:'frost'},
+  {n:'瘟疫之主',type:'nature',tier:5,boss:true,mech:'plague'},
+  {n:'影殿主宰',type:'shadow',tier:5,boss:true,mech:'shadowcourt'},
+  {n:'熔核泰坦',type:'fire',tier:5,boss:true,mech:'titan'},
+  {n:'深淵海怪',type:'water',tier:5,boss:true,mech:'kraken'},
+  {n:'骸骨帝皇',type:'undead',tier:5,boss:true,mech:'boneking'},
+  {n:'狂戰魔神',type:'blood',tier:5,boss:true,mech:'berserk'},
+  {n:'星隕看守者',type:'metal',tier:5,boss:true,mech:'starseal'},
+  {n:'夢魘織者',type:'shadow',tier:5,boss:true,mech:'nightmare'},
+  {n:'聖焰審判官',type:'fire',tier:5,boss:true,mech:'judgment'},
+  {n:'腐朽花園主',type:'nature',tier:5,boss:true,mech:'garden'}
 ];
+
+/* 50 種怪物詞綴（質變為主） */
 const MONSTER_AFFIXES = [
-  {id:'armored', name:'堅甲', desc:'防禦大幅提升', apply:(m)=>{ m.def = Math.round(m.def*1.5); }},
-  {id:'bloodrage', name:'血怒', desc:'攻擊大幅提升，但防禦降低', apply:(m)=>{ m.atk = Math.round(m.atk*1.5); m.def = Math.round(m.def*0.7); }},
-  {id:'giant', name:'巨體', desc:'生命大幅提升', apply:(m)=>{ m.maxHp = Math.round(m.maxHp*1.4); m.hp = m.maxHp; }},
-  {id:'swift', name:'疾速', desc:'速度大幅提升', apply:(m)=>{ m.spd = Math.round(m.spd*1.5); }},
-  {id:'regenerating', name:'再生', desc:'每回合自動回復生命', apply:(m)=>{ m.hasRegen = true; }}
+  {id:'armored', name:'堅甲', desc:'防禦×1.5', apply:(m)=>{ m.def=Math.round(m.def*1.5); }},
+  {id:'bloodrage', name:'血怒', desc:'攻擊×1.5，防禦×0.7', apply:(m)=>{ m.atk=Math.round(m.atk*1.5); m.def=Math.round(m.def*0.7); }},
+  {id:'giant', name:'巨體', desc:'生命×1.45', apply:(m)=>{ m.maxHp=Math.round(m.maxHp*1.45); m.hp=m.maxHp; }},
+  {id:'swift', name:'疾速', desc:'速度×1.55', apply:(m)=>{ m.spd=Math.round(m.spd*1.55); }},
+  {id:'regenerating', name:'再生', desc:'每回合回 5% 生命', apply:(m)=>{ m.hasRegen=true; m.regenRate=0.05; }},
+  {id:'thorns', name:'荊棘', desc:'受擊反傷 20%', apply:(m)=>{ m.thorns=0.20; }},
+  {id:'vampiric', name:'吸血', desc:'攻擊回復造成傷害 25%', apply:(m)=>{ m.vampiric=0.25; }},
+  {id:'poisonous', name:'劇毒', desc:'攻擊使目標中毒', apply:(m)=>{ m.poisonTouch=true; }},
+  {id:'frenzied', name:'狂亂', desc:'生命＜40% 時攻擊×1.6', apply:(m)=>{ m.enrageAt=0.4; m.enrageMult=1.6; }},
+  {id:'evasive', name:'飄忽', desc:'25% 閃避物理', apply:(m)=>{ m.evade=0.25; }},
+  {id:'stoneSkin', name:'岩膚', desc:'防禦×1.35，速度×0.85', apply:(m)=>{ m.def=Math.round(m.def*1.35); m.spd=Math.round(m.spd*0.85); }},
+  {id:'berserk', name:'狂暴', desc:'攻擊×1.4，生命×0.85', apply:(m)=>{ m.atk=Math.round(m.atk*1.4); m.maxHp=Math.round(m.maxHp*0.85); m.hp=m.maxHp; }},
+  {id:'shielded', name:'護盾', desc:'前 2 次受傷減半', apply:(m)=>{ m.shieldCharges=2; }},
+  {id:'multiStrike', name:'連擊', desc:'35% 機率攻擊兩次', apply:(m)=>{ m.doubleAtk=0.35; }},
+  {id:'cleave', name:'橫掃', desc:'攻擊有機會波及全隊', apply:(m)=>{ m.aoeAtk=0.30; }},
+  {id:'manaBurn', name:'灼魔', desc:'攻擊額外扣 MP', apply:(m)=>{ m.manaBurn=true; }},
+  {id:'chilling', name:'寒凍', desc:'攻擊降低目標速度', apply:(m)=>{ m.chillTouch=true; }},
+  {id:'burning', name:'燃燒', desc:'每回合造成持續火傷', apply:(m)=>{ m.auraBurn=0.03; }},
+  {id:'fortified', name:'固守', desc:'生命×1.25，防禦×1.25', apply:(m)=>{ m.maxHp=Math.round(m.maxHp*1.25); m.hp=m.maxHp; m.def=Math.round(m.def*1.25); }},
+  {id:'glassCannon', name:'玻璃炮', desc:'攻擊×1.8，生命×0.6', apply:(m)=>{ m.atk=Math.round(m.atk*1.8); m.maxHp=Math.round(m.maxHp*0.6); m.hp=m.maxHp; }},
+  {id:'nimble', name:'輕盈', desc:'速度×1.35，閃避+10%', apply:(m)=>{ m.spd=Math.round(m.spd*1.35); m.evade=(m.evade||0)+0.10; }},
+  {id:'thickHide', name:'厚皮', desc:'受到物理傷害 −20%', apply:(m)=>{ m.physResist=0.20; }},
+  {id:'magicWard', name:'魔抗', desc:'受到魔法傷害 −25%', apply:(m)=>{ m.magResist=0.25; }},
+  {id:'undying', name:'不死', desc:'首次瀕死時以 20% 血復活一次', apply:(m)=>{ m.undying=true; }},
+  {id:'packLeader', name:'頭領', desc:'經驗與金幣×1.3', apply:(m)=>{ m.exp=Math.round(m.exp*1.3); m.gold=Math.round(m.gold*1.3); }},
+  {id:'wealthy', name:'富有', desc:'金幣×1.8', apply:(m)=>{ m.gold=Math.round(m.gold*1.8); }},
+  {id:'experienced', name:'老練', desc:'經驗×1.5', apply:(m)=>{ m.exp=Math.round(m.exp*1.5); }},
+  {id:'brutal', name:'殘暴', desc:'攻擊×1.3', apply:(m)=>{ m.atk=Math.round(m.atk*1.3); }},
+  {id:'ironWill', name:'鐵志', desc:'免疫嘲諷優先（較難被拉）', apply:(m)=>{ m.ignoreTaunt=0.5; }},
+  {id:'stunning', name:'震擊', desc:'攻擊 15% 機率讓目標跳過下回合', apply:(m)=>{ m.stunChance=0.15; }},
+  {id:'lifeLink', name:'命鏈', desc:'每回合回 3% 生命', apply:(m)=>{ m.hasRegen=true; m.regenRate=0.03; }},
+  {id:'barbed', name:'倒刺', desc:'反傷 30%', apply:(m)=>{ m.thorns=0.30; }},
+  {id:'shadowstep', name:'影步', desc:'閃避 35%', apply:(m)=>{ m.evade=0.35; }},
+  {id:'overgrowth', name:'增生', desc:'生命×1.6，速度×0.8', apply:(m)=>{ m.maxHp=Math.round(m.maxHp*1.6); m.hp=m.maxHp; m.spd=Math.round(m.spd*0.8); }},
+  {id:'sparking', name:'電弧', desc:'攻擊附加魔法傷害', apply:(m)=>{ m.arcBonus=0.25; }},
+  {id:'plagued', name:'瘟疫', desc:'攻擊必中毒，毒傷較重', apply:(m)=>{ m.poisonTouch=true; m.poisonHeavy=true; }},
+  {id:'colossal', name:'魁梧', desc:'生命×1.7，防禦×1.2', apply:(m)=>{ m.maxHp=Math.round(m.maxHp*1.7); m.hp=m.maxHp; m.def=Math.round(m.def*1.2); }},
+  {id:'ruthless', name:'無情', desc:'對生命＜50% 的目標傷害×1.4', apply:(m)=>{ m.execute=1.4; }},
+  {id:'warded', name:'結界', desc:'前 3 次受傷 −40%', apply:(m)=>{ m.shieldCharges=3; m.shieldReduce=0.4; }},
+  {id:'haste', name:'加速', desc:'速度×1.7', apply:(m)=>{ m.spd=Math.round(m.spd*1.7); }},
+  {id:'savagery', name:'蠻力', desc:'攻擊×1.25，生命×1.15', apply:(m)=>{ m.atk=Math.round(m.atk*1.25); m.maxHp=Math.round(m.maxHp*1.15); m.hp=m.maxHp; }},
+  {id:'reflective', name:'反射', desc:'反傷 15% 且魔抗+15%', apply:(m)=>{ m.thorns=0.15; m.magResist=(m.magResist||0)+0.15; }},
+  {id:'bloodlust', name:'嗜血', desc:'吸血 40%', apply:(m)=>{ m.vampiric=0.40; }},
+  {id:'tenacious', name:'韌性', desc:'生命×1.3，再生 4%', apply:(m)=>{ m.maxHp=Math.round(m.maxHp*1.3); m.hp=m.maxHp; m.hasRegen=true; m.regenRate=0.04; }},
+  {id:'crippling', name:'致殘', desc:'攻擊降低目標攻擊', apply:(m)=>{ m.crippleTouch=true; }},
+  {id:'arcane', name:'奧能', desc:'攻擊偏魔法、魔抗高', apply:(m)=>{ m.arcBonus=0.4; m.magResist=(m.magResist||0)+0.2; }},
+  {id:'phalanx', name:'方陣', desc:'防禦×1.6，攻擊×0.9', apply:(m)=>{ m.def=Math.round(m.def*1.6); m.atk=Math.round(m.atk*0.9); }},
+  {id:'unstable', name:'不穩', desc:'生命×0.75，攻擊×1.55，死亡爆炸', apply:(m)=>{ m.maxHp=Math.round(m.maxHp*0.75); m.hp=m.maxHp; m.atk=Math.round(m.atk*1.55); m.deathBurst=0.15; }},
+  {id:'hunterMark', name:'獵物', desc:'受到標記類傷害額外 +15%', apply:(m)=>{ m.markVulnerable=1.15; }},
+  {id:'rare', name:'稀有', desc:'全數值 +20%（精英專屬）', apply:(m)=>{ m.atk=Math.round(m.atk*1.2); m.def=Math.round(m.def*1.2); m.maxHp=Math.round(m.maxHp*1.2); m.hp=m.maxHp; m.spd=Math.round(m.spd*1.2); m.exp=Math.round(m.exp*1.2); m.gold=Math.round(m.gold*1.2); }}
 ];
-function rollAffixCount(tier, boss, playerLevel){
-  let base = 0;
-  if(boss) base = weightedChoice(Math.random, [{item:1,w:50},{item:2,w:35},{item:3,w:15}]);
-  else if(tier>=3 && Math.random()<0.55) base = 1;
-  if(base===0) return 0; // 一般小怪不會被拉高等級的規則波及
-  const bonus = Math.floor(Math.max(0, playerLevel-20)/10); // Lv20後每10等，詞綴+1
-  return Math.min(base+bonus, 5);
+
+/** 30 等後至少 1 詞綴；之後每 10 等 +1，對應至 120 等 */
+function rollAffixCount(tier, boss, playerLevel, isElite){
+  let count = 0;
+  if(playerLevel >= 30){
+    count = 1 + Math.floor((playerLevel - 30) / 10); // 30→1 … 120→10
+    count = Math.min(count, 8);
+  } else if(boss){
+    count = weightedChoice(Math.random, [{item:1,w:40},{item:2,w:40},{item:3,w:20}]);
+  } else if(tier >= 3 && Math.random() < 0.45){
+    count = 1;
+  } else if(tier >= 4 && Math.random() < 0.7){
+    count = 1;
+  }
+  if(boss) count = Math.max(count, 2);
+  if(isElite) count = Math.max(count, 1) + 1; // 精英至少多一條常規
+  return Math.min(count, MONSTER_AFFIXES.length - 1); // 預留 rare
 }
-function makeMonster(tmpl, playerLevel, rng){
-  const tier = tmpl.tier;
-  const lvl = clamp(playerLevel + rint(rng,-1,1), 1, 60);
-  const scale = (1 + (tier-1)*0.5) * (1 + lvl*0.09 + lvl*lvl*0.0028);
-  const boss = !!tmpl.boss;
-  const mon = {
-    name: tmpl.n,
-    type: tmpl.type,
-    tier, boss,
+
+function applyMonsterAffixes(mon, count, rng, forceRare){
+  const pool = MONSTER_AFFIXES.filter(a=>a.id!=='rare');
+  const shuffled = pool.slice().sort(()=>rng()-0.5);
+  const chosen = shuffled.slice(0, Math.min(count, shuffled.length));
+  chosen.forEach(aff=>{
+    aff.apply(mon);
+    mon.affixes.push(aff.id);
+    mon.affixNames = mon.affixNames || [];
+    mon.affixNames.push(aff.name);
+  });
+  if(forceRare){
+    const rare = MONSTER_AFFIXES.find(a=>a.id==='rare');
+    if(rare){ rare.apply(mon); mon.affixes.push('rare'); mon.affixNames.push('稀有'); }
+  }
+}
+
+/**
+ * 1–120 曲線：
+ * scale ≈ (1+(tier-1)*0.45) * (1 + lv*0.07 + lv²*0.0018)
+ * 高等級血量與經驗明顯拉開
+ */
+function makeMonster(tmpl, playerLevel, rng, opts){
+  opts = opts || {};
+  rng = rng || Math.random;
+  const tier = clamp(num(tmpl && tmpl.tier, 1), 1, 5);
+  const pl = clamp(num(playerLevel, 1), 1, MAX_PLAYER_LEVEL);
+  const lvl = clamp(pl + rint(rng, -1, 2), 1, MAX_PLAYER_LEVEL);
+  const tierMul = 1 + (tier - 1) * 0.45;
+  const lvlMul = 1 + lvl * 0.07 + lvl * lvl * 0.0018;
+  const scale = tierMul * lvlMul;
+  const boss = !!(tmpl && tmpl.boss);
+  const elite = !!opts.elite && !boss;
+  let mon = {
+    name: (elite ? '精英·' : '') + ((tmpl && tmpl.n) || '未知生物'),
+    type: (tmpl && tmpl.type) || 'beast',
+    tier, boss, elite,
     level: lvl,
-    hp: Math.round((boss?300:42) * scale),
-    maxHp: Math.round((boss?300:42) * scale),
-    atk: Math.round((boss?18:9) * (1+(tier-1)*0.4) * (1+lvl*0.08)),
-    def: Math.round((boss?10:4) * (1+(tier-1)*0.3) * (1+lvl*0.06)),
-    spd: rint(rng, 6+tier, 12+tier),
-    exp: Math.round((boss?400:40) * scale),
-    gold: Math.round((boss?300:25) * scale * (0.7+rng()*0.6)),
-    seed: tmpl.n + '_' + lvl + '_' + Math.floor(rng()*9999),
-    status:null, statusTurns:0, rewarded:false, hasRegen:false, affixes:[]
+    hp: 0, maxHp: 0, atk: 0, def: 0, spd: 0,
+    exp: 0, gold: 0,
+    seed: ((tmpl && tmpl.n) || 'm') + '_' + lvl + '_' + Math.floor(rng()*9999),
+    status:null, statusTurns:0, rewarded:false,
+    hasRegen:false, regenRate:0.05,
+    affixes:[], affixNames:[],
+    mech: boss ? ((tmpl && tmpl.mech) || null) : null,
+    bossTurns: 0
   };
-  const affixCount = rollAffixCount(tier, boss, playerLevel);
-  if(affixCount>0){
-    const shuffled = MONSTER_AFFIXES.slice().sort(()=>rng()-0.5);
-    const chosen = shuffled.slice(0, Math.min(affixCount, MONSTER_AFFIXES.length));
-    chosen.forEach(aff=>{ aff.apply(mon); mon.affixes.push(aff.id); });
+  const hpBase = boss ? 420 : (elite ? 55 : 42);
+  const atkBase = boss ? 28 : (elite ? 14 : 12);
+  // 防禦成長放緩：避免中後期物攻被壓成 1 傷
+  const defBase = boss ? 10 : (elite ? 4 : 3);
+  const expBase = boss ? 520 : (elite ? 58 : 40);
+  const goldBase = boss ? 380 : (elite ? 36 : 25);
+  mon.maxHp = Math.max(1, Math.round(hpBase * scale * (boss ? 1.15 : 1)));
+  mon.hp = mon.maxHp;
+  mon.atk = Math.max(1, Math.round(atkBase * (1+(tier-1)*0.42) * (1+lvl*0.09)));
+  mon.def = Math.max(0, Math.round(defBase * (1+(tier-1)*0.20) * (1+lvl*0.04)));
+  mon.spd = Math.max(1, rint(rng, 5+tier, 11+tier*2));
+  mon.exp = Math.max(1, Math.round(expBase * scale * (1 + lvl * 0.01)));
+  mon.gold = Math.max(0, Math.round(goldBase * scale * (0.7 + rng()*0.6)));
+
+  if(elite){
+    mon.atk = Math.max(1, Math.round(mon.atk * 1.35));
+    mon.def = Math.max(0, Math.round(mon.def * 1.25));
+    mon.maxHp = Math.max(1, Math.round(mon.maxHp * 1.35));
+    mon.hp = mon.maxHp;
+    mon.exp = Math.max(1, Math.round(mon.exp * 1.4));
+    mon.gold = Math.max(0, Math.round(mon.gold * 1.35));
+  }
+
+  const wantAffix = rollAffixCount(tier, boss, pl, elite);
+  const forceRare = elite;
+  applyMonsterAffixes(mon, wantAffix, rng, forceRare);
+
+  // 詞綴套用後強制數值合法，避免任何 NaN 進入戰鬥
+  mon.maxHp = Math.max(1, num(mon.maxHp, 1));
+  mon.hp = clamp(num(mon.hp, mon.maxHp), 0, mon.maxHp);
+  mon.atk = Math.max(1, num(mon.atk, 1));
+  mon.def = Math.max(0, num(mon.def, 0));
+  // 防禦軟上限：約等於「同級期望物攻」的 1.1 倍，避免詞綴疊到無法輸出
+  const defCap = Math.round((8 + lvl * 1.2 + tier * 3) * (elite ? 1.25 : 1) * (boss ? 1.6 : 1));
+  if(mon.def > defCap) mon.def = defCap;
+  mon.spd = Math.max(1, num(mon.spd, 1));
+  mon.exp = Math.max(1, num(mon.exp, 1));
+  mon.gold = Math.max(0, num(mon.gold, 0));
+
+  if(boss && mon.mech){
+    mon.exp = Math.max(1, Math.round(mon.exp * 1.25));
+    mon.gold = Math.max(0, Math.round(mon.gold * 1.25));
   }
   return mon;
 }
 
-/* ============ 資料：裝備 ============ */
+/* ============ 資料：裝備（稀有度 12 階 + 詞條系統） ============ */
+/* 由低到高：粗製→一般→順手→常用→罕見→稀有→稀罕→史詩→傳奇→神話→千古→唯一 */
 const RARITIES = [
-  {id:'common', name:'普通', mult:1.0, w:50, color:'var(--common)', hex:'#b7b3c9'},
-  {id:'rare', name:'稀有', mult:1.35, w:27, color:'var(--rare)', hex:'#4ba3c7'},
-  {id:'epic', name:'史詩', mult:1.8, w:14, color:'var(--epic)', hex:'#a35bd6'},
-  {id:'legend', name:'傳說', mult:2.4, w:7, color:'var(--legend)', hex:'#e0b256'},
-  {id:'mythic', name:'神話', mult:3.2, w:2, color:'var(--mythic)', hex:'#ff6ec7'}
+  {id:'crude',    name:'粗製', mult:0.55, variance:0.12, affixCount:0, w:22, hex:'#6b6358'},
+  {id:'normal',   name:'一般', mult:0.80, variance:0.12, affixCount:0, w:20, hex:'#9c8f7c'},
+  {id:'handy',    name:'順手', mult:1.05, variance:0.14, affixCount:0, w:16, hex:'#a8a090'},
+  {id:'common',   name:'常用', mult:1.30, variance:0.14, affixCount:0, w:14, hex:'#b7c49a'},
+  {id:'uncommon', name:'罕見', mult:1.55, variance:0.15, affixCount:1, w:10, hex:'#5b93a8'},
+  {id:'rare',     name:'稀有', mult:1.90, variance:0.15, affixCount:1, w:7,  hex:'#4a9fd8'},
+  {id:'scarce',   name:'稀罕', mult:2.30, variance:0.16, affixCount:1, w:5,  hex:'#6b8cff'},
+  {id:'epic',     name:'史詩', mult:2.80, variance:0.16, affixCount:2, w:3,  hex:'#a565d6'},
+  {id:'legend',   name:'傳奇', mult:3.40, variance:0.18, affixCount:2, w:1.5,hex:'#ff6a35'},
+  {id:'mythic',   name:'神話', mult:4.20, variance:0.18, affixCount:2, w:0.8,hex:'#ff4fa3'},
+  {id:'ancient',  name:'千古', mult:5.20, variance:0.20, affixCount:3, w:0.3,hex:'#ffd24a'},
+  {id:'unique',   name:'唯一', mult:6.50, variance:0.10, affixCount:4, w:0.1,hex:'#ff3b3b'}
 ];
+/* 舊存檔稀有度對照 */
+const RARITY_LEGACY_MAP = {common:'normal', rare:'rare', epic:'epic', legend:'legend', mythic:'mythic'};
+
+const MATERIALS = {
+  cloth:  {name:'布', roles:['mage','healer']},
+  leather:{name:'皮', roles:['archer','rogue','warrior']},
+  iron:   {name:'鐵', roles:['tank','warrior']},
+  wood:   {name:'木', roles:['archer','mage']},
+  silver: {name:'銀', roles:['healer','mage']},
+  bone:   {name:'骨', roles:['mage','rogue']}
+};
+const ROLE_AFFIX_POOL = {
+  tank:    [{stat:'con',v:3,label:'堅韌'},{stat:'def',v:5,label:'守護'},{stat:'hp',v:25,label:'厚重'},{stat:'con',v:4,label:'鐵壁'}],
+  warrior: [{stat:'str',v:3,label:'勇猛'},{stat:'atk',v:5,label:'鋒利'},{stat:'str',v:4,label:'破軍'},{stat:'hp',v:15,label:'血氣'}],
+  archer:  [{stat:'agi',v:3,label:'鷹眼'},{stat:'spd',v:4,label:'疾射'},{stat:'atk',v:4,label:'穿楊'},{stat:'agi',v:4,label:'游擊'}],
+  rogue:   [{stat:'agi',v:4,label:'影襲'},{stat:'spd',v:5,label:'迅捷'},{stat:'atk',v:3,label:'毒刃'},{stat:'agi',v:3,label:'潛行'}],
+  healer:  [{stat:'int',v:3,label:'慈悲'},{stat:'mp',v:18,label:'聖癒'},{stat:'int',v:4,label:'禱言'},{stat:'con',v:2,label:'堅心'}],
+  mage:    [{stat:'int',v:4,label:'奧術'},{stat:'matk',v:6,label:'秘法'},{stat:'mp',v:20,label:'魔力'},{stat:'int',v:3,label:'元素'}]
+};
+const GENERIC_AFFIX_POOL = [
+  {stat:'str',v:2,label:'力量'},{stat:'con',v:2,label:'體質'},{stat:'agi',v:2,label:'敏捷'},{stat:'int',v:2,label:'智力'},
+  {stat:'atk',v:3,label:'攻擊'},{stat:'matk',v:3,label:'魔攻'},{stat:'def',v:3,label:'防禦'},{stat:'spd',v:2,label:'速度'},
+  {stat:'hp',v:12,label:'生命'},{stat:'mp',v:10,label:'魔力'}
+];
+
 const EQUIP_BASES = {
   weapon: [
-    {n:'鐵劍',stat:'atk',v:5},{n:'精鋼劍',stat:'atk',v:6},{n:'長劍',stat:'atk',v:6},{n:'闊劍',stat:'atk',v:7},
-    {n:'細劍',stat:'atk',v:5},{n:'彎刀',stat:'atk',v:6},{n:'武士刀',stat:'atk',v:7},{n:'雙手巨劍',stat:'atk',v:9},
-    {n:'戰斧',stat:'atk',v:7},{n:'雙刃斧',stat:'atk',v:8},{n:'獵弓',stat:'atk',v:5},{n:'長弓',stat:'atk',v:6},
-    {n:'複合弓',stat:'atk',v:6},{n:'反曲弓',stat:'atk',v:7},{n:'獵殺弩',stat:'atk',v:6},{n:'法杖',stat:'atk',v:5},
-    {n:'水晶法杖',stat:'atk',v:6},{n:'秘術權杖',stat:'atk',v:6},{n:'元素法杖',stat:'atk',v:7},{n:'匕首',stat:'atk',v:4},
-    {n:'雙持短刃',stat:'atk',v:5},{n:'暗影匕首',stat:'atk',v:5},{n:'淬毒之刃',stat:'atk',v:6},{n:'戰錘',stat:'atk',v:7},
-    {n:'巨鎚',stat:'atk',v:9},{n:'聖光錘',stat:'atk',v:6},{n:'晨星錘',stat:'atk',v:7},{n:'聖典',stat:'atk',v:5},
-    {n:'聖典之書',stat:'atk',v:6},{n:'長矛',stat:'atk',v:6},{n:'騎士槍',stat:'atk',v:7},{n:'三叉戟',stat:'atk',v:6},
-    {n:'骨杖',stat:'atk',v:5},{n:'亡靈權杖',stat:'atk',v:6},{n:'死靈法杖',stat:'atk',v:7},{n:'鐮刀',stat:'atk',v:6},
-    {n:'巨型鐮刀',stat:'atk',v:8},{n:'虎爪拳套',stat:'atk',v:5},{n:'鋼爪',stat:'atk',v:6},{n:'鞭刃',stat:'atk',v:5},
-    {n:'荊棘鞭',stat:'atk',v:6},{n:'符文之刃',stat:'atk',v:7},{n:'遠古之刃',stat:'atk',v:8},{n:'燃燒之劍',stat:'atk',v:8},
-    {n:'冰霜巨劍',stat:'atk',v:8}
+    {n:'鐵劍',stat:'atk',v:5,mat:'iron',role:'warrior'},{n:'精鋼劍',stat:'atk',v:6,mat:'iron',role:'warrior'},
+    {n:'長劍',stat:'atk',v:6,mat:'iron',role:'warrior'},{n:'闊劍',stat:'atk',v:7,mat:'iron',role:'warrior'},
+    {n:'雙手巨劍',stat:'atk',v:9,mat:'iron',role:'warrior'},{n:'戰斧',stat:'atk',v:7,mat:'iron',role:'warrior'},
+    {n:'雙刃斧',stat:'atk',v:8,mat:'iron',role:'warrior'},{n:'戰錘',stat:'atk',v:7,mat:'iron',role:'tank'},
+    {n:'巨鎚',stat:'atk',v:9,mat:'iron',role:'tank'},{n:'長矛',stat:'atk',v:6,mat:'iron',role:'tank'},
+    {n:'騎士槍',stat:'atk',v:7,mat:'iron',role:'tank'},{n:'獵弓',stat:'atk',v:5,mat:'wood',role:'archer'},
+    {n:'長弓',stat:'atk',v:6,mat:'wood',role:'archer'},{n:'複合弓',stat:'atk',v:6,mat:'wood',role:'archer'},
+    {n:'反曲弓',stat:'atk',v:7,mat:'wood',role:'archer'},{n:'獵殺弩',stat:'atk',v:6,mat:'wood',role:'archer'},
+    {n:'匕首',stat:'atk',v:4,mat:'iron',role:'rogue'},{n:'雙持短刃',stat:'atk',v:5,mat:'iron',role:'rogue'},
+    {n:'暗影匕首',stat:'atk',v:5,mat:'bone',role:'rogue'},{n:'淬毒之刃',stat:'atk',v:6,mat:'iron',role:'rogue'},
+    {n:'法杖',stat:'matk',v:5,mat:'wood',role:'mage'},{n:'水晶法杖',stat:'matk',v:6,mat:'silver',role:'mage'},
+    {n:'秘術權杖',stat:'matk',v:6,mat:'silver',role:'mage'},{n:'元素法杖',stat:'matk',v:7,mat:'wood',role:'mage'},
+    {n:'骨杖',stat:'matk',v:5,mat:'bone',role:'mage'},{n:'亡靈權杖',stat:'matk',v:6,mat:'bone',role:'mage'},
+    {n:'死靈法杖',stat:'matk',v:7,mat:'bone',role:'mage'},{n:'聖典',stat:'matk',v:5,mat:'cloth',role:'healer'},
+    {n:'聖典之書',stat:'matk',v:6,mat:'cloth',role:'healer'},{n:'聖光錘',stat:'atk',v:6,mat:'silver',role:'healer'},
+    {n:'晨星錘',stat:'atk',v:7,mat:'silver',role:'tank'},{n:'虎爪拳套',stat:'atk',v:5,mat:'leather',role:'warrior'},
+    {n:'鋼爪',stat:'atk',v:6,mat:'iron',role:'warrior'},{n:'符文之刃',stat:'atk',v:7,mat:'silver',role:'mage'},
+    {n:'遠古之刃',stat:'atk',v:8,mat:'iron',role:'warrior'},{n:'燃燒之劍',stat:'atk',v:8,mat:'iron',role:'mage'},
+    {n:'冰霜巨劍',stat:'atk',v:8,mat:'iron',role:'mage'},{n:'鐮刀',stat:'atk',v:6,mat:'iron',role:'rogue'},
+    {n:'巨型鐮刀',stat:'atk',v:8,mat:'iron',role:'warrior'},{n:'鞭刃',stat:'atk',v:5,mat:'leather',role:'rogue'},
+    {n:'荊棘鞭',stat:'atk',v:6,mat:'wood',role:'rogue'},{n:'三叉戟',stat:'atk',v:6,mat:'iron',role:'tank'}
   ],
   armor: [
-    {n:'皮甲',stat:'def',v:5},{n:'硬化皮甲',stat:'def',v:6},{n:'獸皮鎧',stat:'def',v:6},{n:'鱗甲',stat:'def',v:7},
-    {n:'鎖甲',stat:'def',v:7},{n:'鏈甲背心',stat:'def',v:7},{n:'精鋼鎖甲',stat:'def',v:8},{n:'布袍',stat:'def',v:2},
-    {n:'學徒袍',stat:'def',v:2},{n:'秘術長袍',stat:'def',v:3},{n:'賢者長袍',stat:'def',v:3},{n:'板甲',stat:'def',v:11},
-    {n:'重裝鎧',stat:'def',v:13},{n:'騎士鎧',stat:'def',v:12},{n:'聖騎鎧',stat:'def',v:13},{n:'斗篷',stat:'def',v:2},
-    {n:'暗影披風',stat:'def',v:3},{n:'夜行斗篷',stat:'def',v:3},{n:'聖衣',stat:'def',v:4},{n:'聖光戰袍',stat:'def',v:6},
-    {n:'聖徒戰甲',stat:'def',v:8},{n:'僧侶束帶服',stat:'def',v:4},{n:'武僧道袍',stat:'def',v:4},{n:'亡靈裹屍布',stat:'def',v:3},
-    {n:'骸骨鎧甲',stat:'def',v:7},{n:'荊棘藤甲',stat:'def',v:5},{n:'鱗片胸甲',stat:'def',v:7},{n:'龍鱗甲',stat:'def',v:11},
-    {n:'戰場皮衣',stat:'def',v:5},{n:'遊俠輕甲',stat:'def',v:3}
+    {n:'皮甲',stat:'def',v:5,mat:'leather',role:'archer'},{n:'硬化皮甲',stat:'def',v:6,mat:'leather',role:'warrior'},
+    {n:'獸皮鎧',stat:'def',v:6,mat:'leather',role:'warrior'},{n:'鱗甲',stat:'def',v:7,mat:'iron',role:'tank'},
+    {n:'鎖甲',stat:'def',v:7,mat:'iron',role:'tank'},{n:'精鋼鎖甲',stat:'def',v:8,mat:'iron',role:'tank'},
+    {n:'板甲',stat:'def',v:11,mat:'iron',role:'tank'},{n:'重裝鎧',stat:'def',v:13,mat:'iron',role:'tank'},
+    {n:'騎士鎧',stat:'def',v:12,mat:'iron',role:'tank'},{n:'聖騎鎧',stat:'def',v:13,mat:'silver',role:'tank'},
+    {n:'布袍',stat:'def',v:2,mat:'cloth',role:'mage'},{n:'學徒袍',stat:'def',v:2,mat:'cloth',role:'mage'},
+    {n:'秘術長袍',stat:'def',v:3,mat:'cloth',role:'mage'},{n:'賢者長袍',stat:'def',v:3,mat:'cloth',role:'mage'},
+    {n:'斗篷',stat:'def',v:2,mat:'cloth',role:'rogue'},{n:'暗影披風',stat:'def',v:3,mat:'cloth',role:'rogue'},
+    {n:'夜行斗篷',stat:'def',v:3,mat:'leather',role:'rogue'},{n:'聖衣',stat:'def',v:4,mat:'cloth',role:'healer'},
+    {n:'聖光戰袍',stat:'def',v:6,mat:'silver',role:'healer'},{n:'聖徒戰甲',stat:'def',v:8,mat:'silver',role:'healer'},
+    {n:'僧侶束帶服',stat:'def',v:4,mat:'cloth',role:'healer'},{n:'武僧道袍',stat:'def',v:4,mat:'cloth',role:'warrior'},
+    {n:'亡靈裹屍布',stat:'def',v:3,mat:'cloth',role:'mage'},{n:'骸骨鎧甲',stat:'def',v:7,mat:'bone',role:'tank'},
+    {n:'荊棘藤甲',stat:'def',v:5,mat:'wood',role:'archer'},{n:'龍鱗甲',stat:'def',v:11,mat:'iron',role:'tank'},
+    {n:'戰場皮衣',stat:'def',v:5,mat:'leather',role:'warrior'},{n:'遊俠輕甲',stat:'def',v:3,mat:'leather',role:'archer'}
   ],
   accessory: [
-    {n:'力量護符',stat:'atk',v:3},{n:'狂戰士臂環',stat:'atk',v:4},{n:'鷹眼徽章',stat:'atk',v:3},{n:'狙擊眼鏡',stat:'atk',v:4},
-    {n:'勇者徽章',stat:'atk',v:4},{n:'盜賊指環',stat:'atk',v:3},{n:'魔力手鐲',stat:'atk',v:4},{n:'烈焰寶石',stat:'atk',v:4},
-    {n:'守護戒指',stat:'def',v:3},{n:'龜甲護盾墜',stat:'def',v:4},{n:'聖徒之戒',stat:'def',v:3},{n:'幸運符',stat:'def',v:3},
-    {n:'暗影戒指',stat:'def',v:3},{n:'巨人腰帶',stat:'def',v:4},{n:'迅捷靴',stat:'spd',v:3},{n:'疾風之羽',stat:'spd',v:4},
-    {n:'獵人綁腿',stat:'spd',v:3},{n:'月光耳環',stat:'spd',v:3},{n:'生命項鍊',stat:'hp',v:20},{n:'活力寶石',stat:'hp',v:28},
-    {n:'不朽之心',stat:'hp',v:32},{n:'亡靈之眼',stat:'hp',v:24},{n:'法力珠',stat:'mp',v:15},{n:'秘術結晶',stat:'mp',v:22},
-    {n:'賢者水晶',stat:'mp',v:26},{n:'毒蛇之牙',stat:'mp',v:18}
+    {n:'力量護符',stat:'str',v:3,mat:'iron',role:'warrior'},{n:'狂戰士臂環',stat:'str',v:4,mat:'iron',role:'warrior'},
+    {n:'鷹眼徽章',stat:'agi',v:3,mat:'wood',role:'archer'},{n:'狙擊眼鏡',stat:'agi',v:4,mat:'wood',role:'archer'},
+    {n:'勇者徽章',stat:'str',v:4,mat:'iron',role:'warrior'},{n:'盜賊指環',stat:'agi',v:3,mat:'bone',role:'rogue'},
+    {n:'魔力手鐲',stat:'int',v:4,mat:'silver',role:'mage'},{n:'烈焰寶石',stat:'matk',v:4,mat:'silver',role:'mage'},
+    {n:'守護戒指',stat:'con',v:3,mat:'iron',role:'tank'},{n:'龜甲護盾墜',stat:'def',v:4,mat:'iron',role:'tank'},
+    {n:'聖徒之戒',stat:'int',v:3,mat:'silver',role:'healer'},{n:'迅捷靴',stat:'spd',v:3,mat:'leather',role:'archer'},
+    {n:'疾風之羽',stat:'spd',v:4,mat:'cloth',role:'rogue'},{n:'獵人綁腿',stat:'agi',v:3,mat:'leather',role:'archer'},
+    {n:'月光耳環',stat:'int',v:3,mat:'silver',role:'mage'},{n:'生命項鍊',stat:'hp',v:20,mat:'silver',role:'tank'},
+    {n:'活力寶石',stat:'hp',v:28,mat:'silver',role:'tank'},{n:'不朽之心',stat:'con',v:5,mat:'bone',role:'tank'},
+    {n:'法力珠',stat:'mp',v:15,mat:'silver',role:'mage'},{n:'秘術結晶',stat:'mp',v:22,mat:'silver',role:'mage'},
+    {n:'賢者水晶',stat:'int',v:5,mat:'silver',role:'mage'},{n:'毒蛇之牙',stat:'agi',v:3,mat:'bone',role:'rogue'},
+    {n:'巨人腰帶',stat:'con',v:4,mat:'iron',role:'tank'},{n:'暗影戒指',stat:'agi',v:3,mat:'bone',role:'rogue'}
   ]
 };
+
+/* 50 件唯一裝備（各 4 條頂階詞綴） */
+const UNIQUE_ITEMS = [
+  {n:'灰燼君王劍',slot:'weapon',stat:'atk',v:14,mat:'iron',role:'warrior',aff:[
+    {stat:'str',v:8,label:'君王之力'},{stat:'atk',v:12,label:'灰燼之刃'},{stat:'hp',v:40,label:'不屈'},{stat:'con',v:5,label:'王座'}]},
+  {n:'虛空法杖·終焉',slot:'weapon',stat:'matk',v:14,mat:'silver',role:'mage',aff:[
+    {stat:'int',v:10,label:'虛空智慧'},{stat:'matk',v:14,label:'終焉之火'},{stat:'mp',v:45,label:'魔力淵'},{stat:'spd',v:4,label:'瞬詠'}]},
+  {n:'聖光救贖之書',slot:'weapon',stat:'matk',v:12,mat:'cloth',role:'healer',aff:[
+    {stat:'int',v:8,label:'神恩'},{stat:'mp',v:40,label:'聖泉'},{stat:'con',v:4,label:'堅信者'},{stat:'hp',v:30,label:'庇護'}]},
+  {n:'影殺·無聲',slot:'weapon',stat:'atk',v:12,mat:'bone',role:'rogue',aff:[
+    {stat:'agi',v:10,label:'無影'},{stat:'spd',v:8,label:'無聲'},{stat:'atk',v:10,label:'必殺'},{stat:'str',v:4,label:'暗殺'}]},
+  {n:'蒼穹長弓',slot:'weapon',stat:'atk',v:13,mat:'wood',role:'archer',aff:[
+    {stat:'agi',v:9,label:'蒼穹之眼'},{stat:'atk',v:11,label:'貫日'},{stat:'spd',v:6,label:'風矢'},{stat:'str',v:3,label:'拉滿'}]},
+  {n:'不朽巨盾斧',slot:'weapon',stat:'atk',v:11,mat:'iron',role:'tank',aff:[
+    {stat:'con',v:10,label:'不朽'},{stat:'def',v:14,label:'鐵壁'},{stat:'hp',v:55,label:'厚甲'},{stat:'str',v:5,label:'反震'}]},
+  {n:'龍骨戰錘',slot:'weapon',stat:'atk',v:13,mat:'bone',role:'tank',aff:[
+    {stat:'str',v:7,label:'龍力'},{stat:'con',v:7,label:'龍骨'},{stat:'atk',v:10,label:'碎顱'},{stat:'def',v:8,label:'龍鱗'}]},
+  {n:'霜噬雙刃',slot:'weapon',stat:'atk',v:12,mat:'iron',role:'rogue',aff:[
+    {stat:'agi',v:8,label:'霜步'},{stat:'atk',v:11,label:'噬魂'},{stat:'spd',v:5,label:'冰裂'},{stat:'int',v:3,label:'寒咒'}]},
+  {n:'烈陽權杖',slot:'weapon',stat:'matk',v:13,mat:'silver',role:'mage',aff:[
+    {stat:'int',v:9,label:'烈陽'},{stat:'matk',v:13,label:'灼燒'},{stat:'mp',v:35,label:'日輪'},{stat:'str',v:3,label:'陽剛'}]},
+  {n:'荆棘王鞭',slot:'weapon',stat:'atk',v:11,mat:'wood',role:'rogue',aff:[
+    {stat:'agi',v:7,label:'荆棘'},{stat:'atk',v:9,label:'撕裂'},{stat:'spd',v:7,label:'抽打'},{stat:'con',v:3,label:'韌皮'}]},
+  {n:'灰燼聖鎧',slot:'armor',stat:'def',v:16,mat:'iron',role:'tank',aff:[
+    {stat:'con',v:10,label:'聖骸'},{stat:'def',v:16,label:'灰燼甲'},{stat:'hp',v:60,label:'不滅'},{stat:'str',v:4,label:'重壓'}]},
+  {n:'虛空法袍',slot:'armor',stat:'def',v:6,mat:'cloth',role:'mage',aff:[
+    {stat:'int',v:10,label:'虛空'},{stat:'matk',v:10,label:'法環'},{stat:'mp',v:50,label:'魔力池'},{stat:'spd',v:3,label:'飄逸'}]},
+  {n:'遊俠風衣',slot:'armor',stat:'def',v:8,mat:'leather',role:'archer',aff:[
+    {stat:'agi',v:9,label:'遊俠'},{stat:'spd',v:7,label:'疾風'},{stat:'atk',v:6,label:'獵裝'},{stat:'con',v:3,label:'野外'}]},
+  {n:'暗影潛行衣',slot:'armor',stat:'def',v:7,mat:'leather',role:'rogue',aff:[
+    {stat:'agi',v:10,label:'潛影'},{stat:'spd',v:8,label:'無蹤'},{stat:'atk',v:5,label:'背刺裝'},{stat:'int',v:2,label:'夜視'}]},
+  {n:'聖愈祭袍',slot:'armor',stat:'def',v:7,mat:'cloth',role:'healer',aff:[
+    {stat:'int',v:8,label:'聖愈'},{stat:'mp',v:40,label:'禱衣'},{stat:'con',v:5,label:'信念'},{stat:'hp',v:35,label:'恩典'}]},
+  {n:'狂戰士皮甲',slot:'armor',stat:'def',v:9,mat:'leather',role:'warrior',aff:[
+    {stat:'str',v:9,label:'狂怒'},{stat:'atk',v:8,label:'血戰'},{stat:'hp',v:35,label:'好戰'},{stat:'spd',v:4,label:'衝鋒'}]},
+  {n:'龍騎士鎧',slot:'armor',stat:'def',v:15,mat:'iron',role:'tank',aff:[
+    {stat:'con',v:9,label:'龍騎'},{stat:'def',v:14,label:'龍鎧'},{stat:'str',v:6,label:'騎槍'},{stat:'hp',v:45,label:'坐騎'}]},
+  {n:'元素編織袍',slot:'armor',stat:'def',v:5,mat:'cloth',role:'mage',aff:[
+    {stat:'int',v:9,label:'元素'},{stat:'matk',v:9,label:'編織'},{stat:'mp',v:38,label:'法線'},{stat:'agi',v:3,label:'流轉'}]},
+  {n:'亡者裹屍甲',slot:'armor',stat:'def',v:10,mat:'bone',role:'mage',aff:[
+    {stat:'int',v:7,label:'亡語'},{stat:'matk',v:8,label:'腐蝕'},{stat:'con',v:6,label:'枯骨'},{stat:'hp',v:30,label:'死寂'}]},
+  {n:'黎明守衛甲',slot:'armor',stat:'def',v:14,mat:'silver',role:'healer',aff:[
+    {stat:'con',v:8,label:'黎明'},{stat:'def',v:12,label:'守衛'},{stat:'int',v:5,label:'晨光'},{stat:'hp',v:40,label:'希望'}]},
+  {n:'世界樹之心',slot:'accessory',stat:'hp',v:50,mat:'wood',role:'tank',aff:[
+    {stat:'con',v:10,label:'樹心'},{stat:'hp',v:55,label:'生機'},{stat:'mp',v:20,label:'樹液'},{stat:'int',v:4,label:'自然'}]},
+  {n:'時間沙漏墜',slot:'accessory',stat:'spd',v:8,mat:'silver',role:'archer',aff:[
+    {stat:'agi',v:8,label:'時之眼'},{stat:'spd',v:10,label:'加速'},{stat:'int',v:5,label:'預知'},{stat:'mp',v:15,label:'時能'}]},
+  {n:'深淵之眼',slot:'accessory',stat:'matk',v:10,mat:'bone',role:'mage',aff:[
+    {stat:'int',v:10,label:'深淵'},{stat:'matk',v:12,label:'凝視'},{stat:'mp',v:35,label:'深海'},{stat:'con',v:3,label:'耐蝕'}]},
+  {n:'屠龍者徽章',slot:'accessory',stat:'atk',v:10,mat:'iron',role:'warrior',aff:[
+    {stat:'str',v:9,label:'屠龍'},{stat:'atk',v:11,label:'龍殺'},{stat:'hp',v:30,label:'勇者'},{stat:'con',v:4,label:'抗龍'}]},
+  {n:'盜王之戒',slot:'accessory',stat:'agi',v:8,mat:'bone',role:'rogue',aff:[
+    {stat:'agi',v:10,label:'盜王'},{stat:'spd',v:8,label:'神偷'},{stat:'atk',v:6,label:'竊刃'},{stat:'int',v:3,label:'慧眼'}]},
+  {n:'大賢者眼鏡',slot:'accessory',stat:'int',v:8,mat:'silver',role:'mage',aff:[
+    {stat:'int',v:11,label:'大賢'},{stat:'matk',v:9,label:'洞察'},{stat:'mp',v:40,label:'智泉'},{stat:'spd',v:2,label:'速讀'}]},
+  {n:'守護天使羽',slot:'accessory',stat:'def',v:8,mat:'silver',role:'healer',aff:[
+    {stat:'int',v:7,label:'天使'},{stat:'con',v:6,label:'守護'},{stat:'hp',v:40,label:'羽庇'},{stat:'mp',v:25,label:'聖音'}]},
+  {n:'泰坦之握',slot:'accessory',stat:'str',v:8,mat:'iron',role:'warrior',aff:[
+    {stat:'str',v:11,label:'泰坦'},{stat:'atk',v:10,label:'巨力'},{stat:'con',v:5,label:'沉重'},{stat:'hp',v:25,label:'巨體'}]},
+  {n:'幻影斗篷扣',slot:'accessory',stat:'spd',v:7,mat:'cloth',role:'rogue',aff:[
+    {stat:'agi',v:9,label:'幻影'},{stat:'spd',v:9,label:'殘像'},{stat:'atk',v:5,label:'虛擊'},{stat:'mp',v:12,label:'幻術'}]},
+  {n:'永恆沙漏戒',slot:'accessory',stat:'int',v:7,mat:'silver',role:'mage',aff:[
+    {stat:'int',v:8,label:'永恆'},{stat:'mp',v:45,label:'時魔'},{stat:'matk',v:8,label:'時止'},{stat:'spd',v:5,label:'時間差'}]},
+  {n:'血怒戰斧·滅',slot:'weapon',stat:'atk',v:15,mat:'iron',role:'warrior',aff:[
+    {stat:'str',v:10,label:'血怒'},{stat:'atk',v:14,label:'滅殺'},{stat:'hp',v:20,label:'嗜血'},{stat:'spd',v:3,label:'狂揮'}]},
+  {n:'星隕法球',slot:'weapon',stat:'matk',v:15,mat:'silver',role:'mage',aff:[
+    {stat:'int',v:11,label:'星隕'},{stat:'matk',v:15,label:'隕星'},{stat:'mp',v:40,label:'星河'},{stat:'agi',v:3,label:'軌道'}]},
+  {n:'月神銀弓',slot:'weapon',stat:'atk',v:14,mat:'silver',role:'archer',aff:[
+    {stat:'agi',v:10,label:'月神'},{stat:'atk',v:12,label:'銀矢'},{stat:'spd',v:6,label:'月光'},{stat:'int',v:4,label:'月識'}]},
+  {n:'審判之錘·神',slot:'weapon',stat:'atk',v:13,mat:'silver',role:'healer',aff:[
+    {stat:'int',v:8,label:'審判'},{stat:'atk',v:10,label:'神錘'},{stat:'mp',v:30,label:'神力'},{stat:'con',v:5,label:'正義'}]},
+  {n:'骨龍脊刃',slot:'weapon',stat:'atk',v:14,mat:'bone',role:'warrior',aff:[
+    {stat:'str',v:8,label:'骨龍'},{stat:'atk',v:13,label:'脊斬'},{stat:'con',v:6,label:'龍脊'},{stat:'hp',v:28,label:'骨血'}]},
+  {n:'風暴鎖子甲',slot:'armor',stat:'def',v:12,mat:'iron',role:'tank',aff:[
+    {stat:'con',v:8,label:'風暴'},{stat:'def',v:13,label:'雷甲'},{stat:'spd',v:5,label:'疾電'},{stat:'str',v:4,label:'轟鳴'}]},
+  {n:'蛛網輕甲',slot:'armor',stat:'def',v:6,mat:'cloth',role:'rogue',aff:[
+    {stat:'agi',v:9,label:'蛛絲'},{stat:'spd',v:8,label:'黏步'},{stat:'atk',v:5,label:'毒網'},{stat:'int',v:3,label:'蛛智'}]},
+  {n:'聖堂侍從甲',slot:'armor',stat:'def',v:11,mat:'silver',role:'healer',aff:[
+    {stat:'con',v:7,label:'聖堂'},{stat:'def',v:10,label:'侍從'},{stat:'int',v:6,label:'侍奉'},{stat:'hp',v:35,label:'信仰'}]},
+  {n:'熔岩板甲',slot:'armor',stat:'def',v:14,mat:'iron',role:'tank',aff:[
+    {stat:'con',v:9,label:'熔岩'},{stat:'def',v:15,label:'火甲'},{stat:'str',v:5,label:'熱能'},{stat:'hp',v:40,label:'岩漿'}]},
+  {n:'寒冰巫袍',slot:'armor',stat:'def',v:5,mat:'cloth',role:'mage',aff:[
+    {stat:'int',v:10,label:'寒冰'},{stat:'matk',v:11,label:'冰法'},{stat:'mp',v:42,label:'凍能'},{stat:'spd',v:2,label:'霜步'}]},
+  {n:'獵神徽章',slot:'accessory',stat:'agi',v:9,mat:'wood',role:'archer',aff:[
+    {stat:'agi',v:11,label:'獵神'},{stat:'atk',v:9,label:'神射'},{stat:'spd',v:7,label:'追蹤'},{stat:'str',v:3,label:'拉弓'}]},
+  {n:'血契戒指',slot:'accessory',stat:'str',v:7,mat:'bone',role:'warrior',aff:[
+    {stat:'str',v:9,label:'血契'},{stat:'atk',v:9,label:'血刃'},{stat:'hp',v:35,label:'血契生'},{stat:'con',v:4,label:'血韌'}]},
+  {n:'智慧蘋果墜',slot:'accessory',stat:'int',v:9,mat:'wood',role:'mage',aff:[
+    {stat:'int',v:12,label:'原罪智'},{stat:'matk',v:8,label:'禁知'},{stat:'mp',v:35,label:'果實'},{stat:'hp',v:15,label:'生命果'}]},
+  {n:'鐵壁臂環',slot:'accessory',stat:'def',v:10,mat:'iron',role:'tank',aff:[
+    {stat:'con',v:10,label:'鐵壁'},{stat:'def',v:12,label:'臂守'},{stat:'hp',v:45,label:'壁壘'},{stat:'str',v:4,label:'格擋'}]},
+  {n:'寧靜祈禱珠',slot:'accessory',stat:'mp',v:30,mat:'silver',role:'healer',aff:[
+    {stat:'int',v:8,label:'寧靜'},{stat:'mp',v:50,label:'祈禱'},{stat:'con',v:5,label:'平心'},{stat:'hp',v:25,label:'安魂'}]},
+  {n:'幽靈靴',slot:'accessory',stat:'spd',v:9,mat:'cloth',role:'rogue',aff:[
+    {stat:'agi',v:8,label:'幽靈'},{stat:'spd',v:11,label:'穿牆'},{stat:'atk',v:4,label:'鬼襲'},{stat:'int',v:4,label:'靈視'}]},
+  {n:'泰坦之心核',slot:'accessory',stat:'con',v:9,mat:'iron',role:'tank',aff:[
+    {stat:'con',v:12,label:'泰坦心'},{stat:'hp',v:60,label:'核心'},{stat:'def',v:8,label:'心甲'},{stat:'str',v:5,label:'脈動'}]},
+  {n:'混沌骰子',slot:'accessory',stat:'luck',v:5,mat:'bone',role:'rogue',aff:[
+    {stat:'agi',v:7,label:'混沌'},{stat:'spd',v:6,label:'機運'},{stat:'atk',v:7,label:'賭刃'},{stat:'int',v:5,label:'算計'}]},
+  {n:'創世碎片',slot:'accessory',stat:'int',v:10,mat:'silver',role:'mage',aff:[
+    {stat:'int',v:12,label:'創世'},{stat:'matk',v:12,label:'碎片'},{stat:'mp',v:48,label:'源初'},{stat:'con',v:4,label:'穩定'}]},
+  {n:'終焉沙漏',slot:'accessory',stat:'spd',v:8,mat:'silver',role:'archer',aff:[
+    {stat:'agi',v:9,label:'終焉'},{stat:'spd',v:10,label:'倒數'},{stat:'atk',v:7,label:'最後一箭'},{stat:'int',v:5,label:'預見'}]}
+];
+
 function avgPartyLevel(s){
   s = s || S;
-  return Math.round(s.party.reduce((a,m)=>a+m.level,0) / s.party.length);
+  if(!s || !s.party || !s.party.length) return 1;
+  const sum = s.party.reduce((a,m)=> a + num(m.level, 1), 0);
+  const avg = Math.round(sum / s.party.length);
+  return clamp(avg, 1, MAX_PLAYER_LEVEL);
 }
-const SECONDARY_STAT_BASE = {atk:4, def:4, spd:3, hp:15, mp:12};
+
+function rarityById(id){
+  if(RARITY_LEGACY_MAP[id]) id = RARITY_LEGACY_MAP[id];
+  return RARITIES.find(r=>r.id===id) || RARITIES[1];
+}
+
+function scaleAffixValue(baseV, rarity, itemLevel, rng){
+  const lvlFactor = 1 + Math.max(0, (itemLevel||1)-1) * 0.05;
+  const variance = 1 + ((rng() * 2 - 1) * (rarity.variance||0.1));
+  return Math.max(1, Math.round(baseV * rarity.mult * lvlFactor * variance));
+}
+
+function pickRoleAffixes(rng, role, count, rarity, itemLevel, usedStats){
+  const pool = (ROLE_AFFIX_POOL[role] || GENERIC_AFFIX_POOL).slice();
+  const gen = GENERIC_AFFIX_POOL.slice();
+  const result = [];
+  usedStats = usedStats || new Set();
+  for(let i=0;i<count;i++){
+    let src = pool.length ? pool : gen;
+    if(!src.length) src = GENERIC_AFFIX_POOL.slice();
+    const idx = Math.floor(rng()*src.length);
+    const template = src.splice(idx,1)[0] || choice(rng, GENERIC_AFFIX_POOL);
+    result.push({
+      stat: template.stat,
+      value: scaleAffixValue(template.v, rarity, itemLevel, rng),
+      label: template.label
+    });
+  }
+  return result;
+}
+
 function rollEquip(rng, minRarity, itemLevel){
   itemLevel = itemLevel || 1;
+  rng = rng || Math.random;
+
+  // 極低機率掉唯一
+  if(rng() < 0.008 && (!minRarity || RARITIES.findIndex(r=>r.id===(RARITY_LEGACY_MAP[minRarity]||minRarity)) <= 11)){
+    return rollUniqueEquip(rng, itemLevel);
+  }
+
   const slot = choice(rng, ['weapon','armor','accessory']);
   const base = choice(rng, EQUIP_BASES[slot]);
-  const minIdx = minRarity ? RARITIES.findIndex(r=>r.id===minRarity) : -1;
-  const pool = RARITIES.filter(r=> minIdx<0 || RARITIES.indexOf(r)>=minIdx);
-  const rarity = weightedChoice(rng, pool.map(r=>({item:r,w:r.w})));
-  const lvlFactor = 1 + Math.max(0, itemLevel-1) * 0.06;
-  const value = Math.round(base.v * rarity.mult * lvlFactor * (slot==='accessory'&&(base.stat==='hp'||base.stat==='mp')?1.5:1));
-  let extraStat = null, extraValue = 0;
-  if(rarity.id==='legend' || rarity.id==='mythic'){
-    const otherStats = Object.keys(SECONDARY_STAT_BASE).filter(s=>s!==base.stat);
-    extraStat = choice(rng, otherStats);
-    extraValue = Math.round(SECONDARY_STAT_BASE[extraStat] * rarity.mult * lvlFactor * 0.55);
+  const minId = minRarity ? (RARITY_LEGACY_MAP[minRarity]||minRarity) : null;
+  const minIdx = minId ? RARITIES.findIndex(r=>r.id===minId) : -1;
+  const pool = RARITIES.filter((r,i)=> i>=Math.max(0,minIdx) && r.id!=='unique');
+  const rarity = weightedChoice(rng, pool.map(r=>({item:r, w:r.w})));
+  const lvlFactor = 1 + Math.max(0, itemLevel-1) * 0.05;
+  const variance = 1 + ((rng()*2-1) * rarity.variance);
+  const mainValue = Math.max(1, Math.round(base.v * rarity.mult * lvlFactor * variance));
+
+  const affixes = [{stat: base.stat, value: mainValue, label: '主屬性'}];
+  if(rarity.affixCount > 0){
+    const extras = pickRoleAffixes(rng, base.role, rarity.affixCount, rarity, itemLevel);
+    affixes.push(...extras);
   }
+
   return {
     uid: 'eq_'+Math.floor(rng()*1e9),
-    slot, name: rarity.name+base.n, stat: base.stat, value,
-    extraStat, extraValue,
-    rarity: rarity.id, rarityName: rarity.name, rarityHex: rarity.hex,
+    slot,
+    name: rarity.name + base.n,
+    baseName: base.n,
+    material: base.mat,
+    role: base.role,
+    stat: base.stat,
+    value: mainValue,
+    affixes,
+    // 相容舊欄位
+    extraStat: affixes[1] ? affixes[1].stat : null,
+    extraValue: affixes[1] ? affixes[1].value : 0,
+    rarity: rarity.id,
+    rarityName: rarity.name,
+    rarityHex: rarity.hex,
     itemLevel,
-    seed: base.n+rarity.id+Math.floor(rng()*999)
+    seed: base.n + rarity.id + Math.floor(rng()*999)
   };
 }
+
+function rollUniqueEquip(rng, itemLevel){
+  const template = choice(rng, UNIQUE_ITEMS);
+  const rarity = RARITIES.find(r=>r.id==='unique');
+  const lvlFactor = 1 + Math.max(0, (itemLevel||1)-1) * 0.04;
+  const mainValue = Math.max(1, Math.round(template.v * rarity.mult * lvlFactor));
+  const affixes = [{stat: template.stat, value: mainValue, label: '主屬性'}];
+  template.aff.forEach(a=>{
+    affixes.push({
+      stat: a.stat,
+      value: Math.max(1, Math.round(a.v * (0.95 + rng()*0.15) * lvlFactor)),
+      label: a.label
+    });
+  });
+  // 唯一以 baseName 判斷持有；uid 仍唯一避免 DOM/filter 衝突
+  return {
+    uid: 'unique_'+template.n+'_'+Math.floor(rng()*1e6),
+    slot: template.slot,
+    name: '【唯一】'+template.n,
+    baseName: template.n,
+    material: template.mat,
+    role: template.role,
+    stat: template.stat,
+    value: mainValue,
+    affixes,
+    extraStat: affixes[1]?affixes[1].stat:null,
+    extraValue: affixes[1]?affixes[1].value:0,
+    rarity: 'unique',
+    rarityName: '唯一',
+    rarityHex: rarity.hex,
+    itemLevel: itemLevel||1,
+    isUnique: true,
+    seed: 'unique_'+template.n
+  };
+}
+
 function equipPrice(item){
-  const extra = item.extraValue ? item.extraValue*7 : 0;
-  return Math.max(8, Math.round(item.value * 9 + extra + (item.itemLevel||1) * 2));
+  if(!item) return 0;
+  const r = rarityById(item.rarity);
+  const affixSum = (item.affixes||[]).reduce((s,a)=>s+(a.value||0),0);
+  const base = item.value || 0;
+  return Math.max(8, Math.round((base*8 + affixSum*6) * (r.mult||1) + (item.itemLevel||1)*3));
+}
+
+/** 把舊裝備資料升級成新 affixes 格式（避免把新「常用 common」誤映射成「一般」） */
+function normalizeItem(item){
+  if(!item || item.slot==='potion') return item;
+  const isLegacy = !item.affixes || !item.affixes.length;
+  // 僅舊存檔（沒有 affixes）才做稀有度對照：舊 common(普通)→normal(一般)
+  if(isLegacy && RARITY_LEGACY_MAP[item.rarity]){
+    item.rarity = RARITY_LEGACY_MAP[item.rarity];
+    const r = rarityById(item.rarity);
+    item.rarityName = r.name;
+    item.rarityHex = r.hex;
+  } else if(item.rarity){
+    // 確保 rarityName/hex 與現行表一致
+    const r = rarityById(item.rarity);
+    if(!item.rarityName) item.rarityName = r.name;
+    if(!item.rarityHex) item.rarityHex = r.hex;
+  }
+  if(isLegacy){
+    item.affixes = [];
+    if(item.stat && item.value) item.affixes.push({stat:item.stat, value:item.value, label:'主屬性'});
+    if(item.extraStat && item.extraValue) item.affixes.push({stat:item.extraStat, value:item.extraValue, label:'附加'});
+  }
+  return item;
+}
+
+/** 安全加入背包：正規化 + 唯一裝備不重複 */
+function addToInventory(item){
+  if(!item) return false;
+  if(item.slot==='potion'){
+    addPotion(item.kind, item.value, item.name);
+    return true;
+  }
+  normalizeItem(item);
+  if(item.isUnique || item.rarity==='unique'){
+    const nameKey = item.baseName || item.name;
+    const exists = S.inventory.some(i=>i.baseName===nameKey || i.name===item.name) ||
+      S.party.some(p=>Object.values(p.equip||{}).some(eq=>eq && (eq.baseName===nameKey || eq.name===item.name)));
+    if(exists){
+      if(S && S.log) S.log.unshift('【唯一】'+nameKey+' 已擁有，無法再取得。');
+      return false;
+    }
+  }
+  S.inventory.push(item);
+  return true;
 }
 
 /* ============ 資料：隨機事件 ============ */
@@ -802,14 +1319,14 @@ const EVENTS = [
     ]},
   {id:'chest', title:'廢棄的寶箱', text:'你發現一個佈滿灰塵的寶箱，鎖已經鏽蝕。',
     choices:[
-      {label:'開啟寶箱',act:(s)=>{ const rng=Math.random; if(rng()<0.15){ const dmg=rint(Math.random,5,15); s.hero.hp=clamp(s.hero.hp-dmg,1,s.hero.maxHp); return '寶箱是陷阱！你中了毒針，損失 '+dmg+' HP。'; } const gold=rint(Math.random,20,60); s.hero.gold+=gold; let msg='寶箱裡有 '+gold+' 金幣。'; if(rng()<0.4){ const item=rollEquip(Math.random,null,avgPartyLevel(s)); s.inventory.push(item); msg+=' 還發現了一件裝備：'+item.name+'！'; } return msg; }},
+      {label:'開啟寶箱',act:(s)=>{ const rng=Math.random; if(rng()<0.15){ const dmg=rint(Math.random,5,15); s.hero.hp=clamp(s.hero.hp-dmg,1,s.hero.maxHp); return '寶箱是陷阱！你中了毒針，損失 '+dmg+' HP。'; } const gold=rint(Math.random,20,60); s.hero.gold+=gold; let msg='寶箱裡有 '+gold+' 金幣。'; if(rng()<0.4){ const item=rollEquip(Math.random,null,avgPartyLevel(s)); if(addToInventory(item)) msg+=' 還發現了一件裝備：'+item.name+'！'; else msg+=' 寶箱裡有件唯一裝備，但你已擁有。'; } return msg; }},
       {label:'謹慎離開',act:()=>'你懷疑這是個陷阱，決定不冒險。'}
     ]},
   {id:'merchant', title:'流浪商人', text:'一位神秘商人推著小車，車上擺滿了奇怪的物品。',
     choices:[
-      {label:'花30金購買HP藥水',act:(s)=>{ if(s.hero.gold>=30){ s.hero.gold-=30; s.inventory.push({uid:'pot_'+Math.floor(Math.random()*1e9),slot:'potion',kind:'hp',name:'治療藥水',value:60}); return '你買到了一瓶治療藥水。'; } return '你的金幣不夠。'; }},
-      {label:'花25金購買MP藥水',act:(s)=>{ if(s.hero.gold>=25){ s.hero.gold-=25; s.inventory.push({uid:'pot_'+Math.floor(Math.random()*1e9),slot:'potion',kind:'mp',name:'魔力藥水',value:40}); return '你買到了一瓶魔力藥水。'; } return '你的金幣不夠。'; }},
-      {label:'花50金購買神秘裝備',act:(s)=>{ if(s.hero.gold>=50){ s.hero.gold-=50; const item=rollEquip(Math.random,'rare',avgPartyLevel(s)); s.inventory.push(item); return '商人賣給你一件 '+item.name+'！'; } return '你的金幣不夠。'; }},
+      {label:'花30金購買HP藥水',act:(s)=>{ if(s.hero.gold>=30){ s.hero.gold-=30; const existing=s.inventory.find(i=>i.slot==='potion'&&i.kind==='hp'&&i.value===60); if(existing) existing.count=(existing.count||1)+1; else s.inventory.push({uid:'pot_'+Math.floor(Math.random()*1e9),slot:'potion',kind:'hp',name:'治療藥水',value:60,count:1}); return '你買到了一瓶治療藥水。'; } return '你的金幣不夠。'; }},
+      {label:'花25金購買MP藥水',act:(s)=>{ if(s.hero.gold>=25){ s.hero.gold-=25; const existing=s.inventory.find(i=>i.slot==='potion'&&i.kind==='mp'&&i.value===40); if(existing) existing.count=(existing.count||1)+1; else s.inventory.push({uid:'pot_'+Math.floor(Math.random()*1e9),slot:'potion',kind:'mp',name:'魔力藥水',value:40,count:1}); return '你買到了一瓶魔力藥水。'; } return '你的金幣不夠。'; }},
+      {label:'花50金購買神秘裝備',act:(s)=>{ if(s.hero.gold>=50){ const item=rollEquip(Math.random,'rare',avgPartyLevel(s)); if(addToInventory(item)){ s.hero.gold-=50; return '商人賣給你一件 '+item.name+'！'; } return '商人拿出唯一裝備，但你已擁有同款，沒有成交。'; } return '你的金幣不夠。'; }},
       {label:'不買，離開',act:()=>'商人聳聳肩，推車離去。'}
     ]},
   {id:'shrine', title:'古老的祝福神龕', text:'一座斑駁的神龕靜靜矗立，散發著淡淡的聖光。',
@@ -839,7 +1356,7 @@ const EVENTS = [
         return '你在小徑上撿到了一些散落的金幣（+'+gold+'）。';
       }},
       {label:'走中間大路',act:(s)=>{ const dmg=rint(Math.random,0,10); if(dmg>0){ s.hero.hp=clamp(s.hero.hp-dmg,1,s.hero.maxHp); return '大路上遭遇小規模落石，損失 '+dmg+' HP。'; } return '大路暢通無阻。'; }},
-      {label:'走右邊密林',act:(s)=>{ const item=rollEquip(Math.random,null,avgPartyLevel(s)); s.inventory.push(item); return '密林深處你發現了一件裝備：'+item.name+'。'; }}
+      {label:'走右邊密林',act:(s)=>{ const item=rollEquip(Math.random,null,avgPartyLevel(s)); if(addToInventory(item)) return '密林深處你發現了一件裝備：'+item.name+'。'; return '密林深處似乎有什麼，但你已擁有那件唯一之物。'; }}
     ]},
   {id:'fairy', title:'森林精靈的祝福', text:'一隻微小的光之精靈繞著你飛舞，似乎想幫助你。',
     choices:[
@@ -855,7 +1372,18 @@ function healParty(s,amt){ s.party.forEach(m=>{ if(m.hp>0) m.hp=clamp(m.hp+amt,0
 function restorePartyFull(s){ s.party.forEach(m=>{ m.hp=m.maxHp; m.mp=m.maxMp; }); }
 
 /* ============ NPC 隊友池 ============ */
-const NPC_NAMES = ['艾莉絲','凱因','露娜','托爾加','薇拉','布蘭登','希兒','葛瑞姆','喬治','史丹利','喬','羅傑','惡魔貓','比利','西薩','熊信寬','Toyz','謝欣達','jay chou','陳美蘭','BR','謝金燕','山豬','蝦味先','蛋頭','禁藥王','陳老師','潮州土狗','godone','majin','栗子','玉麟','天峰','葉玫瑰','王希銘','迪拉胖','YOUND LEE','潤少',,'gummy B(他說要大寫)','趙翊帆','春艷','李權哲','YB','有錢人','前人','不公們','沒人能殺死的鬼','費玉清','阿兄喬治','小卡比','QUANZO','O.DKIZZYA','REX','macdella','eyeballray','SheATH','yappy','drew','呂士軒','ANBA','林聖夫','約翰','rgry','吳卓源','Barry chen','熱狗','大隻','小人','陳星翰','KITCAT','朱軒羊','公園','凡尼師男孩','馬英九','蔡英文','消防隊的楊先生','水哥DJDIDILONG','DIE4REALLL','NGKE配菜','KAPPERKIRA','LOKI LU','芋比','JIMMY','玫','33','厚片女孩','女拳主義者','死肥胖哥','修斗','林萌','駱楓','林俊傑','6YI7'];
+const NPC_NAMES = [
+  '艾莉絲','凱因','露娜','托爾加','薇拉','布蘭登','希兒','葛瑞姆',
+  '喬治','史丹利','喬','羅傑','惡魔貓','比利','西薩','熊信寬','Toyz','謝欣達',
+  'jay chou','陳美蘭','BR','謝金燕','山豬','蝦味先','蛋頭','禁藥王','陳老師','潮州土狗',
+  'godone','majin','栗子','玉麟','天峰','葉玫瑰','王希銘','迪拉胖','YOUND LEE','潤少',
+  'gummy B','趙翊帆','春艷','李權哲','YB','有錢人','前人','不公們','沒人能殺死的鬼','費玉清',
+  '阿兄喬治','小卡比','QUANZO','O.DKIZZYA','REX','macdella','eyeballray','SheATH','yappy','drew',
+  '呂士軒','ANBA','林聖夫','約翰','rgry','吳卓源','Barry chen','熱狗','大隻','小人','陳星翰',
+  'KITCAT','朱軒羊','公園','凡尼師男孩','馬英九','蔡英文','消防隊的楊先生','水哥DJDIDILONG',
+  'DIE4REALLL','NGKE配菜','KAPPERKIRA','LOKI LU','芋比','JIMMY','玫','33','厚片女孩','女拳主義者',
+  '死肥胖哥','修斗','林萌','駱楓','林俊傑','6YI7'
+];
 function makeRandomAlly(){
   const name = choice(Math.random, NPC_NAMES);
   const m = buildMember(name, 1);
@@ -864,13 +1392,54 @@ function makeRandomAlly(){
 }
 
 /* ============ 角色成員建構 / 升級 / 職業成長 ============ */
+/** 從裝備加總某一屬性（支援 affixes 陣列 + 舊格式） */
+function equipBonus(m, stat){
+  let v = 0;
+  if(!m.equip) return 0;
+  Object.values(m.equip).forEach(eq=>{
+    if(!eq) return;
+    if(eq.affixes && eq.affixes.length){
+      eq.affixes.forEach(a=>{ if(a.stat===stat) v += a.value||0; });
+    } else {
+      if(eq.stat===stat) v += eq.value||0;
+      if(eq.extraStat===stat) v += eq.extraValue||0;
+    }
+  });
+  return v;
+}
+
+/**
+ * 主屬性加成公式（明確可見）
+ * 力量 STR → 物理攻擊
+ * 體質 CON → 生命上限、少量防禦
+ * 敏捷 AGI → 速度
+ * 智力 INT → 魔力上限、魔法攻擊
+ */
+const ATTR_FORMULA = {
+  strToAtk: 1.2,
+  conToHp: 5,
+  conToDef: 0.4,
+  agiToSpd: 1.1,
+  intToMp: 3,
+  intToMatk: 1.4
+};
+
 function computeStats(m){
-  const lv = m.level;
+  const lv = clamp(num(m.level, 1), 1, MAX_PLAYER_LEVEL);
+  if(!Number.isFinite(Number(m.level)) || Number(m.level) < 1) m.level = lv;
+  // 基礎戰鬥屬性（職業層）
   let maxHp = COMMONER.base.hp + COMMONER.grow.hp*(lv-1);
   let maxMp = COMMONER.base.mp + COMMONER.grow.mp*(lv-1);
   let atk = COMMONER.base.atk + COMMONER.grow.atk*(lv-1);
   let def = COMMONER.base.def + COMMONER.grow.def*(lv-1);
   let spd = COMMONER.base.spd + COMMONER.grow.spd*(lv-1);
+  let matk = 5 + lv * 0.6; // 基礎魔攻
+
+  // 主屬性基礎：每人都有，隨等級成長
+  let str = 5 + Math.floor((lv-1)*0.4);
+  let con = 5 + Math.floor((lv-1)*0.4);
+  let agi = 5 + Math.floor((lv-1)*0.4);
+  let intel = 5 + Math.floor((lv-1)*0.4); // int 是保留字，用 intel
 
   const layers = [];
   if(m.professionId){
@@ -893,19 +1462,52 @@ function computeStats(m){
     atk += d.statBonus.atk + d.growBonus.atk*since;
     def += d.statBonus.def + d.growBonus.def*since;
     spd += d.statBonus.spd + d.growBonus.spd*since;
+    // 依職業偏向主屬性
+    if(d.statBonus.atk > d.statBonus.mp) str += Math.floor((d.statBonus.atk + d.growBonus.atk*since)*0.3);
+    if(d.statBonus.hp > 10) con += Math.floor((d.statBonus.hp + d.growBonus.hp*since)*0.08);
+    if(d.statBonus.spd > 0) agi += Math.floor((d.statBonus.spd + d.growBonus.spd*since)*0.4);
+    if(d.statBonus.mp > 5) intel += Math.floor((d.statBonus.mp + d.growBonus.mp*since)*0.15);
   });
+
+  // 裝備主屬性
+  str += equipBonus(m, 'str');
+  con += equipBonus(m, 'con');
+  agi += equipBonus(m, 'agi');
+  intel += equipBonus(m, 'int');
+
+  // 主屬性 → 戰鬥屬性
+  atk += str * ATTR_FORMULA.strToAtk;
+  maxHp += con * ATTR_FORMULA.conToHp;
+  def += con * ATTR_FORMULA.conToDef;
+  spd += agi * ATTR_FORMULA.agiToSpd;
+  maxMp += intel * ATTR_FORMULA.intToMp;
+  matk += intel * ATTR_FORMULA.intToMatk;
+
+  // 裝備直接戰鬥屬性
+  maxHp += equipBonus(m, 'hp');
+  maxMp += equipBonus(m, 'mp');
+  atk += equipBonus(m, 'atk');
+  matk += equipBonus(m, 'matk');
+  def += equipBonus(m, 'def');
+  spd += equipBonus(m, 'spd');
+
   return {
     maxHp:Math.max(1,Math.round(maxHp)), maxMp:Math.max(0,Math.round(maxMp)),
-    atk:Math.max(1,Math.round(atk)), def:Math.max(0,Math.round(def)), spd:Math.max(1,Math.round(spd))
+    atk:Math.max(1,Math.round(atk)), matk:Math.max(1,Math.round(matk)),
+    def:Math.max(0,Math.round(def)), spd:Math.max(1,Math.round(spd)),
+    str:Math.max(1,Math.round(str)), con:Math.max(1,Math.round(con)),
+    agi:Math.max(1,Math.round(agi)), int:Math.max(1,Math.round(intel))
   };
 }
 function applyComputedStats(m){
   const s = computeStats(m);
-  const dHp = s.maxHp - (m.maxHp||0);
-  const dMp = s.maxMp - (m.maxMp||0);
-  m.maxHp=s.maxHp; m.maxMp=s.maxMp; m.atk=s.atk; m.def=s.def; m.spd=s.spd;
-  m.hp = clamp((m.hp||0)+dHp, 0, m.maxHp);
-  m.mp = clamp((m.mp||0)+dMp, 0, m.maxMp);
+  const dHp = s.maxHp - num(m.maxHp, 0);
+  const dMp = s.maxMp - num(m.maxMp, 0);
+  m.maxHp=s.maxHp; m.maxMp=s.maxMp;
+  m.atk=s.atk; m.matk=s.matk; m.def=s.def; m.spd=s.spd;
+  m.str=s.str; m.con=s.con; m.agi=s.agi; m.int=s.int;
+  m.hp = clamp(num(m.hp, 0)+dHp, 0, m.maxHp);
+  m.mp = clamp(num(m.mp, 0)+dMp, 0, m.maxMp);
 }
 function setProfession(m, professionId){
   m.professionId = professionId;
@@ -971,7 +1573,9 @@ function buildMember(name, level){
     classId:null, classLevel:null,
     advId:null, advLevel:null,
     level: level||1, exp:0, nextExp: expForLevel(level||1),
-    maxHp:0, hp:0, maxMp:0, mp:0, atk:0, def:0, spd:0,
+    maxHp:0, hp:0, maxMp:0, mp:0,
+    atk:0, matk:0, def:0, spd:0,
+    str:0, con:0, agi:0, int:0,
     equip:{weapon:null,armor:null,accessory:null,accessory2:null},
     buffDef:0, buffTurns:0, guarding:false, taunting:false,
     usedGuardianAngel:false
@@ -991,16 +1595,21 @@ function memberPalette(m){
   }
   return COMMONER.palette;
 }
-function expForLevel(lv){ return Math.round(30 * Math.pow(lv,1.5)); }
+function expForLevel(lv){
+  lv = clamp(lv, 1, MAX_PLAYER_LEVEL);
+  return Math.round(30 * Math.pow(lv, 1.5) * (1 + lv * 0.008));
+}
 function statTotal(m, stat){
-  let v = m[stat];
-  Object.values(m.equip).forEach(eq=>{
-    if(!eq) return;
-    if(eq.stat===stat) v += eq.value;
-    if(eq.extraStat===stat) v += eq.extraValue;
-  });
-  if(stat==='def' && m.buffTurns>0) v += m.buffDef;
-  return v;
+  // 裝備與主屬性已計入 m.*，此處只加戰鬥中臨時 buff
+  let v;
+  if(stat==='hp') v = m.maxHp;
+  else if(stat==='mp') v = m.maxMp;
+  else if(stat==='matk') v = m.matk || m.atk || 1;
+  else if(stat==='atk') v = (m.atk||0) - num(m.atkDebuff, 0);
+  else if(stat==='spd') v = (m.spd||0) - num(m.spdDebuff, 0);
+  else v = m[stat];
+  if(stat==='def' && m.buffTurns>0) v = num(v,0) + num(m.buffDef,0);
+  return Math.max(0, num(v, 0));
 }
 function evaluateEvolution(m){
   if(m.level>=PROFESSION_LEVEL && !m.professionId){ S.pendingStage='profession'; return; }
@@ -1034,8 +1643,13 @@ function autoEvolveAll(m, log){
   }
 }
 function gainExp(m, amt, log){
+  if(m.level >= MAX_PLAYER_LEVEL){
+    m.exp = 0;
+    m.nextExp = expForLevel(MAX_PLAYER_LEVEL);
+    return;
+  }
   m.exp += amt;
-  while(m.exp >= m.nextExp){
+  while(m.exp >= m.nextExp && m.level < MAX_PLAYER_LEVEL){
     m.exp -= m.nextExp;
     m.level++;
     applyComputedStats(m);
@@ -1046,6 +1660,12 @@ function gainExp(m, amt, log){
     } else {
       autoEvolveAll(m, log);
     }
+  }
+  if(m.level >= MAX_PLAYER_LEVEL){
+    m.level = MAX_PLAYER_LEVEL;
+    m.exp = 0;
+    m.nextExp = expForLevel(MAX_PLAYER_LEVEL);
+    log.push(m.name+' 已達等級上限 '+MAX_PLAYER_LEVEL+'！');
   }
 }
 
@@ -1060,7 +1680,7 @@ function newGame(){
     screen:'hub',
     hero,
     party:[hero],
-    inventory:[{uid:'pot_start',slot:'potion',kind:'hp',name:'治療藥水',value:60}],
+    inventory:[{uid:'pot_start',slot:'potion',kind:'hp',name:'治療藥水',value:60,count:1}],
     log:[],
     battle:null,
     daysSurvived:0,
@@ -1088,22 +1708,47 @@ function startBattle(){
   const avgLevel = avgPartyLevel();
   const availableTiers = [1];
   if(avgLevel>=4) availableTiers.push(2);
-  if(avgLevel>=9) availableTiers.push(3);
-  if(avgLevel>=16) availableTiers.push(4);
-  const bossRoll = avgLevel>=20 && rng()<0.06;
-  let pool = bossRoll ? MONSTER_TYPES.filter(m=>m.tier===5) : MONSTER_TYPES.filter(m=>availableTiers.includes(m.tier));
-  if(pool.length===0) pool = MONSTER_TYPES.filter(m=>m.tier===1);
-  const count = bossRoll?1:rint(rng,1,3);
+  if(avgLevel>=10) availableTiers.push(3);
+  if(avgLevel>=18) availableTiers.push(4);
+  // Boss 僅 50 等後出現
+  const bossRoll = avgLevel>=50 && rng()<0.08;
+  let pool = bossRoll
+    ? MONSTER_TYPES.filter(m=>m.boss)
+    : MONSTER_TYPES.filter(m=>!m.boss && availableTiers.includes(m.tier));
+  if(pool.length===0) pool = MONSTER_TYPES.filter(m=>m.tier===1 && !m.boss);
+
+  let count;
+  if(bossRoll){
+    count = 1;
+  } else {
+    // 隨等級可遇到更多怪，上限 6
+    let maxC = 2;
+    if(avgLevel>=8) maxC = 3;
+    if(avgLevel>=15) maxC = 4;
+    if(avgLevel>=25) maxC = 5;
+    if(avgLevel>=35) maxC = MAX_MONSTER_PARTY;
+    count = rint(rng, 1, maxC);
+  }
   const monsters=[];
-  for(let i=0;i<count;i++) monsters.push(makeMonster(choice(rng,pool), avgLevel, rng));
+  for(let i=0;i<count;i++){
+    const tmpl = choice(rng, pool);
+    // 精英：非 Boss、20 等後約 12%（高等更高）
+    const eliteChance = avgLevel>=20 ? Math.min(0.08 + (avgLevel-20)*0.002, 0.22) : 0;
+    const elite = !bossRoll && rng() < eliteChance;
+    monsters.push(makeMonster(tmpl, avgLevel, rng, { elite }));
+  }
   S.party.forEach(m=>{
     m.usedGuardianAngel=false;
     m.taunting=false; m.buffDef=0; m.buffTurns=0;
+    m.skipTurn=false; m.atkDebuff=0; m.spdDebuff=0;
   });
   S.battle = {
     monsters, turnLog:[], selectedActor:null, selectedAction:null, over:false, win:null,
     order: buildTurnOrder(monsters), turnIndex:0, roundNum:1
   };
+  if(bossRoll){
+    S.battle.turnLog.unshift('⚠ 強大的 Boss「'+monsters[0].name+'」擋在前方！');
+  }
   S.screen='battle';
   advanceBattleTurn(true);
   render();
@@ -1127,6 +1772,23 @@ function advanceBattleTurn(first){
       if(m.buffTurns>0){
         m.buffTurns--;
         if(m.buffTurns<=0){ m.buffTurns=0; m.buffDef=0; m.taunting=false; }
+      }
+      // 玩家中毒結算（怪物毒觸／Boss 瘟疫等）
+      if(m.hp>0 && m.status==='poison' && m.statusTurns>0){
+        const dmg = Math.max(1, Math.round(m.maxHp * 0.05));
+        m.hp = clamp(m.hp - dmg, 0, m.maxHp);
+        b.turnLog.unshift(m.name+' 受到中毒侵蝕，損失 '+dmg+' HP。');
+        m.statusTurns--;
+        if(m.statusTurns<=0) m.status=null;
+        if(m.hp===0){
+          const guardian = S.party.find(p=>p.hp>0 && hasPassive(p,'guardianAngel') && !p.usedGuardianAngel);
+          if(guardian){
+            m.hp=1; guardian.usedGuardianAngel=true;
+            b.turnLog.unshift('⚜️ '+guardian.name+' 的守護天使發動，'+m.name+' 保住 1 HP！');
+          } else {
+            b.turnLog.unshift(m.name+' 中毒倒下了！');
+          }
+        }
       }
       if(m.hp>0 && m.maxMp>0 && m.mp < m.maxMp){
         const baseRegen = Math.max(1, Math.round(m.maxMp*0.04));
@@ -1154,12 +1816,21 @@ function advanceBattleTurn(first){
 function tickMonsterStatus(mon){
   const b=S.battle;
   if(mon.hasRegen && mon.hp>0 && mon.hp<mon.maxHp){
-    const heal = Math.max(1, Math.round(mon.maxHp*0.05));
+    const rate = mon.regenRate || 0.05;
+    const heal = Math.max(1, Math.round(mon.maxHp*rate));
     mon.hp = clamp(mon.hp+heal, 0, mon.maxHp);
-    b.turnLog.unshift(mon.name+' 的傷口迅速再生，恢復 '+heal+' HP。');
+    b.turnLog.unshift(mon.name+' 再生，恢復 '+heal+' HP。');
+  }
+  if(mon.auraBurn && mon.hp>0){
+    S.party.forEach(p=>{
+      if(p.hp<=0) return;
+      const bd = Math.max(1, Math.round(p.maxHp * mon.auraBurn));
+      p.hp = clamp(p.hp-bd, 0, p.maxHp);
+      b.turnLog.unshift(mon.name+' 的燃燒光環灼傷了 '+p.name+'（'+bd+'）。');
+    });
   }
   if(mon.status==='poison' && mon.statusTurns>0){
-    const dmg = Math.max(1, Math.round(mon.maxHp*0.06));
+    const dmg = Math.max(1, Math.round(mon.maxHp*(mon.poisonHeavy?0.09:0.06)));
     mon.hp = clamp(mon.hp-dmg,0,mon.maxHp);
     b.turnLog.unshift(mon.name+' 受到中毒侵蝕，損失 '+dmg+' HP。');
     mon.statusTurns--;
@@ -1167,29 +1838,344 @@ function tickMonsterStatus(mon){
     checkKillReward(mon, b);
     if(mon.hp===0) b.turnLog.unshift(mon.name+' 被毒素侵蝕殆盡而倒下了！');
   }
+  if(mon.marked && mon.markTurns>0){
+    mon.markTurns--;
+    if(mon.markTurns<=0){
+      mon.marked=false; mon.markMult=1; mon.markTurns=0;
+      b.turnLog.unshift(mon.name+' 身上的追蹤標記消散了。');
+    }
+  }
 }
+/** 對怪物結算傷害（閃避／抗性／護盾／荊棘／不死／死亡爆炸） */
+function applyDamageToMonster(actor, mon, rawDmg, isMagic, b){
+  if(!mon || mon.hp<=0) return 0;
+  // 防禦：任何上游 NaN 傷害在此截斷
+  mon.maxHp = Math.max(1, num(mon.maxHp, 1));
+  mon.hp = clamp(num(mon.hp, mon.maxHp), 0, mon.maxHp);
+  let dmg = Math.max(0, num(rawDmg, 0));
+  if(!Number.isFinite(dmg) || dmg < 0) dmg = 0;
+  if(!isMagic && mon.evade && Math.random() < mon.evade){
+    b.turnLog.unshift(mon.name+' 閃避了攻擊！');
+    return 0;
+  }
+  if(!isMagic && mon.physResist) dmg = Math.max(1, Math.round(dmg * (1 - num(mon.physResist, 0))));
+  if(isMagic && mon.magResist) dmg = Math.max(1, Math.round(dmg * (1 - num(mon.magResist, 0))));
+  if(mon.shieldCharges > 0){
+    const red = mon.shieldReduce != null ? num(mon.shieldReduce, 0.5) : 0.5;
+    dmg = Math.max(1, Math.round(dmg * (1 - red)));
+    mon.shieldCharges--;
+    b.turnLog.unshift(mon.name+' 的護盾抵銷了部分傷害（剩餘 '+mon.shieldCharges+'）。');
+  }
+  if(dmg > 0) mon.hp = clamp(mon.hp - dmg, 0, mon.maxHp);
+  if(mon.thorns && actor && actor.hp > 0){
+    const ref = Math.max(1, Math.round(dmg * mon.thorns));
+    actor.hp = clamp(actor.hp - ref, 0, actor.maxHp);
+    b.turnLog.unshift(mon.name+' 反彈了 '+ref+' 點傷害！');
+  }
+  if(mon.hp <= 0 && mon.undying){
+    mon.undying = false;
+    mon.hp = Math.max(1, Math.round(mon.maxHp * 0.2));
+    b.turnLog.unshift(mon.name+' 的不死之力發動，以殘血重生！');
+  }
+  if(mon.hp <= 0 && mon.deathBurst){
+    S.party.forEach(p=>{
+      if(p.hp<=0) return;
+      const bd = Math.max(1, Math.round(p.maxHp * mon.deathBurst));
+      p.hp = clamp(p.hp - bd, 0, p.maxHp);
+    });
+    b.turnLog.unshift(mon.name+' 死亡時發生爆炸，波及全隊！');
+  }
+  return dmg;
+}
+function effectiveMonAtk(mon){
+  let atk = mon.atk;
+  if(mon.enrageAt && mon.hp <= mon.maxHp * mon.enrageAt){
+    atk = Math.round(atk * (mon.enrageMult || 1.5));
+  }
+  return atk;
+}
+function runBossMechanic(mon, b){
+  if(!mon.boss || !mon.mech) return;
+  mon.bossTurns = (mon.bossTurns || 0) + 1;
+  const t = mon.bossTurns;
+  const party = S.party.filter(p=>p.hp>0);
+  if(!party.length) return;
+  switch(mon.mech){
+    case 'inferno':
+      if(t % 3 === 0){
+        party.forEach(p=>{ const d=Math.max(1,Math.round(mon.atk*0.7)); p.hp=clamp(p.hp-d,0,p.maxHp); });
+        b.turnLog.unshift(mon.name+' 釋放【煉獄吐息】，全隊受到火焰傷害！');
+      }
+      break;
+    case 'void':
+      if(t % 4 === 0){
+        const p = choice(Math.random, party);
+        p.mp = clamp(p.mp - Math.round(p.maxMp*0.25), 0, p.maxMp);
+        b.turnLog.unshift(mon.name+' 的【虛空汲取】抽走了 '+p.name+' 的魔力！');
+      }
+      break;
+    case 'reaper':
+      if(mon.hp < mon.maxHp*0.4 && !mon._reaperBuff){
+        mon._reaperBuff=true; mon.atk=Math.round(mon.atk*1.35);
+        b.turnLog.unshift(mon.name+' 進入【收割】狀態，攻擊大幅提升！');
+      }
+      break;
+    case 'tide':
+      if(t % 3 === 0){
+        mon.hp = clamp(mon.hp + Math.round(mon.maxHp*0.06), 0, mon.maxHp);
+        b.turnLog.unshift(mon.name+' 藉【潮汐】恢復了生命！');
+      }
+      break;
+    case 'roots':
+      if(t % 3 === 0){
+        const p = choice(Math.random, party);
+        p.skipTurn = true;
+        b.turnLog.unshift(mon.name+' 的【纏繞根須】困住了 '+p.name+'！');
+      }
+      break;
+    case 'colossus':
+      if(t === 1){ mon.shieldCharges = (mon.shieldCharges||0)+3; mon.shieldReduce=0.4; b.turnLog.unshift(mon.name+' 展開【鋼鐵結界】！'); }
+      break;
+    case 'bloodmoon':
+      if(t % 2 === 0){
+        const d = Math.max(1, Math.round(mon.atk*0.9));
+        const p = choice(Math.random, party);
+        p.hp = clamp(p.hp-d,0,p.maxHp);
+        mon.hp = clamp(mon.hp+Math.round(d*0.5),0,mon.maxHp);
+        b.turnLog.unshift(mon.name+' 【血月噬咬】造成 '+d+' 傷害並吸血！');
+      }
+      break;
+    case 'frost':
+      if(t % 3 === 0){
+        party.forEach(p=>{ p.spdDebuff = (p.spdDebuff||0)+2; });
+        b.turnLog.unshift(mon.name+' 的【永凍】減慢了全隊速度！');
+      }
+      break;
+    case 'plague':
+      if(t % 2 === 0){
+        const p = choice(Math.random, party);
+        p.status = 'poison'; p.statusTurns = 3;
+        b.turnLog.unshift(mon.name+' 散播【瘟疫】，'+p.name+' 中毒了！');
+      }
+      break;
+    case 'shadowcourt':
+      if(t % 4 === 0){ mon.evade = Math.min(0.5, (mon.evade||0)+0.15); b.turnLog.unshift(mon.name+' 隱入【影殿】，閃避提升！'); }
+      break;
+    case 'titan':
+      if(t % 3 === 0){
+        party.forEach(p=>{ const d=Math.max(1,Math.round(mon.atk*0.55)); p.hp=clamp(p.hp-d,0,p.maxHp); });
+        b.turnLog.unshift(mon.name+' 【熔核重踏】震擊全隊！');
+      }
+      break;
+    case 'kraken':
+      if(t % 3 === 0){
+        party.forEach(p=>{ p.hp=clamp(p.hp-Math.max(1,Math.round(mon.atk*0.4)),0,p.maxHp); });
+        b.turnLog.unshift(mon.name+' 的【觸手拍擊】掃過全隊！');
+      }
+      break;
+    case 'boneking':
+      if(t % 4 === 0){
+        mon.def = Math.round(mon.def*1.15);
+        b.turnLog.unshift(mon.name+' 召喚骨牆，防禦上升！');
+      }
+      break;
+    case 'berserk':
+      if(mon.hp < mon.maxHp*0.5 && !mon._berserk){
+        mon._berserk=true; mon.atk=Math.round(mon.atk*1.5); mon.def=Math.round(mon.def*0.8);
+        b.turnLog.unshift(mon.name+' 陷入【狂戰】！');
+      }
+      break;
+    case 'starseal':
+      if(t % 5 === 0){
+        party.forEach(p=>{ p.mp = clamp(p.mp - 15, 0, p.maxMp); });
+        b.turnLog.unshift(mon.name+' 【星隕封印】壓制全隊魔力！');
+      }
+      break;
+    case 'nightmare':
+      if(t % 3 === 0){
+        const p = choice(Math.random, party);
+        p.skipTurn = true;
+        b.turnLog.unshift(mon.name+' 織出【夢魘】，'+p.name+' 無法行動！');
+      }
+      break;
+    case 'judgment':
+      if(t % 3 === 0){
+        const p = party.slice().sort((a,b)=>b.hp-a.hp)[0];
+        const d = Math.max(1, Math.round(mon.atk*1.1));
+        p.hp = clamp(p.hp-d,0,p.maxHp);
+        b.turnLog.unshift(mon.name+' 【聖焰審判】點名了 '+p.name+'（'+d+'）！');
+      }
+      break;
+    case 'garden':
+      if(t % 3 === 0){
+        mon.hp = clamp(mon.hp + Math.round(mon.maxHp*0.08), 0, mon.maxHp);
+        party.forEach(p=>{ if(Math.random()<0.4){ p.status='poison'; p.statusTurns=2; } });
+        b.turnLog.unshift(mon.name+' 的【腐朽花園】蔓延，回復並散播毒素！');
+      }
+      break;
+  }
+}
+/* ============================================================
+ * 戰鬥公式（J 技能重做核心）
+ * ------------------------------------------------------------
+ * 物理：max(1, round( 物攻 × 倍率 − 敵防 × 0.50 × (1−穿甲比例) ))
+ * 魔法：max(1, round( 魔攻 × 倍率 − 敵防 × 0.25 ))
+ * 治療：round( 魔攻 × 係數 + 智力 × 0.6 + 等級 × 2 )
+ * 自癒：round( 自身最大HP × 係數 )，可附帶回 MP
+ * 暴擊率：基礎 8% + 敏捷 × 0.4%（技能可覆寫），暴擊傷害 ×1.6
+ * 標記：結算後再 × markMult
+ * 聖光：對 undead / shadow 額外 ×1.25
+ * 普通攻擊：物攻 × (0.9~1.2 隨機)
+ * ============================================================ */
+const CF = {
+  PHYS_DEF: 0.32,
+  MAG_DEF: 0.18,
+  PHYS_FLOOR: 0.28,
+  MAG_FLOOR: 0.30,
+  CRIT_MULT: 1.6,
+  BASE_CRIT: 0.08,
+  AGI_CRIT: 0.004,
+  HOLY_BONUS: 1.25,
+  PIERCE_RATIO: 0.30,
+  ATK_VAR_MIN: 0.90,
+  ATK_VAR_MAX: 1.20
+};
+const EVIL_TYPES = ['undead','shadow'];
+function isEvilMon(mon){ return !!(mon && EVIL_TYPES.indexOf(mon.type)>=0); }
+function critChance(actor, sk){
+  if(sk && sk.crit != null) return clamp(sk.crit, 0, 0.95);
+  return clamp(CF.BASE_CRIT + (actor.agi||0) * CF.AGI_CRIT, 0, 0.75);
+}
+function rollCrit(actor, sk){ return Math.random() < critChance(actor, sk); }
+function pierceIgnore(actor, targetDef){
+  return hasPassive(actor,'pierce') ? targetDef * CF.PIERCE_RATIO : 0;
+}
+function markMultOf(target){
+  let m = (target && target.marked && target.markMult) ? target.markMult : 1;
+  if(target && target.markVulnerable && m > 1) m *= target.markVulnerable;
+  return m;
+}
+/** 物理傷害。opts: {mult, variance, canCrit, sk, forceCrit} */
+function calcPhysDmg(actor, target, opts){
+  opts = opts || {};
+  const mult = num(opts.mult != null ? opts.mult : 1, 1);
+  const atk = Math.max(1, num(statTotal(actor,'atk'), 1));
+  const def = Math.max(0, num(target && target.def, 0));
+  const ignore = num(pierceIgnore(actor, def), 0);
+  let variance = 1;
+  if(opts.variance){
+    variance = CF.ATK_VAR_MIN + Math.random() * (CF.ATK_VAR_MAX - CF.ATK_VAR_MIN);
+  }
+  const raw = atk * mult * variance;
+  const mitigated = raw - (def - ignore) * CF.PHYS_DEF;
+  const floor = raw * (CF.PHYS_FLOOR != null ? CF.PHYS_FLOOR : 0.28);
+  let dmg = Math.max(1, Math.round(Math.max(floor, mitigated)));
+  const didCrit = opts.forceCrit || (opts.canCrit && rollCrit(actor, opts.sk));
+  if(didCrit) dmg = Math.round(dmg * CF.CRIT_MULT);
+  dmg = Math.round(dmg * num(markMultOf(target), 1));
+  return { dmg: Math.max(1, num(dmg, 1)), crit: !!didCrit, marked: markMultOf(target) > 1 };
+}
+/** 魔法傷害。opts: {mult, holy, sk} */
+function calcMagicDmg(actor, target, opts){
+  opts = opts || {};
+  const mult = num(opts.mult != null ? opts.mult : 1, 1);
+  const matk = Math.max(1, num(statTotal(actor,'matk'), 1));
+  const def = Math.max(0, num(target && target.def, 0));
+  const raw = matk * mult;
+  const mitigated = raw - def * CF.MAG_DEF;
+  const floor = raw * (CF.MAG_FLOOR != null ? CF.MAG_FLOOR : 0.30);
+  let dmg = Math.max(1, Math.round(Math.max(floor, mitigated)));
+  if(opts.holy && isEvilMon(target)) dmg = Math.round(dmg * CF.HOLY_BONUS);
+  dmg = Math.round(dmg * num(markMultOf(target), 1));
+  return { dmg: Math.max(1, num(dmg, 1)), crit: false, marked: markMultOf(target) > 1, holy: !!(opts.holy && isEvilMon(target)) };
+}
+/** 治療量（單體／群體共用係數） */
+function calcHealAmt(actor, healCoef){
+  const matk = statTotal(actor,'matk');
+  const intel = actor.int || 0;
+  return Math.max(1, Math.round(matk * (healCoef||1) + intel * 0.6 + actor.level * 2));
+}
+function dmgTag(r){
+  let t = '';
+  if(r.crit) t += '（會心一擊！）';
+  if(r.holy) t += '（聖光克邪）';
+  if(r.marked) t += '（標記加成）';
+  return t;
+}
+
 function monsterAct(mon){
   const b=S.battle;
+  runBossMechanic(mon, b);
   const aliveParty = S.party.filter(m=>m.hp>0);
   if(aliveParty.length===0) return;
-  const tauntTarget = aliveParty.find(m=>m.taunting);
-  const target = tauntTarget || choice(Math.random, aliveParty);
-  let dmg = Math.max(1, Math.round(mon.atk * (0.85+Math.random()*0.3) - statTotal(target,'def')*0.55));
-  let blocked = false;
-  if(hasPassive(target,'block') && Math.random()<0.18){
-    dmg = Math.max(1, Math.round(dmg*0.65));
-    blocked = true;
-  }
-  target.hp = clamp(target.hp-dmg,0,target.maxHp);
-  b.turnLog.unshift(mon.name+' 攻擊了 '+target.name+'，造成 '+dmg+' 點傷害。'+(blocked?'（格擋減傷！）':''));
-  if(target.hp===0){
-    const guardian = S.party.find(p=>(p.hp>0 || p.uid===target.uid) && hasPassive(p,'guardianAngel') && !p.usedGuardianAngel);
-    if(guardian){
-      target.hp = 1;
-      guardian.usedGuardianAngel = true;
-      b.turnLog.unshift('⚜️ '+guardian.name+' 的守護天使發動，'+target.name+' 奇蹟般保住了 1 點HP！');
-    } else {
-      b.turnLog.unshift(target.name+' 倒下了！');
+
+  const attackOnce = (target)=>{
+    let atk = Math.max(1, num(effectiveMonAtk(mon), 1));
+    if(mon.execute && target.hp < target.maxHp * 0.5) atk = Math.round(atk * num(mon.execute, 1));
+    // 怪物打人：攻擊略高方差、防禦折算較低、保底較高 → 有威脅但不秒殺
+    const rawM = atk * (0.95 + Math.random()*0.25);
+    const mitM = rawM - num(statTotal(target,'def'),0)*0.22;
+    let dmg = Math.max(1, Math.round(Math.max(rawM*0.42, mitM)));
+    if(mon.arcBonus) dmg = Math.round(dmg * (1 + mon.arcBonus * 0.5));
+    let blocked = false;
+    if(hasPassive(target,'block') && Math.random()<0.18){
+      dmg = Math.max(1, Math.round(dmg*0.65));
+      blocked = true;
+    }
+    target.hp = clamp(target.hp-dmg,0,target.maxHp);
+    b.turnLog.unshift(mon.name+' 攻擊了 '+target.name+'，造成 '+dmg+' 點傷害。'+(blocked?'（格擋減傷！）':''));
+    if(mon.vampiric){
+      const heal = Math.max(1, Math.round(dmg * mon.vampiric));
+      mon.hp = clamp(mon.hp+heal, 0, mon.maxHp);
+      b.turnLog.unshift(mon.name+' 吸血恢復了 '+heal+' HP。');
+    }
+    if(mon.poisonTouch){
+      target.status = 'poison';
+      target.statusTurns = mon.poisonHeavy ? 4 : 3;
+      b.turnLog.unshift(target.name+' 中毒了！');
+    }
+    if(mon.manaBurn){
+      const burn = Math.max(3, Math.round(target.maxMp * 0.08));
+      target.mp = clamp(target.mp - burn, 0, target.maxMp);
+      b.turnLog.unshift(mon.name+' 灼燒了 '+target.name+' 的魔力（-'+burn+' MP）！');
+    }
+    if(mon.chillTouch){
+      target.spdDebuff = (target.spdDebuff||0) + 3;
+      b.turnLog.unshift(target.name+' 被寒氣侵襲，速度下降！');
+    }
+    if(mon.crippleTouch){
+      target.atkDebuff = (target.atkDebuff||0) + Math.max(1, Math.round(statTotal(target,'atk')*0.08));
+      b.turnLog.unshift(target.name+' 被致殘，攻擊力下降！');
+    }
+    if(mon.stunChance && Math.random() < mon.stunChance){
+      target.skipTurn = true;
+      b.turnLog.unshift(target.name+' 被震暈，下回合無法行動！');
+    }
+    if(target.hp===0){
+      const guardian = S.party.find(p=>(p.hp>0 || p.uid===target.uid) && hasPassive(p,'guardianAngel') && !p.usedGuardianAngel);
+      if(guardian){
+        target.hp = 1;
+        guardian.usedGuardianAngel = true;
+        b.turnLog.unshift('⚜️ '+guardian.name+' 的守護天使發動，'+target.name+' 奇蹟般保住了 1 點HP！');
+      } else {
+        b.turnLog.unshift(target.name+' 倒下了！');
+      }
+    }
+  };
+
+  // 選目標：嘲諷（鐵志可無視）
+  let tauntTarget = aliveParty.find(m=>m.taunting);
+  if(tauntTarget && mon.ignoreTaunt && Math.random() < mon.ignoreTaunt) tauntTarget = null;
+  const mainTarget = tauntTarget || choice(Math.random, aliveParty);
+
+  if(mon.aoeAtk && Math.random() < mon.aoeAtk){
+    b.turnLog.unshift(mon.name+' 使出橫掃！');
+    S.party.filter(m=>m.hp>0).forEach(p=> attackOnce(p));
+  } else {
+    attackOnce(mainTarget);
+    if(mon.doubleAtk && Math.random() < mon.doubleAtk && mainTarget.hp > 0){
+      b.turnLog.unshift(mon.name+' 追加連擊！');
+      attackOnce(mainTarget);
     }
   }
 }
@@ -1199,17 +2185,24 @@ function playerAction(actorUid, action, targetIdx, skillIdx, potionUid){
   const actor = S.party.find(m=>m.uid===actorUid);
   if(!actor || actor.hp<=0) return;
   actor.taunting=false;
+  if(actor.skipTurn){
+    actor.skipTurn=false;
+    b.turnLog.unshift(actor.name+' 仍受控無法行動！');
+    checkBattleEnd();
+    if(!b.over) advanceBattleTurn(false);
+    render();
+    return;
+  }
   if(action==='attack'){
     const target = b.monsters[targetIdx];
     if(!target||target.hp<=0) return;
-    const defIgnore = hasPassive(actor,'pierce') ? target.def*0.3 : 0;
-    const dmg = Math.max(1, Math.round(statTotal(actor,'atk') * (0.9+Math.random()*0.3) - (target.def-defIgnore)*0.5));
-    target.hp = clamp(target.hp-dmg,0,target.maxHp);
-    b.turnLog.unshift(actor.name+' 攻擊了 '+target.name+'，造成 '+dmg+' 點傷害。');
+    const r = calcPhysDmg(actor, target, { mult:1, variance:true, canCrit:true, sk:null });
+    const dealt = applyDamageToMonster(actor, target, r.dmg, false, b);
+    if(dealt>0) b.turnLog.unshift(actor.name+' 攻擊了 '+target.name+'，造成 '+dealt+' 點傷害'+dmgTag(r)+'。');
     if(hasPassive(actor,'doubleStrike') && target.hp>0 && Math.random()<0.22){
-      const dmg2 = Math.max(1, Math.round(statTotal(actor,'atk')*0.5 - target.def*0.5));
-      target.hp = clamp(target.hp-dmg2,0,target.maxHp);
-      b.turnLog.unshift(actor.name+' 觸發追加攻擊，額外造成 '+dmg2+' 點傷害！');
+      const r2 = calcPhysDmg(actor, target, { mult:0.55, canCrit:false });
+      const d2 = applyDamageToMonster(actor, target, r2.dmg, false, b);
+      if(d2>0) b.turnLog.unshift(actor.name+' 觸發追加攻擊，額外造成 '+d2+' 點傷害！');
     }
     if(hasPassive(actor,'virulence') && target.hp>0 && !target.status && Math.random()<0.25){
       target.status='poison'; target.statusTurns=3;
@@ -1229,13 +2222,16 @@ function playerAction(actorUid, action, targetIdx, skillIdx, potionUid){
   } else if(action==='item'){
     const item = potionUid ? S.inventory.find(i=>i.uid===potionUid) : S.inventory.find(i=>i.slot==='potion');
     if(!item){ render(); return; }
-    S.inventory.splice(S.inventory.indexOf(item),1);
-    if(item.kind==='mp'){
-      actor.mp = clamp(actor.mp+item.value,0,actor.maxMp);
-      b.turnLog.unshift(actor.name+' 使用了 '+item.name+'，恢復 '+item.value+' MP。');
+    const potName = item.name;
+    const potVal = item.value;
+    const potKind = item.kind;
+    if(!consumePotion(item)){ render(); return; }
+    if(potKind==='mp'){
+      actor.mp = clamp(actor.mp+potVal,0,actor.maxMp);
+      b.turnLog.unshift(actor.name+' 使用了 '+potName+'，恢復 '+potVal+' MP。');
     } else {
-      actor.hp = clamp(actor.hp+item.value,0,actor.maxHp);
-      b.turnLog.unshift(actor.name+' 使用了 '+item.name+'，恢復 '+item.value+' HP。');
+      actor.hp = clamp(actor.hp+potVal,0,actor.maxHp);
+      b.turnLog.unshift(actor.name+' 使用了 '+potName+'，恢復 '+potVal+' HP。');
     }
   } else if(action==='defend'){
     actor.buffDef = Math.round(statTotal(actor,'def')*0.5); actor.buffTurns=1;
@@ -1257,76 +2253,97 @@ function playerAction(actorUid, action, targetIdx, skillIdx, potionUid){
 }
 function applySkill(actor, sk, targetIdx, b){
   const type = sk.type;
-  if(type==='phys' || type==='magic' || type==='phys_crit'){
+  if(type==='mark'){
     const target = b.monsters[targetIdx];
     if(!target||target.hp<=0) return;
-    let crit = type==='phys_crit' && Math.random()<0.45;
-    const baseStat = type==='magic'? statTotal(actor,'atk')*1.15 : statTotal(actor,'atk');
-    const defIgnore = (type!=='magic' && hasPassive(actor,'pierce')) ? target.def*0.3 : 0;
-    let dmg = Math.max(1, Math.round(baseStat*sk.mult - (target.def-defIgnore)*(type==='magic'?0.25:0.5)));
-    if(crit) dmg = Math.round(dmg*1.6);
-    target.hp = clamp(target.hp-dmg,0,target.maxHp);
-    b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」對 '+target.name+' 造成 '+dmg+' 點傷害'+(crit?'（會心一擊！）':'')+'。');
+    target.marked = true;
+    target.markTurns = sk.markTurns||3;
+    target.markMult = sk.markMult||1.35;
+    b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」標記了 '+target.name+'！'+target.markTurns+' 回合內受傷提升 '+Math.round((target.markMult-1)*100)+'%。');
+  } else if(type==='phys' || type==='phys_crit'){
+    const target = b.monsters[targetIdx];
+    if(!target||target.hp<=0) return;
+    const skCrit = Object.assign({}, sk, { crit: sk.crit != null ? sk.crit : (type==='phys_crit' ? 0.45 : undefined) });
+    const r = calcPhysDmg(actor, target, { mult: sk.mult||1, canCrit:true, sk: skCrit });
+    const dealt = applyDamageToMonster(actor, target, r.dmg, false, b);
+    if(dealt>0) b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」對 '+target.name+' 造成 '+dealt+' 點傷害'+dmgTag(r)+'。');
+    if(sk.poison && target.hp>0){ target.status='poison'; target.statusTurns=sk.poisonTurns||3; b.turnLog.unshift(target.name+' 中毒了！'); }
+    checkKillReward(target, b);
+    if(target.hp===0) b.turnLog.unshift(target.name+' 被擊敗了！');
+  } else if(type==='magic'){
+    const target = b.monsters[targetIdx];
+    if(!target||target.hp<=0) return;
+    const r = calcMagicDmg(actor, target, { mult: sk.mult||1, holy: !!sk.holy });
+    const dealt = applyDamageToMonster(actor, target, r.dmg, true, b);
+    if(dealt>0) b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」對 '+target.name+' 造成 '+dealt+' 點傷害'+dmgTag(r)+'。');
     checkKillReward(target, b);
     if(target.hp===0) b.turnLog.unshift(target.name+' 被擊敗了！');
   } else if(type==='phys_multi' || type==='phys_multi2'){
     const target = b.monsters[targetIdx];
     if(!target||target.hp<=0) return;
-    const hits = type==='phys_multi'?3:2;
-    const defIgnore = hasPassive(actor,'pierce') ? target.def*0.3 : 0;
-    let total=0;
+    const hits = sk.hits || (type==='phys_multi' ? 3 : 2);
+    let total=0, anyMark=false;
     for(let i=0;i<hits;i++){
       if(target.hp<=0) break;
-      const dmg = Math.max(1, Math.round(statTotal(actor,'atk')*sk.mult - (target.def-defIgnore)*0.5));
-      target.hp = clamp(target.hp-dmg,0,target.maxHp);
-      total+=dmg;
+      const r = calcPhysDmg(actor, target, { mult: sk.mult||1, canCrit: !!sk.canCrit, sk });
+      total += applyDamageToMonster(actor, target, r.dmg, false, b);
+      if(r.marked) anyMark=true;
     }
-    b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」共造成 '+total+' 點傷害。');
+    b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」共 '+hits+' 擊，造成 '+total+' 點傷害'+(anyMark?'（標記加成）':'')+'。');
+    if(sk.poison && target.hp>0){ target.status='poison'; target.statusTurns=sk.poisonTurns||3; }
     checkKillReward(target, b);
     if(target.hp===0) b.turnLog.unshift(target.name+' 被擊敗了！');
   } else if(type==='magic_aoe' || type==='magic_dot'){
     let total=0;
     b.monsters.forEach(mo=>{
       if(mo.hp<=0) return;
-      let dmg = Math.max(1, Math.round(statTotal(actor,'atk')*1.1*sk.mult - mo.def*0.25));
-      mo.hp = clamp(mo.hp-dmg,0,mo.maxHp);
-      total+=dmg;
-      if(type==='magic_dot'){ mo.status='poison'; mo.statusTurns=3; }
+      const r = calcMagicDmg(actor, mo, { mult: sk.mult||1, holy: !!sk.holy });
+      total += applyDamageToMonster(actor, mo, r.dmg, true, b);
+      if(type==='magic_dot' || sk.poison){ mo.status='poison'; mo.statusTurns=sk.poisonTurns||3; }
       checkKillReward(mo, b);
     });
-    b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」對全體敵人造成共 '+total+' 點傷害'+(type==='magic_dot'?'，並附加中毒效果':'')+'。');
+    b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」對全體造成共 '+total+' 點傷害'+(type==='magic_dot'||sk.poison?'，並附加中毒':'')+'。');
   } else if(type==='heal'){
     const target = S.party[targetIdx];
     if(!target) return;
-    let amt = Math.round(actor.maxMp*0.02 + statTotal(actor,'atk')*sk.heal + actor.level*3);
-    if(hasPassive(actor,'mercyHeal') && target.hp < target.maxHp*0.3){ amt = Math.round(amt*1.25); }
+    let amt = calcHealAmt(actor, sk.heal||1);
+    if(hasPassive(actor,'mercyHeal') && target.hp < target.maxHp*0.3) amt = Math.round(amt*1.25);
     target.hp = clamp(target.hp+amt,0,target.maxHp);
     b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」為 '+target.name+' 恢復 '+amt+' HP。');
   } else if(type==='heal_aoe'){
-    const amt = Math.round(actor.level*4 + statTotal(actor,'atk')*sk.heal);
+    const amt = calcHealAmt(actor, sk.heal||0.8);
     healParty(S, amt);
     b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」為全隊恢復 '+amt+' HP。');
   } else if(type==='buff'){
-    S.party.forEach(m=>{ if(m.hp>0){ m.buffDef = Math.round(statTotal(m,'def')*0.2); m.buffTurns=2; } });
-    b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」，全隊防禦提升！');
+    const turns = sk.buffTurns||2;
+    const ratio = sk.buffDefRatio != null ? sk.buffDefRatio : 0.20;
+    S.party.forEach(m=>{
+      if(m.hp>0){ m.buffDef = Math.round(statTotal(m,'def')*ratio); m.buffTurns=turns; }
+    });
+    b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」，全隊防禦提升 '+Math.round(ratio*100)+'%（'+turns+' 回合）！');
   } else if(type==='guard'){
-    actor.taunting=true; actor.buffDef=Math.round(statTotal(actor,'def')*0.6); actor.buffTurns=2;
-    b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」，吸引敵人攻擊並提升防禦！');
+    const turns = sk.buffTurns||2;
+    const ratio = sk.buffDefRatio != null ? sk.buffDefRatio : 0.60;
+    actor.taunting=true;
+    actor.buffDef=Math.round(statTotal(actor,'def')*ratio);
+    actor.buffTurns=turns;
+    b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」，嘲諷敵人並提升防禦 '+Math.round(ratio*100)+'%（'+turns+' 回合）！');
   } else if(type==='steal'){
     const target = b.monsters[targetIdx];
     if(!target||target.hp<=0) return;
-    const dmg = Math.max(1, Math.round(statTotal(actor,'atk')*1.1 - target.def*0.5));
-    target.hp = clamp(target.hp-dmg,0,target.maxHp);
-    const stolen = rint(Math.random,5,15);
+    const r = calcPhysDmg(actor, target, { mult: sk.mult||1.1, canCrit:false });
+    const dealt = applyDamageToMonster(actor, target, r.dmg, false, b);
+    const stolen = rint(Math.random, sk.stealMin||5, sk.stealMax||15);
     S.hero.gold += stolen;
-    b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」，造成 '+dmg+' 傷害並偷得 '+stolen+' 金幣。');
+    b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」，造成 '+dealt+' 傷害並偷得 '+stolen+' 金幣。');
     checkKillReward(target, b);
     if(target.hp===0) b.turnLog.unshift(target.name+' 被擊敗了！');
   } else if(type==='self_heal'){
-    const amt = Math.round(actor.maxHp*sk.heal);
+    const amt = Math.max(1, Math.round(actor.maxHp * (sk.heal||0.2)));
+    const mpGain = sk.mpGain != null ? sk.mpGain : 10;
     actor.hp = clamp(actor.hp+amt,0,actor.maxHp);
-    actor.mp = clamp(actor.mp+10,0,actor.maxMp);
-    b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」，恢復 '+amt+' HP 與部分MP。');
+    actor.mp = clamp(actor.mp+mpGain,0,actor.maxMp);
+    b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」，恢復 '+amt+' HP 與 '+mpGain+' MP。');
   }
   if(hasPassive(actor,'combatFlow') && ['phys','phys_crit','phys_multi','phys_multi2'].includes(type)){
     actor.mp = clamp(actor.mp+5,0,actor.maxMp);
@@ -1355,15 +2372,14 @@ function checkBattleEnd(){
       let dropped=[];
       b.monsters.forEach(m=>{
         const affixCount = m.affixes ? m.affixes.length : 0;
-        const dropChance = m.boss?1:(m.tier>=3?0.5:0.28) + affixCount*0.1;
+        const dropChance = m.boss?1:(m.elite?0.55:(m.tier>=3?0.5:0.28)) + affixCount*0.08;
         if(Math.random()<dropChance){
-          let floor = m.boss ? 'epic' : null;
+          let floor = m.boss ? 'epic' : (m.elite ? 'rare' : null);
           if(affixCount>=3) floor='legend';
-          else if(affixCount>=2) floor='epic';
+          else if(affixCount>=2) floor= floor || 'epic';
           else if(affixCount>=1 && !floor) floor='rare';
           const item = rollEquip(Math.random, floor, m.level);
-          S.inventory.push(item);
-          dropped.push(item.name);
+          if(addToInventory(item)) dropped.push(item.name);
         }
       });
       if(dropped.length) b.turnLog.unshift('掉落裝備：'+dropped.join('、'));
@@ -1409,6 +2425,20 @@ function resolveEvent(choiceIdx){
 /* ============ 裝備 / 背包 ============ */
 function equipItem(item, memberUid){
   const m = S.party.find(p=>p.uid===(memberUid||S.invSelectedUid)) || S.hero;
+  normalizeItem(item);
+  // 唯一裝備：全隊只能有一件（含已裝備）
+  if(item.isUnique || item.rarity==='unique'){
+    const held = [];
+    S.party.forEach(p=>{
+      Object.values(p.equip||{}).forEach(eq=>{ if(eq && eq.baseName===item.baseName) held.push({p, eq}); });
+    });
+    S.inventory.forEach(i=>{ if(i.uid!==item.uid && i.baseName===item.baseName) held.push({inv:true, eq:i}); });
+    if(held.length){
+      S.log.unshift('【唯一】'+item.baseName+' 全隊僅能持有一件。');
+      render();
+      return;
+    }
+  }
   let targetSlot = item.slot;
   if(item.slot==='accessory'){
     targetSlot = !m.equip.accessory ? 'accessory' : (!m.equip.accessory2 ? 'accessory2' : 'accessory');
@@ -1417,21 +2447,64 @@ function equipItem(item, memberUid){
   if(cur) S.inventory.push(cur);
   m.equip[targetSlot]=item;
   S.inventory = S.inventory.filter(i=>i.uid!==item.uid);
+  applyComputedStats(m);
   render();
 }
 function unequipItem(slot, memberUid){
   const m = S.party.find(p=>p.uid===(memberUid||S.invSelectedUid)) || S.hero;
   const cur = m.equip[slot];
   if(cur){ S.inventory.push(cur); m.equip[slot]=null; }
+  applyComputedStats(m); // 卸下後重算屬性
   render();
+}
+function addPotion(kind, value, name){
+  const existing = S.inventory.find(i=>i.slot==='potion' && i.kind===kind && i.value===value);
+  if(existing){
+    existing.count = (existing.count||1) + 1;
+    return existing;
+  }
+  const pot = {
+    uid:'pot_'+Math.floor(Math.random()*1e9),
+    slot:'potion', kind, value,
+    name: name || (kind==='mp' ? '魔力藥水' : '治療藥水'),
+    count:1
+  };
+  S.inventory.push(pot);
+  return pot;
+}
+function consumePotion(item){
+  if(!item || item.slot!=='potion') return false;
+  const c = item.count||1;
+  if(c<=1){
+    S.inventory = S.inventory.filter(i=>i.uid!==item.uid);
+  } else {
+    item.count = c - 1;
+  }
+  return true;
 }
 function usePotionOutOfBattle(item, memberUid){
   const m = S.party.find(p=>p.uid===(memberUid||S.invSelectedUid)) || S.hero;
   if(item.slot!=='potion') return;
   if(item.kind==='mp'){ m.mp = clamp(m.mp+item.value,0,m.maxMp); }
   else { m.hp = clamp(m.hp+item.value,0,m.maxHp); }
-  S.inventory = S.inventory.filter(i=>i.uid!==item.uid);
+  consumePotion(item);
   render();
+}
+/** 合併舊存檔中散落的同款藥水 */
+function stackExistingPotions(){
+  if(!S || !S.inventory) return;
+  const pots = S.inventory.filter(i=>i.slot==='potion');
+  const others = S.inventory.filter(i=>i.slot!=='potion');
+  const map = {};
+  pots.forEach(p=>{
+    const key = p.kind+'_'+p.value;
+    if(!map[key]){
+      map[key] = Object.assign({}, p, {count: p.count||1});
+    } else {
+      map[key].count += (p.count||1);
+    }
+  });
+  S.inventory = others.concat(Object.values(map));
 }
 
 /* ============ 渲染 ============ */
@@ -1486,12 +2559,33 @@ function loadGame(){
     if(!S.inventory) S.inventory = [];
     if(!S.log) S.log = [];
     if(S.pendingStage==null) S.pendingStage = null;
+    // 合併舊存檔散落藥水 + 正規化裝備 + 重算屬性
+    stackExistingPotions();
+    S.inventory.forEach(normalizeItem);
+    S.party.forEach(m=>{
+      if(!m.equip) m.equip={weapon:null,armor:null,accessory:null,accessory2:null};
+      Object.keys(m.equip).forEach(k=>{ if(m.equip[k]) normalizeItem(m.equip[k]); });
+      applyComputedStats(m);
+    });
     // 戰鬥／事件畫面讀檔不安全 → 強制回營地
     if(S.screen==='battle' || S.screen==='event' || !S.screen){
       S.battle = null;
       S.event = null;
       S.screen = 'hub';
     }
+    // 淨化隊伍數值，避免舊存檔 level/hp 異常導致戰鬥 NaN
+    S.party.forEach(m=>{
+      m.level = Math.max(1, Number.isFinite(Number(m.level)) ? Math.floor(Number(m.level)) : 1);
+      if(typeof applyComputedStats === 'function') applyComputedStats(m);
+      m.maxHp = Math.max(1, Number(m.maxHp)||1);
+      m.hp = Math.max(0, Math.min(Number(m.hp)||0, m.maxHp));
+      m.maxMp = Math.max(0, Number(m.maxMp)||0);
+      m.mp = Math.max(0, Math.min(Number(m.mp)||0, m.maxMp));
+      m.atk = Math.max(1, Number(m.atk)||1);
+      m.def = Math.max(0, Number(m.def)||0);
+      m.spd = Math.max(1, Number(m.spd)||1);
+      if(m.matk != null) m.matk = Math.max(1, Number(m.matk)||1);
+    });
     evaluateEvolution(S.hero);
     if(S.pendingStage==='profession') S.screen='evolve-profession';
     else if(S.pendingStage==='class') S.screen='evolve-class';
@@ -1684,14 +2778,21 @@ function bindEvent(){
 function renderBattle(){
   const b=S.battle;
   const monsterHtml = b.monsters.map((m,i)=>{
+    // 顯示前清一次 NaN，避免 UI 出現 "NaN"
+    m.maxHp = Math.max(1, num(m.maxHp, 1));
+    m.hp = clamp(num(m.hp, 0), 0, m.maxHp);
     const dead = m.hp<=0;
-    const hpPct = Math.round(m.hp/m.maxHp*100);
-    const affixTags = (m.affixes&&m.affixes.length) ? `<div class="small" style="color:var(--epic);">${m.affixes.map(id=>esc(MONSTER_AFFIXES.find(a=>a.id===id).name)).join(' · ')}</div>` : '';
+    const hpPct = Math.round((m.hp/m.maxHp)*100);
+    const affixTags = (m.affixNames&&m.affixNames.length)
+      ? `<div class="small" style="color:${m.elite?'var(--legend)':'var(--epic)'};">${m.affixNames.map(esc).join(' · ')}</div>`
+      : ((m.affixes&&m.affixes.length) ? `<div class="small" style="color:var(--epic);">${m.affixes.map(id=>{ const a=MONSTER_AFFIXES.find(x=>x.id===id); return esc(a?a.name:id); }).join(' · ')}</div>` : '');
+    const markTag = (m.marked && m.markTurns>0) ? `<div class="small" style="color:var(--gold);">◎ 追蹤標記 ${m.markTurns}回合</div>` : '';
+    const eliteTag = m.elite ? `<div class="small" style="color:var(--legend);">◆ 精英</div>` : '';
     return `
     <div class="monster-box ${dead?'dead':'target-selectable'}" data-tidx="${i}">
       <canvas class="sprite" id="mon-${i}" width="72" height="72"></canvas>
       <div class="monster-name">${m.boss?'👑 ':''}${esc(m.name)} Lv.${m.level}</div>
-      ${affixTags}
+      ${eliteTag}${affixTags}${markTag}
       <div class="bar-wrap" style="width:70px;margin:2px auto;"><div class="bar" style="width:${hpPct}%;background:var(--hp)"></div></div>
       <div class="small">${m.hp}/${m.maxHp}</div>
     </div>`;
@@ -1722,8 +2823,10 @@ function renderBattle(){
     const hpPotions = S.inventory.filter(i=>i.slot==='potion' && i.kind!=='mp');
     const mpPotions = S.inventory.filter(i=>i.slot==='potion' && i.kind==='mp');
     const potionBtns = [];
-    if(hpPotions.length) potionBtns.push(`<button class="btn btn-compact" data-item-potion="${hpPotions[0].uid}">🧪 HP藥水 ×${hpPotions.length}</button>`);
-    if(mpPotions.length) potionBtns.push(`<button class="btn btn-compact" data-item-potion="${mpPotions[0].uid}">💧 MP藥水 ×${mpPotions.length}</button>`);
+    const hpCount = hpPotions.reduce((a,p)=>a+(p.count||1),0);
+    const mpCount = mpPotions.reduce((a,p)=>a+(p.count||1),0);
+    if(hpCount) potionBtns.push(`<button class="btn btn-compact" data-item-potion="${hpPotions[0].uid}">🧪 HP藥水 ×${hpCount}</button>`);
+    if(mpCount) potionBtns.push(`<button class="btn btn-compact" data-item-potion="${mpPotions[0].uid}">💧 MP藥水 ×${mpCount}</button>`);
     if(potionBtns.length===0) potionBtns.push(`<button class="btn btn-compact" disabled>🧪 藥水（無）</button>`);
     actionPanel = `
     <p class="small" style="text-align:center;">輪到 <b style="color:var(--gold)">${esc(actor.name)}</b> 行動 — 請選擇動作，再點擊目標怪物</p>
@@ -1829,80 +2932,207 @@ function promptAllyTarget(actor, token){
   });
 }
 
+/** 推估裝備後相對目前裝備的屬性差（僅顯示主要戰鬥屬性） */
+function invCompareHtml(member, item){
+  if(!item || item.slot==='potion') return '';
+  let slot = item.slot;
+  if(slot==='accessory'){
+    // 對比空槽或數值較低的那一格
+    const a = member.equip.accessory, b = member.equip.accessory2;
+    if(!a) slot = 'accessory';
+    else if(!b) slot = 'accessory2';
+    else {
+      const score = (eq)=> (eq.affixes||[]).reduce((s,x)=>s+(x.value||0),0) + (eq.value||0);
+      slot = score(a) <= score(b) ? 'accessory' : 'accessory2';
+    }
+  }
+  const cur = member.equip[slot];
+  const stats = ['atk','matk','def','spd','hp','mp','str','con','agi','int'];
+  const sumOf = (eq, st)=>{
+    if(!eq) return 0;
+    if(eq.affixes&&eq.affixes.length) return eq.affixes.filter(a=>a.stat===st).reduce((s,a)=>s+(a.value||0),0);
+    let v=0; if(eq.stat===st) v+=eq.value||0; if(eq.extraStat===st) v+=eq.extraValue||0; return v;
+  };
+  const parts=[];
+  stats.forEach(st=>{
+    const d = sumOf(item, st) - sumOf(cur, st);
+    if(d===0) return;
+    const cls = d>0 ? 'delta-up' : 'delta-down';
+    const sign = d>0 ? '+' : '';
+    parts.push(`<span class="${cls}">${statLabel(st)} ${sign}${d}</span>`);
+  });
+  if(!parts.length) return `<div class="inv-compare delta-same">與目前裝備數值相近</div>`;
+  return `<div class="inv-compare">相對已裝備：${parts.join(' · ')}</div>`;
+}
 function renderInventory(){
   const selMember = S.party.find(m=>m.uid===S.invSelectedUid) || S.hero;
+  if(!S.invFilter) S.invFilter = 'all';
+  const filter = S.invFilter;
   const slots = ['weapon','armor','accessory','accessory2'];
-  const memberTabs = S.party.map(m=>`<button class="btn ${m.uid===selMember.uid?'active':''}" data-selmember="${m.uid}">${esc(m.name)}</button>`).join('');
+  const slotLabel = {weapon:'武器',armor:'防具',accessory:'飾品',accessory2:'飾品2'};
+  const memberTabs = S.party.map(m=>`
+    <button class="btn ${m.uid===selMember.uid?'active':''}" data-selmember="${m.uid}">
+      ${esc(m.name)}${m.isHero?' ★':''}
+    </button>`).join('');
+
   const equippedHtml = slots.map(slot=>{
     const item = selMember.equip[slot];
-    const label = {weapon:'武器',armor:'防具',accessory:'飾品',accessory2:'飾品2'}[slot];
-    if(!item) return `<div class="item-row"><span class="small">${label}槽：空</span></div>`;
-    return `<div class="item-row">
-      <div style="display:flex;align-items:center;gap:8px;">
+    const label = slotLabel[slot];
+    if(!item){
+      return `<div class="equip-slot empty">
+        <div class="equip-slot-label">${label}</div>
+        <div class="small" style="margin:auto 0;">空槽 — 從下方背包裝備</div>
+      </div>`;
+    }
+    return `<div class="equip-slot">
+      <div class="equip-slot-label">${label}</div>
+      <div class="equip-slot-body">
         <canvas class="sprite" id="eq-${slot}" width="40" height="40"></canvas>
-        <div><div class="rarity-${item.rarity}">${esc(item.name)}</div><div class="meta">${label} ${equipAffixText(item)} · Lv.${item.itemLevel||1}</div></div>
+        <div>
+          <div class="rarity-${item.rarity}">${esc(item.name)}</div>
+          <div class="meta">${equipAffixText(item)} · Lv.${item.itemLevel||1}</div>
+        </div>
       </div>
       <button class="btn" data-unequip="${slot}">卸下</button>
     </div>`;
   }).join('');
 
-  const invItems = S.inventory.map((item,i)=>{
+  const filters = [
+    {id:'all', label:'全部'},
+    {id:'weapon', label:'武器'},
+    {id:'armor', label:'防具'},
+    {id:'accessory', label:'飾品'},
+    {id:'potion', label:'藥水'}
+  ];
+  const filterHtml = filters.map(f=>`
+    <button class="btn ${filter===f.id?'active':''}" data-invfilter="${f.id}">${f.label}</button>
+  `).join('');
+
+  const filtered = S.inventory.filter(item=>{
+    if(filter==='all') return true;
+    if(filter==='potion') return item.slot==='potion';
+    if(filter==='accessory') return item.slot==='accessory';
+    return item.slot===filter;
+  });
+
+  const invItems = filtered.map((item,i)=>{
+    const realIdx = S.inventory.indexOf(item);
     if(item.slot==='potion'){
       const icon = item.kind==='mp' ? '💧' : '🧪';
       const statName = item.kind==='mp' ? 'MP' : 'HP';
-      return `<div class="item-row">
-        <div><span>${icon} ${esc(item.name)}</span> <span class="meta">恢復 ${item.value} ${statName}</span></div>
-        <button class="btn" data-usepot="${item.uid}">對${esc(selMember.name)}使用</button>
+      const cnt = item.count||1;
+      return `<div class="inv-card">
+        <div class="inv-card-top">
+          <div>
+            <div>${icon} <b>${esc(item.name)}</b> ×${cnt}</div>
+            <div class="meta">恢復 ${item.value} ${statName}</div>
+          </div>
+        </div>
+        <div class="inv-card-actions">
+          <button class="btn gold" data-usepot="${item.uid}">對 ${esc(selMember.name)} 使用</button>
+        </div>
       </div>`;
     }
-    const label = {weapon:'武器',armor:'防具',accessory:'飾品'}[item.slot];
-    return `<div class="item-row">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <canvas class="sprite" id="inv-${i}" width="40" height="40"></canvas>
-        <div><div class="rarity-${item.rarity}">${esc(item.name)}</div><div class="meta">${label} ${equipAffixText(item)} · Lv.${item.itemLevel||1}</div></div>
+    const label = slotLabel[item.slot] || item.slot;
+    return `<div class="inv-card">
+      <div class="inv-card-top">
+        <canvas class="sprite" id="inv-${realIdx}" width="40" height="40"></canvas>
+        <div>
+          <div class="rarity-${item.rarity}">${esc(item.name)}</div>
+          <div class="meta">${label} · ${equipAffixText(item)} · Lv.${item.itemLevel||1}</div>
+          ${invCompareHtml(selMember, item)}
+        </div>
       </div>
-      <button class="btn gold" data-equip="${item.uid}">裝備</button>
+      <div class="inv-card-actions">
+        <button class="btn gold" data-equip="${item.uid}">裝備給 ${esc(selMember.name)}</button>
+      </div>
     </div>`;
-  }).join('') || '<p class="small">背包空空如也。</p>';
+  }).join('') || '<p class="small" style="text-align:center;padding:16px 0;">此分類沒有物品。</p>';
 
   return `
   <div class="panel">
     <p class="section-title">隊伍整備</p>
     <div class="segmented" style="flex-wrap:wrap;width:100%;">${memberTabs}</div>
-    <p class="section-title">${esc(selMember.name)} 的裝備</p>
-    <div class="statline" style="margin-bottom:8px;">
-      <span>ATK ${statTotal(selMember,'atk')}</span><span>DEF ${statTotal(selMember,'def')}</span>
-      <span>SPD ${statTotal(selMember,'spd')}</span><span>HP ${selMember.maxHp}</span><span>MP ${selMember.maxMp}</span>
+
+    <p class="section-title">${esc(selMember.name)} · Lv.${selMember.level} · ${esc(displayClassName(selMember))}</p>
+    <div class="inv-stats">
+      <span>力量 <b>${selMember.str||0}</b></span>
+      <span>體質 <b>${selMember.con||0}</b></span>
+      <span>敏捷 <b>${selMember.agi||0}</b></span>
+      <span>智力 <b>${selMember.int||0}</b></span>
+      <span>物攻 <b>${statTotal(selMember,'atk')}</b></span>
+      <span>魔攻 <b>${statTotal(selMember,'matk')}</b></span>
+      <span>防禦 <b>${statTotal(selMember,'def')}</b></span>
+      <span>速度 <b>${statTotal(selMember,'spd')}</b></span>
+      <span>HP <b>${selMember.hp}/${selMember.maxHp}</b></span>
+      <span>MP <b>${selMember.mp}/${selMember.maxMp}</b></span>
+      <span>金幣 <b>${S.hero.gold||0}</b></span>
+      <span>背包 <b>${S.inventory.length}</b></span>
     </div>
-    ${equippedHtml}
+
+    <p class="section-title">已裝備</p>
+    <div class="equip-grid">${equippedHtml}</div>
+
     <hr class="divider">
-    <p class="section-title">背包物品</p>
+    <p class="section-title">背包 · 點選分類篩選</p>
+    <div class="inv-filter">${filterHtml}</div>
     ${invItems}
-    <div style="text-align:center;margin-top:10px;"><button class="btn" id="back-hub2">返回營地</button></div>
+    <div style="text-align:center;margin-top:12px;"><button class="btn" id="back-hub2">返回營地</button></div>
   </div>`;
 }
-function statLabel(s){ return {atk:'攻擊',def:'防禦',spd:'敏捷',hp:'生命',mp:'法力',heal:'治療'}[s]||s; }
+function statLabel(s){
+  return {
+    atk:'物攻', matk:'魔攻', def:'防禦', spd:'速度',
+    hp:'生命', mp:'魔力',
+    str:'力量', con:'體質', agi:'敏捷', int:'智力',
+    heal:'治療', luck:'幸運'
+  }[s]||s;
+}
 function equipAffixText(item){
+  if(item.affixes && item.affixes.length){
+    return item.affixes.map(a=>{
+      const tag = a.label && a.label!=='主屬性' ? a.label+' ' : '';
+      return tag+'+'+a.value+' '+statLabel(a.stat);
+    }).join(' · ');
+  }
   let s = '+'+item.value+' '+statLabel(item.stat);
   if(item.extraStat) s += ' · 額外+'+item.extraValue+' '+statLabel(item.extraStat);
   return s;
 }
 function skillEstimate(actor, sk){
   const atk = statTotal(actor,'atk');
+  const matk = statTotal(actor,'matk');
+  const cc = Math.round(critChance(actor, sk)*100);
   switch(sk.type){
-    case 'phys': return '預估傷害 ~'+Math.round(atk*sk.mult);
-    case 'phys_crit': return '預估傷害 ~'+Math.round(atk*sk.mult)+'（機率爆擊x1.6）';
-    case 'phys_multi': return '預估總傷害 ~'+Math.round(atk*sk.mult*3)+'（3連擊）';
-    case 'phys_multi2': return '預估總傷害 ~'+Math.round(atk*sk.mult*2)+'（2連擊）';
-    case 'magic': return '預估魔法傷害 ~'+Math.round(atk*1.15*sk.mult);
-    case 'magic_aoe': return '預估群體傷害 ~'+Math.round(atk*1.1*sk.mult)+'/敵';
-    case 'magic_dot': return '預估傷害 ~'+Math.round(atk*1.1*sk.mult)+'/敵 + 中毒3回合';
-    case 'heal': return '預估治療 ~'+Math.round(actor.maxMp*0.02+atk*sk.heal+actor.level*3)+' HP';
-    case 'heal_aoe': return '預估群體治療 ~'+Math.round(actor.level*4+atk*sk.heal)+' HP';
-    case 'self_heal': return '恢復 ~'+Math.round(actor.maxHp*sk.heal)+' HP + 10 MP';
-    case 'buff': return '全隊防禦+20%，持續2回合';
-    case 'guard': return '嘲諷 + 防禦大幅提升，持續2回合';
-    case 'steal': return '傷害 + 偷取5~15金幣';
+    case 'phys':
+      return '預估 ~'+Math.round(atk*(sk.mult||1))+' 物傷（物攻×'+ (sk.mult||1) +'−防×0.5）';
+    case 'phys_crit':
+      return '預估 ~'+Math.round(atk*(sk.mult||1))+' 物傷，爆擊率約 '+(sk.crit!=null?Math.round(sk.crit*100):Math.max(cc,45))+'%（×'+CF.CRIT_MULT+'）';
+    case 'phys_multi':
+    case 'phys_multi2': {
+      const hits = sk.hits || (sk.type==='phys_multi'?3:2);
+      return '預估總傷 ~'+Math.round(atk*(sk.mult||1)*hits)+'（'+hits+' 連擊，每段物攻×'+(sk.mult||1)+'）';
+    }
+    case 'magic':
+      return '預估 ~'+Math.round(matk*(sk.mult||1))+' 魔傷（魔攻×'+(sk.mult||1)+'−防×0.25）'+(sk.holy?'；對邪惡×1.25':'');
+    case 'magic_aoe':
+      return '預估 ~'+Math.round(matk*(sk.mult||1))+'/敵（魔攻×'+(sk.mult||1)+'）';
+    case 'magic_dot':
+      return '預估 ~'+Math.round(matk*(sk.mult||1))+'/敵 + 中毒'+(sk.poisonTurns||3)+'回合';
+    case 'heal':
+      return '預估治療 ~'+calcHealAmt(actor, sk.heal||1)+' HP（魔攻×係數+智力×0.6+Lv×2）';
+    case 'heal_aoe':
+      return '預估群體治療 ~'+calcHealAmt(actor, sk.heal||0.8)+' HP／人';
+    case 'self_heal':
+      return '恢復 ~'+Math.round(actor.maxHp*(sk.heal||0.2))+' HP + '+(sk.mpGain!=null?sk.mpGain:10)+' MP';
+    case 'buff':
+      return '全隊防禦+'+(Math.round((sk.buffDefRatio!=null?sk.buffDefRatio:0.2)*100))+'%，'+(sk.buffTurns||2)+' 回合';
+    case 'guard':
+      return '嘲諷 + 自身防禦+'+(Math.round((sk.buffDefRatio!=null?sk.buffDefRatio:0.6)*100))+'%，'+(sk.buffTurns||2)+' 回合';
+    case 'steal':
+      return '物傷（×'+(sk.mult||1.1)+'）+ 偷取 '+(sk.stealMin||5)+'~'+(sk.stealMax||15)+' 金';
+    case 'mark':
+      return '輔助：標記 '+(sk.markTurns||3)+' 回合，受傷+' + Math.round(((sk.markMult||1.35)-1)*100) + '%';
     default: return '';
   }
 }
@@ -1915,6 +3145,10 @@ function bindInventory(){
   S.inventory.forEach((item,i)=>{ if(item.slot!=='potion') queueEquipIcon('inv-'+i, item.seed, item.slot, item.rarityHex); });
   document.querySelectorAll('[data-selmember]').forEach(btn=> btn.addEventListener('click', ()=>{
     S.invSelectedUid = btn.dataset.selmember;
+    render();
+  }));
+  document.querySelectorAll('[data-invfilter]').forEach(btn=> btn.addEventListener('click', ()=>{
+    S.invFilter = btn.dataset.invfilter;
     render();
   }));
   document.querySelectorAll('[data-unequip]').forEach(btn=> btn.addEventListener('click', ()=> unequipItem(btn.dataset.unequip, selMember.uid)));
@@ -2030,10 +3264,21 @@ function bindShop(){
     const entry = S.shopStock[idx];
     if(!entry || entry.sold) return;
     if(S.hero.gold < entry.price) return;
-    S.hero.gold -= entry.price;
-    S.inventory.push(entry.item);
-    entry.sold = true;
-    S.log.unshift('花費 '+entry.price+' 金幣，從商店購入了 '+entry.item.name+'。');
+    if(entry.item.slot==='potion'){
+      S.hero.gold -= entry.price;
+      addPotion(entry.item.kind, entry.item.value, entry.item.name);
+      entry.sold = true;
+      S.log.unshift('花費 '+entry.price+' 金幣，從商店購入了 '+entry.item.name+'。');
+    } else {
+      if(!addToInventory(entry.item)){
+        S.log.unshift('無法購入：'+entry.item.name+'（唯一裝備已擁有）。');
+        render();
+        return;
+      }
+      S.hero.gold -= entry.price;
+      entry.sold = true;
+      S.log.unshift('花費 '+entry.price+' 金幣，從商店購入了 '+entry.item.name+'。');
+    }
     render();
   }));
   document.querySelectorAll('[data-sell]').forEach(btn=> btn.addEventListener('click', ()=>{
@@ -2153,7 +3398,8 @@ function renderParty(){
       <div style="flex:1;">
         <b>${esc(m.name)}${m.isHero?' (你)':''}</b> · ${esc(displayClassName(m))} · Lv.${m.level}
         <div class="small">HP ${m.hp}/${m.maxHp} ・ MP ${m.mp}/${m.maxMp} ・ EXP ${m.exp}/${m.nextExp}</div>
-        <div class="small">ATK ${statTotal(m,'atk')} / DEF ${statTotal(m,'def')} / SPD ${statTotal(m,'spd')}</div>
+        <div class="small">物攻 ${statTotal(m,'atk')} / 魔攻 ${statTotal(m,'matk')} / 防 ${statTotal(m,'def')} / 速 ${statTotal(m,'spd')}</div>
+        <div class="small">力${m.str||0} 體${m.con||0} 敏${m.agi||0} 智${m.int||0}</div>
       </div>
       ${canDismiss?`<button class="btn danger" data-dismiss="${m.uid}">遣散</button>`:''}
     </div>`;
