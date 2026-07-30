@@ -272,13 +272,35 @@ canvas.sprite{image-rendering:pixelated;background:#0a0807;border:1px solid var(
     "acc feet .";
   gap:6px;justify-items:center;
 }
-.bp-slot{width:100%;max-width:96px;min-height:70px;background:var(--bg-deep);border:1px solid var(--line);border-radius:6px;padding:6px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:border-color .15s,box-shadow .15s;}
+.bp-slot{width:100%;max-width:88px;min-height:64px;background:var(--bg-deep);border:1px solid var(--line);border-radius:6px;padding:5px 4px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;cursor:pointer;transition:border-color .15s,box-shadow .15s;overflow:hidden;box-sizing:border-box;}
 .bp-slot:hover,.bp-slot.selected{border-color:var(--gold);box-shadow:0 0 0 1px rgba(255,210,74,.3);}
 .bp-slot.empty{border-style:dashed;opacity:.9;}
 .bp-slot.empty-can{border-color:var(--gold-dim);}
-.bp-slot .sl{font-size:9px;color:var(--gold);font-family:'Silkscreen',monospace;letter-spacing:.5px;}
-.bp-slot .sn{font-size:10px;color:var(--text);text-align:center;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bp-slot .sl{font-size:9px;color:var(--gold);font-family:'Silkscreen',monospace;letter-spacing:.5px;flex-shrink:0;}
+.bp-slot .sn{font-size:10px;color:var(--text);text-align:center;line-height:1.15;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0;}
 .bp-slot .sm{font-size:9px;color:var(--text-dim);text-align:center;line-height:1.2;}
+/* 紙娃娃／背包格內的裝備圖示：強制塞進格子，不撐開版面 */
+.bp-slot canvas,
+.bp-slot canvas.sprite{
+  width:36px !important;
+  height:36px !important;
+  max-width:70% !important;
+  max-height:36px !important;
+  object-fit:contain;
+  image-rendering:pixelated;
+  flex-shrink:0;
+  display:block;
+}
+.bp-cell canvas,
+.bp-cell canvas.sprite{
+  width:70% !important;
+  height:70% !important;
+  max-width:40px !important;
+  max-height:40px !important;
+  object-fit:contain;
+  image-rendering:pixelated;
+  display:block;
+}
 .bp-slot[data-area="head"]{grid-area:head;}
 .bp-slot[data-area="weapon"]{grid-area:weapon;}
 .bp-slot[data-area="chest"]{grid-area:chest;}
@@ -297,7 +319,12 @@ canvas.sprite{image-rendering:pixelated;background:#0a0807;border:1px solid var(
   display:grid;grid-template-columns:repeat(6,1fr);gap:6px;
   min-height:200px;
 }
-@media (max-width:480px){ .bp-grid{grid-template-columns:repeat(5,1fr);} }
+@media (max-width:480px){
+  .bp-grid{grid-template-columns:repeat(5,1fr);}
+  .bp-slot{max-width:72px;min-height:58px;padding:4px 3px;}
+  .bp-slot canvas,.bp-slot canvas.sprite{width:28px !important;height:28px !important;max-height:28px !important;}
+  .bp-cell canvas,.bp-cell canvas.sprite{max-width:32px !important;max-height:32px !important;}
+}
 .bp-cell{
   aspect-ratio:1;background:var(--bg-deep);border:1px solid var(--line);border-radius:5px;
   display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;
@@ -636,8 +663,8 @@ function drawHumanPortrait(canvas, seed, size){
   pxRect(ctx, cell, 5,9, 2,1, skin[2]);
 
   // 眼睛
-  pxRect(ctx, cell, 5,6, 2,1, '#fff8f0');
-  pxRect(ctx, cell, 9,6, 2,1, '#fff8f0');
+  pxRect(ctx, cell, 5,6, 2,1, '#fffffff0');
+  pxRect(ctx, cell, 9,6, 2,1, '#fffffff0');
   pxRect(ctx, cell, 5,6, 1,1, eye);
   pxRect(ctx, cell, 9,6, 1,1, eye);
   // 眉毛
@@ -700,7 +727,7 @@ const MONSTER_TEMPLATES = {
     pxRect(ctx,cell, 6,8, 1,2, '#1a1a1a');
     pxRect(ctx,cell, 9,8, 1,2, '#1a1a1a');
     pxRect(ctx,cell, 7,10, 2,1, p[2]);
-    if(rng()>0.5) pxRect(ctx,cell, 5,7, 1,1, '#fff8');
+    if(rng()>0.5) pxRect(ctx,cell, 5,7, 1,1, '#ffffff');
   },
   skeleton: (ctx,cell,p,rng)=>{
     pxRect(ctx,cell, 5,2, 6,2, p[2]); // 頭
@@ -868,8 +895,15 @@ function drawSprite(canvas, seed, palette, size, opts){
 }
 
 function drawEquipIcon(canvas, seed, kind, rarityColor){
-  const size=12, cell=Math.floor(120/size);
+  const size=12, cell=Math.floor(96/size); // 較小緩衝區，仍保持像素感
   canvas.width=size*cell; canvas.height=size*cell;
+  // 顯示尺寸交給 CSS；順便寫 style 避免被 width/height 屬性撐破格子
+  canvas.style.width = '100%';
+  canvas.style.height = 'auto';
+  canvas.style.maxWidth = '40px';
+  canvas.style.maxHeight = '40px';
+  canvas.style.objectFit = 'contain';
+  canvas.style.imageRendering = 'pixelated';
   const ctx=canvas.getContext('2d');
   ctx.clearRect(0,0,canvas.width,canvas.height);
   const rng = mulberry32(hashStr(seed));
@@ -2712,7 +2746,8 @@ function newGame(){
     shopTab:'buy',
     invSelectedUid:hero.uid,
     tavernStock:null,
-    wareFilter:'all'
+    wareFilter:'all',
+    warePage:0
   };
   render();
 }
@@ -3562,6 +3597,7 @@ function resolveEvent(choiceIdx){
 /** 背包裝備格硬上限（藥水可堆疊，不占此上限）；超出自動進倉庫 */
 const BACKPACK_CAP = 30;
 const WAREHOUSE_CAP = 80;
+const WAREHOUSE_PAGE_SIZE = 20;
 function ensureWarehouse(){
   if(!S) return;
   if(!Array.isArray(S.warehouse)) S.warehouse = [];
@@ -3771,7 +3807,11 @@ function importSaveFromText(text){
     if(!data || !data.party || !data.party.length) throw new Error('格式錯誤');
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
     if(loadGame()){
+      if(S.screen==='battle' || S.screen==='event'){
+        S.battle = null; S.event = null; S.screen = 'hub';
+      }
       if(S.log) S.log.unshift('📥 存檔已匯入。');
+      saveGame(); // 寫回正規化後狀態
       render();
       return true;
     }
@@ -3899,8 +3939,18 @@ function restartGame(){
   render();
 }
 
+/** 倉庫頁：沿用背包 UI 的倉庫篩選 */
+function renderWarehouse(){
+  if(S) S.invFilter = 'warehouse';
+  return renderInventory();
+}
+function bindWarehouse(){
+  bindInventory();
+}
+
 function render(){
   const root = document.getElementById('screens');
+  if(!root) return;
   if(!S){ root.innerHTML = renderCharCreate(); bindCharCreate(); return; }
   if(S.screen==='hub') { root.innerHTML = renderHub(); bindHub(); }
   else if(S.screen==='battle') { root.innerHTML = renderBattle(); bindBattle(); }
@@ -3975,9 +4025,9 @@ function bindCharCreate(){
 
 function memberCardHtml(m, idx, opts){
   opts=opts||{};
-  const hpPct = Math.round(m.hp/m.maxHp*100);
-  const mpPct = m.maxMp? Math.round(m.mp/m.maxMp*100):0;
-  const expPct = Math.round(m.exp/m.nextExp*100);
+  const hpPct = Math.max(0, Math.min(100, Math.round(num(m.hp,0)/Math.max(1,num(m.maxHp,1))*100)));
+  const mpPct = m.maxMp? Math.max(0, Math.min(100, Math.round(num(m.mp,0)/Math.max(1,num(m.maxMp,1))*100))):0;
+  const expPct = Math.max(0, Math.min(100, Math.round(num(m.exp,0)/Math.max(1,num(m.nextExp,1))*100)));
   const spriteId = (opts.prefix||'pc')+'-'+idx;
   if(opts.compact){
     return `
@@ -4062,6 +4112,15 @@ function renderHub(){
   <div class="panel">
     <p class="section-title">冒險紀錄</p>
     <div class="log-box">${recentLog}</div>
+    <hr class="divider">
+    <div class="inv-bonus-line" style="text-align:center;margin:6px 0 4px;">存檔 · 上次：<b>${formatSavedAt(S.savedAt)}</b></div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:4px;">
+      <button class="btn" id="manual-save-btn">💾 手動存檔</button>
+      <button class="btn" id="export-save-btn">📤 匯出</button>
+      <button class="btn" id="import-save-btn">📥 匯入</button>
+    </div>
+    <input type="file" id="import-save-file" accept="application/json,.json" style="display:none"/>
+    <div style="text-align:center;"><button class="flee-link" id="restart-game-btn">🗑️ 放棄進度，重新開始</button></div>
   </div>`;
 }
 function bindHub(){
@@ -4078,6 +4137,25 @@ function bindHub(){
   if(restHpBtn) restHpBtn.addEventListener('click', restHP);
   const restMpBtn = document.getElementById('rest-mp-btn');
   if(restMpBtn) restMpBtn.addEventListener('click', restMP);
+  const restartBtn = document.getElementById('restart-game-btn');
+  if(restartBtn) restartBtn.addEventListener('click', restartGame);
+  const manSave = document.getElementById('manual-save-btn');
+  if(manSave) manSave.addEventListener('click', ()=>{ saveGame(true); render(); });
+  const expBtn = document.getElementById('export-save-btn');
+  if(expBtn) expBtn.addEventListener('click', ()=>{ exportSave(); render(); });
+  const impBtn = document.getElementById('import-save-btn');
+  const impFile = document.getElementById('import-save-file');
+  if(impBtn && impFile){
+    impBtn.addEventListener('click', ()=> impFile.click());
+    impFile.addEventListener('change', ()=>{
+      const f = impFile.files && impFile.files[0];
+      if(!f) return;
+      const reader = new FileReader();
+      reader.onload = ()=> importSaveFromText(String(reader.result||''));
+      reader.readAsText(f);
+      impFile.value = '';
+    });
+  }
 }
 
 function renderEvent(){
@@ -4317,6 +4395,7 @@ function sortInventory(mode){
   S.inventory = gear.concat(pots);
   if(S.log) S.log.unshift('背包已整理（'+({rarity:'稀有度',slot:'欄位',level:'等級',name:'名稱'}[mode]||mode)+'）。');
 }
+
 function renderInventory(){
   S.party.forEach(m=>{ ensureMemberEquip(m); applyComputedStats(m); });
   const selMember = S.party.find(m=>m.uid===S.invSelectedUid) || S.hero;
@@ -4345,7 +4424,7 @@ function renderInventory(){
       </div>`;
     }
     return `<div class="bp-slot ${S.invSelectedItemUid===item.uid?'selected':''}" data-area="${def.area}" data-dollslot="${def.id}" data-equid="${item.uid}">
-      <canvas class="sprite" id="eq-${def.id}" width="40" height="40"></canvas>
+      <canvas class="sprite" id="eq-${def.id}" width="36" height="36"></canvas>
       <div class="sl">${def.label}</div>
       <div class="sn rarity-${item.rarity}">${esc(item.name)}</div>
     </div>`;
@@ -4379,11 +4458,28 @@ function renderInventory(){
     });
   }
 
-  // 背包格（固定 GRID 格，預留空位）
+  // 倉庫分頁
+  if(filter==='warehouse'){
+    if(S.warePage == null || S.warePage < 0) S.warePage = 0;
+    const totalPages = Math.max(1, Math.ceil(Math.max(filtered.length, 1) / WAREHOUSE_PAGE_SIZE));
+    if(S.warePage >= totalPages) S.warePage = totalPages - 1;
+  } else {
+    S.warePage = 0;
+  }
+  const warePage = filter==='warehouse' ? (S.warePage||0) : 0;
+  const wareTotalPages = filter==='warehouse'
+    ? Math.max(1, Math.ceil(Math.max(filtered.length, 1) / WAREHOUSE_PAGE_SIZE))
+    : 1;
+  const pageStart = filter==='warehouse' ? warePage * WAREHOUSE_PAGE_SIZE : 0;
+  const pageItems = filter==='warehouse'
+    ? filtered.slice(pageStart, pageStart + WAREHOUSE_PAGE_SIZE)
+    : filtered;
+
+  // 背包格（固定 GRID 格）；倉庫只顯示當前頁
   const cells = [];
-  const cellCap = filter==='warehouse' ? Math.max(GRID, Math.min(WAREHOUSE_CAP, Math.max(filtered.length, GRID))) : GRID;
+  const cellCap = filter==='warehouse' ? WAREHOUSE_PAGE_SIZE : GRID;
   for(let i=0;i<cellCap;i++){
-    const item = filtered[i];
+    const item = filter==='warehouse' ? pageItems[i] : filtered[i];
     if(!item){
       cells.push(`<div class="bp-cell empty" title="${filter==='warehouse'?'倉庫空位':'背包空位'}"></div>`);
       continue;
@@ -4500,6 +4596,13 @@ function renderInventory(){
           <button class="btn" data-invsort="level">等級</button>
           <button class="btn" data-invsort="name">名稱</button>
         </div>
+        ${filter==='warehouse' ? `
+        <div class="bp-toolbar" style="justify-content:center;align-items:center;gap:8px;">
+          <button class="btn" id="ware-page-prev" ${warePage<=0?'disabled':''}>◀ 上一頁</button>
+          <span class="small">倉庫第 <b>${warePage+1}</b> / ${wareTotalPages} 頁</span>
+          <span class="small">（${filtered.length}/${WAREHOUSE_CAP}）</span>
+          <button class="btn" id="ware-page-next" ${warePage>=wareTotalPages-1?'disabled':''}>下一頁 ▶</button>
+        </div>` : ''}
         <div class="bp-grid">${cells.join('')}</div>
       </div>
     </div>
@@ -4594,6 +4697,7 @@ function bindInventory(){
   document.querySelectorAll('[data-invfilter]').forEach(btn=> btn.addEventListener('click', ()=>{
     S.invFilter = btn.dataset.invfilter;
     S.invSelectedItemUid = null;
+    if(S.invFilter==='warehouse') S.warePage = 0;
     render();
   }));
   document.querySelectorAll('[data-invsort]').forEach(btn=> btn.addEventListener('click', ()=>{
@@ -4630,10 +4734,26 @@ function bindInventory(){
     S.invSelectedItemUid = null;
     render();
   }));
-  // 倉庫頁 icon
+  const prevP = document.getElementById('ware-page-prev');
+  const nextP = document.getElementById('ware-page-next');
+  if(prevP) prevP.addEventListener('click', ()=>{
+    S.warePage = Math.max(0, (S.warePage||0) - 1);
+    S.invSelectedItemUid = null;
+    render();
+  });
+  if(nextP) nextP.addEventListener('click', ()=>{
+    const total = Math.max(1, Math.ceil(((S.warehouse||[]).length || 1) / WAREHOUSE_PAGE_SIZE));
+    S.warePage = Math.min(total - 1, (S.warePage||0) + 1);
+    S.invSelectedItemUid = null;
+    render();
+  });
+  // 倉庫頁 icon（僅當前頁）
   if(S.invFilter==='warehouse'){
-    (S.warehouse||[]).forEach((item,i)=>{
-      if(item.slot==='potion') return;
+    const page = S.warePage||0;
+    const start = page * WAREHOUSE_PAGE_SIZE;
+    const pageItems = (S.warehouse||[]).slice(start, start + WAREHOUSE_PAGE_SIZE);
+    pageItems.forEach((item,i)=>{
+      if(!item || item.slot==='potion') return;
       const el = document.getElementById('wh-'+i);
       if(el){
         const kind = (item.slot==='weapon'||item.slot==='offhand') ? 'weapon' : (item.slot==='accessory' ? 'accessory' : 'armor');
