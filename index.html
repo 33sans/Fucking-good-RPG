@@ -148,7 +148,7 @@ canvas.sprite{image-rendering:pixelated;background:#0a0807;border:1px solid var(
   border-radius:4px;
 }
 .member-card.active-turn{border-left-color:var(--gold);box-shadow:0 0 8px rgba(255,106,53,.15);}
-.member-card.dead{opacity:.4;}
+.member-card.dead{opacity:.55;filter:grayscale(.3);}
 .member-info{flex:1;min-width:0;}
 .member-name{font-size:13px;font-weight:700;display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;}
 /* 戰鬥精簡角色卡 — 縮小佔位，留給技能與怪物 */
@@ -217,6 +217,7 @@ canvas.sprite{image-rendering:pixelated;background:#0a0807;border:1px solid var(
 .skill-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;}
 .skill-btn{display:flex;flex-direction:column;align-items:stretch;gap:3px;text-align:left;padding:10px 12px;white-space:normal;min-height:var(--touch-min);}
 .skill-btn-head{display:flex;justify-content:space-between;align-items:center;font-weight:700;gap:8px;}
+.skill-unique{border-color:var(--r-unique)!important;box-shadow:0 0 0 1px rgba(255,59,59,.35);}
 .skill-btn-desc{color:var(--text-dim);line-height:1.4;font-size:12px;}
 .skill-btn-est{color:var(--gold);font-size:12px;}
 .skill-btn .mp-cost{font-family:'Space Mono','Noto Serif TC',serif;color:var(--mp);font-size:11px;white-space:nowrap;}
@@ -233,41 +234,98 @@ canvas.sprite{image-rendering:pixelated;background:#0a0807;border:1px solid var(
 }
 .item-row .meta{font-size:11px;color:var(--text-dim);font-family:'Space Mono','Noto Serif TC',serif;}
 .item-row .btn{flex-shrink:0;white-space:nowrap;}
-/* 背包重做 */
-.inv-stats{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
-  background:var(--bg-panel-2);border:1px solid var(--line);border-radius:6px;
-  padding:10px;margin-bottom:10px;font-size:12px;
+/* 背包重做 v3：參考經典 RPG 版面 */
+.bp-wrap{display:flex;flex-direction:column;gap:10px;}
+.bp-main{display:grid;grid-template-columns:1fr;gap:10px;}
+@media (min-width:720px){
+  .bp-main{grid-template-columns:minmax(240px,0.95fr) minmax(260px,1.15fr);}
 }
-.inv-stats span{color:var(--text-dim);}
-.inv-stats b{color:var(--text);font-weight:700;}
-.equip-grid{
-  display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;
+.bp-left,.bp-right{
+  background:linear-gradient(180deg,var(--bg-panel) 0%,var(--bg-panel-2) 100%);
+  border:1px solid var(--line);border-radius:8px;padding:10px;
 }
-.equip-slot{
-  background:var(--bg-panel-2);border:1px solid var(--line);border-radius:6px;
-  padding:10px;min-height:88px;display:flex;flex-direction:column;gap:6px;
+.bp-char{
+  display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:center;
+  margin-bottom:10px;padding-bottom:10px;border-bottom:1px dashed var(--line);
 }
-.equip-slot.empty{border-style:dashed;opacity:0.85;}
-.equip-slot-label{font-size:10px;color:var(--gold);letter-spacing:1px;font-family:'Silkscreen',monospace;}
-.equip-slot-body{display:flex;align-items:flex-start;gap:8px;flex:1;}
-.equip-slot-body .meta{font-size:11px;color:var(--text-dim);line-height:1.35;}
-.equip-slot .btn{width:100%;margin-top:auto;}
-.inv-filter{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
-.inv-filter .btn{padding:8px 12px;font-size:12px;}
-.inv-filter .btn.active{background:var(--gold-dim);color:var(--bg-deep);border-color:var(--gold);}
-.inv-card{
-  background:var(--bg-panel-2);border:1px solid var(--line);border-radius:6px;
-  padding:10px;margin-bottom:8px;
+.bp-char-meta{font-size:12px;line-height:1.55;}
+.bp-char-meta .nm{font-family:'Silkscreen',monospace;color:var(--gold);font-size:13px;}
+.bp-bars{margin-top:4px;}
+.bp-bar-row{display:flex;align-items:center;gap:6px;margin:3px 0;font-size:11px;color:var(--text-dim);}
+.bp-bar-row b{color:var(--text);min-width:64px;font-weight:600;}
+.bp-bar{flex:1;height:8px;background:#1a1510;border:1px solid var(--line);border-radius:3px;overflow:hidden;}
+.bp-bar > i{display:block;height:100%;}
+.bp-bar.hp > i{background:linear-gradient(90deg,#8b2e2e,#e74c3c);}
+.bp-bar.mp > i{background:linear-gradient(90deg,#1a4a6e,#3b9eff);}
+.bp-gold-exp{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:var(--text-dim);margin-top:6px;}
+.bp-gold-exp b{color:var(--gold);}
+
+/* 裝備紙娃娃 */
+.bp-equip-title{font-family:'Silkscreen',monospace;font-size:11px;color:var(--gold);letter-spacing:1px;margin:0 0 8px;}
+.bp-doll{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  grid-template-areas:
+    ". head ."
+    "weapon chest offhand"
+    "hands armor cape"
+    "acc feet .";
+  gap:6px;justify-items:center;
 }
-.inv-card-top{display:flex;align-items:flex-start;gap:10px;}
-.inv-card-top > div:first-of-type{flex:1;min-width:0;}
-.inv-card-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
-.inv-card-actions .btn{flex:1;min-width:90px;text-align:center;}
+.bp-slot{width:100%;max-width:96px;min-height:70px;background:var(--bg-deep);border:1px solid var(--line);border-radius:6px;padding:6px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:border-color .15s,box-shadow .15s;}
+.bp-slot:hover,.bp-slot.selected{border-color:var(--gold);box-shadow:0 0 0 1px rgba(255,210,74,.3);}
+.bp-slot.empty{border-style:dashed;opacity:.9;}
+.bp-slot.empty-can{border-color:var(--gold-dim);}
+.bp-slot .sl{font-size:9px;color:var(--gold);font-family:'Silkscreen',monospace;letter-spacing:.5px;}
+.bp-slot .sn{font-size:10px;color:var(--text);text-align:center;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bp-slot .sm{font-size:9px;color:var(--text-dim);text-align:center;line-height:1.2;}
+.bp-slot[data-area="head"]{grid-area:head;}
+.bp-slot[data-area="weapon"]{grid-area:weapon;}
+.bp-slot[data-area="chest"]{grid-area:chest;}
+.bp-slot[data-area="offhand"]{grid-area:offhand;}
+.bp-slot[data-area="hands"]{grid-area:hands;}
+.bp-slot[data-area="armor"]{grid-area:armor;}
+.bp-slot[data-area="cape"]{grid-area:cape;}
+.bp-slot[data-area="acc"]{grid-area:acc;}
+.bp-slot[data-area="feet"]{grid-area:feet;}
+
+/* 右側背包格 */
+.bp-toolbar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;align-items:center;}
+.bp-toolbar .btn{padding:7px 10px;font-size:11px;}
+.bp-toolbar .btn.active{background:var(--gold-dim);color:var(--bg-deep);border-color:var(--gold);}
+.bp-grid{
+  display:grid;grid-template-columns:repeat(6,1fr);gap:6px;
+  min-height:200px;
+}
+@media (max-width:480px){ .bp-grid{grid-template-columns:repeat(5,1fr);} }
+.bp-cell{
+  aspect-ratio:1;background:var(--bg-deep);border:1px solid var(--line);border-radius:5px;
+  display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;
+  padding:3px;
+}
+.bp-cell:hover,.bp-cell.selected{border-color:var(--gold);box-shadow:0 0 0 1px rgba(255,210,74,.35);}
+.bp-cell.empty{opacity:.45;cursor:default;border-style:dashed;}
+.bp-cell .cnt{position:absolute;right:2px;bottom:1px;font-size:9px;color:var(--gold);font-family:'Silkscreen',monospace;}
+.bp-cell .tag{position:absolute;left:2px;top:1px;font-size:8px;line-height:1;padding:1px 3px;border-radius:2px;}
+.bp-cell .tag.up{background:rgba(125,206,160,.25);color:#7dcea0;}
+.bp-cell .tag.fit{background:rgba(255,210,74,.2);color:var(--gold);}
+.bp-cell canvas{width:70%;height:70%;image-rendering:pixelated;}
+
+/* 底部詳情 */
+.bp-detail{
+  background:var(--bg-panel-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;
+  min-height:88px;
+}
+.bp-detail .ttl{font-size:13px;margin-bottom:4px;}
+.bp-detail .meta{font-size:11px;color:var(--text-dim);line-height:1.45;}
+.bp-detail-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.bp-detail-actions .btn{flex:1;min-width:90px;text-align:center;}
+.bp-member-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+.inv-compare{font-size:11px;margin-top:3px;line-height:1.35;}
 .delta-up{color:#7dcea0;}
 .delta-down{color:#e07a7a;}
 .delta-same{color:var(--text-dim);}
-.inv-compare{font-size:11px;margin-top:4px;line-height:1.4;font-family:'Space Mono','Noto Serif TC',serif;}
+.inv-bonus-line{font-size:10px;color:var(--text-dim);margin-top:2px;}
 .small{font-size:11px;color:var(--text-dim);font-family:'Space Mono','Noto Serif TC',serif;}
 .event-text{font-size:14px;line-height:1.8;margin:10px 0;}
 .hidden{display:none !important;}
@@ -506,8 +564,282 @@ function clamp(v,a,b){
 function esc(s){ return (s+'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 
 /* ============ 像素精靈產生器 ============ */
-// 產生對稱的怪物/角色/裝備像素圖，以 seed 決定圖案，palette 決定配色
-function drawSprite(canvas, seed, palette, size){
+/**
+ * 頭像／像素系統規劃（星露谷風格框）：
+ * - 人物：寫實向像素半身像（膚色／髮型／五官由 seed 決定，非名人翻拍）
+ * - 怪物：自訂像素風，依 type 套用輪廓模板 + 調色
+ * - 裝備：仍用簡化圖示
+ */
+const SKIN_TONES = [
+  ['#f6e0c8','#e8c4a0','#c9956c'], // 淺
+  ['#e8c4a0','#d4a574','#b07a4a'],
+  ['#d4a574','#b07a4a','#8a5a32'],
+  ['#b07a4a','#8a5a32','#5c3a20'],
+  ['#8a5a32','#5c3a20','#3a2414'],
+  ['#f0d5b8','#d4a090','#a07060']  // 偏紅
+];
+const HAIR_COLORS = [
+  '#1a120c','#2c1810','#4a2c14','#6b3a1f','#8b4513',
+  '#c9a227','#e8d080','#c0c0c8','#5a1a1a','#2a1a3a',
+  '#1a2a4a','#3a5a2a','#4a4a4a','#e8e0d0'
+];
+const EYE_COLORS = ['#2a1a10','#3a5a8a','#3a6b3a','#5a3a1a','#4a2a6a','#1a1a1a','#6b4a2a'];
+const SHIRT_COLORS = [
+  ['#3a5a8a','#2a3a5a'],['#8a3a3a','#5a2020'],['#3a6b3a','#2a4a2a'],
+  ['#6b4a8a','#3a2a5a'],['#8a6b3a','#5a4a20'],['#4a4a4a','#2a2a2a'],
+  ['#c9a05f','#8a7030'],['#2f6a8f','#1a3a5a']
+];
+
+function pxFill(ctx, cell, pts, color){
+  ctx.fillStyle = color;
+  pts.forEach(([x,y])=> ctx.fillRect(x*cell, y*cell, cell, cell));
+}
+function pxRect(ctx, cell, x,y,w,h, color){
+  ctx.fillStyle = color;
+  ctx.fillRect(x*cell, y*cell, w*cell, h*cell);
+}
+
+/** 人物：星露谷風格半身像（16×16 放大） */
+function drawHumanPortrait(canvas, seed, size){
+  size = size || 16;
+  const rng = mulberry32(hashStr('human_'+seed));
+  const cell = Math.floor(160/size);
+  canvas.width = size*cell; canvas.height = size*cell;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // 背景（星露谷常見柔和底）
+  const bgChoices = ['#1a3040','#2a1a28','#1a2a1a','#2a2418','#1a1a2a','#302018'];
+  const bg = bgChoices[Math.floor(rng()*bgChoices.length)];
+  pxRect(ctx, cell, 0,0, size,size, bg);
+
+  const skin = SKIN_TONES[Math.floor(rng()*SKIN_TONES.length)];
+  const hair = HAIR_COLORS[Math.floor(rng()*HAIR_COLORS.length)];
+  const eye = EYE_COLORS[Math.floor(rng()*EYE_COLORS.length)];
+  const shirt = SHIRT_COLORS[Math.floor(rng()*SHIRT_COLORS.length)];
+  const genderBias = rng(); // 0~1 影響髮型輪廓
+  const hairStyle = Math.floor(rng()*5); // 0短 1中 2長 3側分 4捲
+
+  // 肩膀／衣服（下半）
+  pxRect(ctx, cell, 2,12, 12,4, shirt[0]);
+  pxRect(ctx, cell, 3,12, 10,1, shirt[1]);
+  // 脖子
+  pxRect(ctx, cell, 7,11, 2,2, skin[1]);
+  // 臉（橢圓近似）
+  pxRect(ctx, cell, 4,4, 8,7, skin[0]);
+  pxRect(ctx, cell, 5,3, 6,1, skin[0]);
+  pxRect(ctx, cell, 5,10, 6,1, skin[1]);
+  pxRect(ctx, cell, 3,5, 1,5, skin[1]);
+  pxRect(ctx, cell, 12,5, 1,5, skin[1]);
+  // 臉部陰影
+  pxRect(ctx, cell, 10,7, 1,3, skin[2]);
+  pxRect(ctx, cell, 5,9, 2,1, skin[2]);
+
+  // 眼睛
+  pxRect(ctx, cell, 5,6, 2,1, '#fff8f0');
+  pxRect(ctx, cell, 9,6, 2,1, '#fff8f0');
+  pxRect(ctx, cell, 5,6, 1,1, eye);
+  pxRect(ctx, cell, 9,6, 1,1, eye);
+  // 眉毛
+  pxRect(ctx, cell, 5,5, 2,1, hair);
+  pxRect(ctx, cell, 9,5, 2,1, hair);
+  // 鼻子
+  pxRect(ctx, cell, 7,7, 1,1, skin[2]);
+  // 嘴
+  const smile = rng() > 0.35;
+  if(smile) pxRect(ctx, cell, 6,9, 4,1, '#a05050');
+  else pxRect(ctx, cell, 7,9, 2,1, '#8a4040');
+
+  // 頭髮
+  if(hairStyle===0){ // 短
+    pxRect(ctx, cell, 4,2, 8,2, hair);
+    pxRect(ctx, cell, 3,3, 2,2, hair);
+    pxRect(ctx, cell, 11,3, 2,2, hair);
+  } else if(hairStyle===1){ // 中
+    pxRect(ctx, cell, 3,2, 10,3, hair);
+    pxRect(ctx, cell, 2,4, 2,3, hair);
+    pxRect(ctx, cell, 12,4, 2,3, hair);
+  } else if(hairStyle===2){ // 長
+    pxRect(ctx, cell, 3,2, 10,3, hair);
+    pxRect(ctx, cell, 2,4, 2,6, hair);
+    pxRect(ctx, cell, 12,4, 2,6, hair);
+    pxRect(ctx, cell, 3,9, 1,2, hair);
+    pxRect(ctx, cell, 12,9, 1,2, hair);
+  } else if(hairStyle===3){ // 側分
+    pxRect(ctx, cell, 4,2, 8,2, hair);
+    pxRect(ctx, cell, 3,3, 3,3, hair);
+    pxRect(ctx, cell, 11,3, 2,2, hair);
+    pxRect(ctx, cell, 2,5, 2,4, hair);
+  } else { // 捲／蓬
+    pxRect(ctx, cell, 3,1, 10,3, hair);
+    pxRect(ctx, cell, 2,3, 3,3, hair);
+    pxRect(ctx, cell, 11,3, 3,3, hair);
+    pxRect(ctx, cell, 4,4, 1,1, hair);
+    pxRect(ctx, cell, 11,4, 1,1, hair);
+  }
+  // 瀏海
+  if(rng()>0.4){
+    pxRect(ctx, cell, 5,3, 3,2, hair);
+    pxRect(ctx, cell, 9,3, 2,1, hair);
+  }
+  // 簡易高光
+  pxRect(ctx, cell, 6,4, 1,1, skin[0]);
+
+  // 細框（星露谷感）
+  ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+  ctx.lineWidth = Math.max(1, cell/4);
+  ctx.strokeRect(0.5, 0.5, canvas.width-1, canvas.height-1);
+}
+
+/** 怪物：依類型模板的自訂像素風 */
+const MONSTER_TEMPLATES = {
+  slime: (ctx,cell,p,rng)=>{
+    pxRect(ctx,cell, 4,6, 8,7, p[0]);
+    pxRect(ctx,cell, 5,5, 6,1, p[1]);
+    pxRect(ctx,cell, 5,13, 6,1, p[2]);
+    pxRect(ctx,cell, 6,8, 1,2, '#1a1a1a');
+    pxRect(ctx,cell, 9,8, 1,2, '#1a1a1a');
+    pxRect(ctx,cell, 7,10, 2,1, p[2]);
+    if(rng()>0.5) pxRect(ctx,cell, 5,7, 1,1, '#fff8');
+  },
+  skeleton: (ctx,cell,p,rng)=>{
+    pxRect(ctx,cell, 5,2, 6,2, p[2]); // 頭
+    pxRect(ctx,cell, 4,4, 8,5, p[1]);
+    pxRect(ctx,cell, 5,5, 2,2, '#1a1a1a');
+    pxRect(ctx,cell, 9,5, 2,2, '#1a1a1a');
+    pxRect(ctx,cell, 6,8, 4,1, p[0]);
+    pxRect(ctx,cell, 6,9, 1,4, p[2]);
+    pxRect(ctx,cell, 9,9, 1,4, p[2]);
+    pxRect(ctx,cell, 4,10, 2,1, p[1]);
+    pxRect(ctx,cell, 10,10, 2,1, p[1]);
+  },
+  wolf: (ctx,cell,p,rng)=>{
+    pxRect(ctx,cell, 3,5, 10,6, p[0]);
+    pxRect(ctx,cell, 2,4, 3,3, p[1]); // 吻
+    pxRect(ctx,cell, 1,5, 2,2, p[2]);
+    pxRect(ctx,cell, 4,3, 2,2, p[0]); // 耳
+    pxRect(ctx,cell, 9,3, 2,2, p[0]);
+    pxRect(ctx,cell, 3,6, 1,1, '#1a1a1a');
+    pxRect(ctx,cell, 5,7, 2,1, '#1a1a1a');
+    pxRect(ctx,cell, 12,7, 2,3, p[1]); // 尾
+  },
+  dragon: (ctx,cell,p,rng)=>{
+    pxRect(ctx,cell, 4,4, 8,7, p[0]);
+    pxRect(ctx,cell, 3,3, 2,2, p[1]);
+    pxRect(ctx,cell, 11,3, 2,2, p[1]);
+    pxRect(ctx,cell, 6,2, 4,2, p[2]);
+    pxRect(ctx,cell, 5,6, 2,1, '#1a1a1a');
+    pxRect(ctx,cell, 9,6, 2,1, '#1a1a1a');
+    pxRect(ctx,cell, 7,8, 2,1, '#c94a3b');
+    pxRect(ctx,cell, 2,7, 2,3, p[1]);
+    pxRect(ctx,cell, 12,7, 2,3, p[1]);
+  },
+  goblin: (ctx,cell,p,rng)=>{
+    pxRect(ctx,cell, 5,3, 6,6, p[0]);
+    pxRect(ctx,cell, 4,4, 1,3, p[1]);
+    pxRect(ctx,cell, 11,4, 1,3, p[1]);
+    pxRect(ctx,cell, 5,5, 1,1, '#1a1a1a');
+    pxRect(ctx,cell, 10,5, 1,1, '#1a1a1a');
+    pxRect(ctx,cell, 6,7, 4,1, p[2]);
+    pxRect(ctx,cell, 4,9, 8,4, p[1]);
+  },
+  ghost: (ctx,cell,p,rng)=>{
+    pxRect(ctx,cell, 5,3, 6,8, p[1]);
+    pxRect(ctx,cell, 4,4, 8,6, p[0]);
+    pxRect(ctx,cell, 5,6, 2,2, '#1a1a1a');
+    pxRect(ctx,cell, 9,6, 2,2, '#1a1a1a');
+    pxRect(ctx,cell, 4,11, 2,2, p[2]);
+    pxRect(ctx,cell, 7,11, 2,2, p[2]);
+    pxRect(ctx,cell, 10,11, 2,2, p[2]);
+  },
+  insect: (ctx,cell,p,rng)=>{
+    pxRect(ctx,cell, 5,5, 6,5, p[0]);
+    pxRect(ctx,cell, 4,6, 1,2, p[1]);
+    pxRect(ctx,cell, 11,6, 1,2, p[1]);
+    pxRect(ctx,cell, 6,4, 1,1, p[2]);
+    pxRect(ctx,cell, 9,4, 1,1, p[2]);
+    pxRect(ctx,cell, 6,6, 1,1, '#1a1a1a');
+    pxRect(ctx,cell, 9,6, 1,1, '#1a1a1a');
+    pxRect(ctx,cell, 3,8, 2,1, p[2]);
+    pxRect(ctx,cell, 11,8, 2,1, p[2]);
+  },
+  golem: (ctx,cell,p,rng)=>{
+    pxRect(ctx,cell, 4,2, 8,4, p[0]);
+    pxRect(ctx,cell, 3,6, 10,6, p[1]);
+    pxRect(ctx,cell, 5,4, 2,2, '#1a1a1a');
+    pxRect(ctx,cell, 9,4, 2,2, '#1a1a1a');
+    pxRect(ctx,cell, 2,7, 2,3, p[2]);
+    pxRect(ctx,cell, 12,7, 2,3, p[2]);
+  },
+  default: (ctx,cell,p,rng)=>{
+    // 對稱雜訊體 + 眼睛
+    const half = 8;
+    for(let y=2;y<14;y++){
+      for(let x=3;x<=half;x++){
+        if(rng()<0.55){
+          const c = p[Math.floor(rng()*p.length)];
+          pxRect(ctx,cell, x,y, 1,1, c);
+          pxRect(ctx,cell, 15-x,y, 1,1, c);
+        }
+      }
+    }
+    pxRect(ctx,cell, 5,6, 2,2, '#1a1a1a');
+    pxRect(ctx,cell, 9,6, 2,2, '#1a1a1a');
+  }
+};
+
+function inferMonsterTemplate(seed, type){
+  const s = String(seed||'') + String(type||'');
+  const low = s.toLowerCase();
+  if(/slime|泥|史萊姆|果凍/.test(low)) return 'slime';
+  if(/skel|骨|骷|亡靈|undead/.test(low)) return 'skeleton';
+  if(/wolf|狼|犬|beast|獸/.test(low)) return 'wolf';
+  if(/dragon|龍|drake|wyrm/.test(low)) return 'dragon';
+  if(/goblin|哥布|獸人|orc/.test(low)) return 'goblin';
+  if(/ghost|幽靈|魂|影|wraith/.test(low)) return 'ghost';
+  if(/bug|蟲|spider|蛛|insect/.test(low)) return 'insect';
+  if(/golem|石像|元素|construct/.test(low)) return 'golem';
+  // type palette hint
+  if(type==='undead') return 'skeleton';
+  if(type==='beast') return 'wolf';
+  if(type==='shadow') return 'ghost';
+  if(type==='nature') return 'insect';
+  if(type==='metal') return 'golem';
+  if(type==='fire' || type==='ice') return 'dragon';
+  return 'default';
+}
+
+function drawMonsterPortrait(canvas, seed, palette, size, type){
+  size = size || 16;
+  const rng = mulberry32(hashStr('mon_'+seed));
+  const cell = Math.floor(160/size);
+  canvas.width = size*cell; canvas.height = size*cell;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  pxRect(ctx, cell, 0,0, size,size, '#0a0807');
+  const p = palette && palette.length ? palette : ['#6b4a2f','#9a6b3f','#c9a05f'];
+  const tmpl = inferMonsterTemplate(seed, type);
+  const fn = MONSTER_TEMPLATES[tmpl] || MONSTER_TEMPLATES.default;
+  fn(ctx, cell, p, rng);
+  // 精英／boss 可由外部再疊，這裡加輕微高光
+  if(rng()>0.7) pxRect(ctx, cell, 4,3, 1,1, p[2]||p[0]);
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+  ctx.lineWidth = Math.max(1, cell/4);
+  ctx.strokeRect(0.5, 0.5, canvas.width-1, canvas.height-1);
+}
+
+/** 通用入口：kind = 'human' | 'monster' | 'legacy' */
+function drawSprite(canvas, seed, palette, size, opts){
+  opts = opts || {};
+  if(opts.kind==='human' || opts.human){
+    drawHumanPortrait(canvas, seed, size);
+    return;
+  }
+  if(opts.kind==='monster' || opts.monster || opts.type){
+    drawMonsterPortrait(canvas, seed, palette, size, opts.type || opts.monsterType);
+    return;
+  }
+  // legacy 對稱雜訊（裝備／未知）
   size = size || 16;
   const rng = mulberry32(hashStr(seed));
   const cell = Math.floor(160/size);
@@ -528,12 +860,13 @@ function drawSprite(canvas, seed, palette, size){
       const srcX = x < half ? x : size-1-x;
       const v = grid[y][srcX];
       if(v===0) continue;
-      const color = palette[v-1] || palette[0];
+      const color = (palette&&palette[v-1]) || (palette&&palette[0]) || '#888';
       ctx.fillStyle = color;
       ctx.fillRect(x*cell,y*cell,cell,cell);
     }
   }
 }
+
 function drawEquipIcon(canvas, seed, kind, rarityColor){
   const size=12, cell=Math.floor(120/size);
   canvas.width=size*cell; canvas.height=size*cell;
@@ -821,21 +1154,31 @@ const MONSTER_AFFIXES = [
   {id:'rare', name:'稀有', desc:'全數值 +20%（精英專屬）', apply:(m)=>{ m.atk=Math.round(m.atk*1.2); m.def=Math.round(m.def*1.2); m.maxHp=Math.round(m.maxHp*1.2); m.hp=m.maxHp; m.spd=Math.round(m.spd*1.2); m.exp=Math.round(m.exp*1.2); m.gold=Math.round(m.gold*1.2); }}
 ];
 
-/** 30 等後至少 1 詞綴；之後每 10 等 +1，對應至 120 等 */
+/** 詞綴數量：30 等起 1 條，之後每 10 等 +1（最高 8）；Boss／精英同樣遵循 */
 function rollAffixCount(tier, boss, playerLevel, isElite){
+  const rng = Math.random;
   let count = 0;
+  // 統一規律：30 等 → 1，40 → 2，50 → 3 … 100 → 8
   if(playerLevel >= 30){
-    count = 1 + Math.floor((playerLevel - 30) / 10); // 30→1 … 120→10
+    count = 1 + Math.floor((playerLevel - 30) / 10);
     count = Math.min(count, 8);
-  } else if(boss){
-    count = weightedChoice(Math.random, [{item:1,w:40},{item:2,w:40},{item:3,w:20}]);
-  } else if(tier >= 3 && Math.random() < 0.45){
+  } else if(tier >= 3 && rng() < 0.45){
     count = 1;
-  } else if(tier >= 4 && Math.random() < 0.7){
+  } else if(tier >= 4 && rng() < 0.70){
+    count = 1;
+  } else if(tier >= 2 && rng() < 0.22){
     count = 1;
   }
-  if(boss) count = Math.max(count, 2);
-  if(isElite) count = Math.max(count, 1) + 1; // 精英至少多一條常規
+  // Boss：同樣走每 10 等 +1；因 50 等才會出現，保底至少等同該等級公式（不再另隨機加）
+  if(boss){
+    if(playerLevel >= 30){
+      count = Math.min(8, 1 + Math.floor((playerLevel - 30) / 10));
+    } else {
+      count = Math.max(count, 2);
+    }
+  }
+  // 精英：在同一規律上再 +1（仍受最高 8 限制）
+  if(isElite) count = Math.min(8, Math.max(count, 1) + 1);
   return Math.min(count, MONSTER_AFFIXES.length - 1); // 預留 rare
 }
 
@@ -856,9 +1199,13 @@ function applyMonsterAffixes(mon, count, rng, forceRare){
 }
 
 /**
- * 1–120 曲線：
- * scale ≈ (1+(tier-1)*0.45) * (1 + lv*0.07 + lv²*0.0018)
- * 高等級血量與經驗明顯拉開
+ * 怪物數值總表（與玩家成長對齊）
+ * ------------------------------------------------------------
+ * 目標手感（同級）：
+ *   普通怪：約 4~7 回合，對砍有壓力
+ *   精英：約 8~14 回合，需認真打
+ *   Boss：耐力戰，失誤會倒，獎勵豐厚
+ * 曲線高於裸裝玩家期望，靠裝備／職業／操作拉開差距
  */
 function makeMonster(tmpl, playerLevel, rng, opts){
   opts = opts || {};
@@ -866,11 +1213,15 @@ function makeMonster(tmpl, playerLevel, rng, opts){
   const tier = clamp(num(tmpl && tmpl.tier, 1), 1, 5);
   const pl = clamp(num(playerLevel, 1), 1, MAX_PLAYER_LEVEL);
   const lvl = clamp(pl + rint(rng, -1, 2), 1, MAX_PLAYER_LEVEL);
-  const tierMul = 1 + (tier - 1) * 0.45;
-  const lvlMul = 1 + lvl * 0.07 + lvl * lvl * 0.0018;
-  const scale = tierMul * lvlMul;
   const boss = !!(tmpl && tmpl.boss);
   const elite = !!opts.elite && !boss;
+
+  // 階級倍率：同等級也要有壓力，高階更耐打、更疼
+  const tierHp = [1, 1, 1.28, 1.62, 2.05, 2.55][tier];
+  const tierAtk = [1, 1, 1.22, 1.45, 1.72, 2.05][tier];
+  const tierDef = [1, 1, 1.15, 1.32, 1.50, 1.70][tier];
+  const tierRew = [1, 1, 1.25, 1.55, 1.90, 2.40][tier];
+
   let mon = {
     name: (elite ? '精英·' : '') + ((tmpl && tmpl.n) || '未知生物'),
     type: (tmpl && tmpl.type) || 'beast',
@@ -885,51 +1236,141 @@ function makeMonster(tmpl, playerLevel, rng, opts){
     mech: boss ? ((tmpl && tmpl.mech) || null) : null,
     bossTurns: 0
   };
-  const hpBase = boss ? 420 : (elite ? 55 : 42);
-  const atkBase = boss ? 28 : (elite ? 14 : 12);
-  // 防禦成長放緩：避免中後期物攻被壓成 1 傷
-  const defBase = boss ? 10 : (elite ? 4 : 3);
-  const expBase = boss ? 520 : (elite ? 58 : 40);
-  const goldBase = boss ? 380 : (elite ? 36 : 25);
-  mon.maxHp = Math.max(1, Math.round(hpBase * scale * (boss ? 1.15 : 1)));
-  mon.hp = mon.maxHp;
-  mon.atk = Math.max(1, Math.round(atkBase * (1+(tier-1)*0.42) * (1+lvl*0.09)));
-  mon.def = Math.max(0, Math.round(defBase * (1+(tier-1)*0.20) * (1+lvl*0.04)));
-  mon.spd = Math.max(1, rint(rng, 5+tier, 11+tier*2));
-  mon.exp = Math.max(1, Math.round(expBase * scale * (1 + lvl * 0.01)));
-  mon.gold = Math.max(0, Math.round(goldBase * scale * (0.7 + rng()*0.6)));
+
+  // 基礎曲線：刻意高於「裸裝玩家同級期望」，裝備／職業優勢才能壓制
+  // 目標：普通 4~7 回合、精英 8~14 回合、Boss 需策略與消耗
+  let maxHp = (48 + lvl * 10.5 + lvl * lvl * 0.055) * tierHp;
+  let atk   = (14 + lvl * 1.55 + tier * 2.4) * tierAtk;
+  let def   = (4.5 + lvl * 0.72 + tier * 1.5) * tierDef;
+  let spd   = rint(rng, 6 + tier, 11 + tier * 2);
+  let exp   = (30 + lvl * 5.5 + tier * 8) * tierRew;
+  let gold  = (18 + lvl * 3.2 + tier * 5) * tierRew * (0.75 + rng() * 0.5);
 
   if(elite){
-    mon.atk = Math.max(1, Math.round(mon.atk * 1.35));
-    mon.def = Math.max(0, Math.round(mon.def * 1.25));
-    mon.maxHp = Math.max(1, Math.round(mon.maxHp * 1.35));
-    mon.hp = mon.maxHp;
-    mon.exp = Math.max(1, Math.round(mon.exp * 1.4));
-    mon.gold = Math.max(0, Math.round(mon.gold * 1.35));
+    maxHp *= 1.65;
+    atk   *= 1.32;
+    def   *= 1.20;
+    exp   *= 1.85;
+    gold  *= 1.70;
+    spd    = Math.round(spd * 1.10);
+  }
+  if(boss){
+    // Boss：血厚、攻高但不秒殺；靠機制+持續壓力取勝
+    maxHp *= 3.20;
+    atk   *= 1.38;
+    def   *= 1.35;
+    exp   *= 4.20;
+    gold  *= 3.60;
+    spd    = Math.round(spd * 1.08);
   }
 
-  const wantAffix = rollAffixCount(tier, boss, pl, elite);
-  const forceRare = elite;
-  applyMonsterAffixes(mon, wantAffix, rng, forceRare);
+  mon.maxHp = Math.max(12, Math.round(maxHp));
+  mon.hp = mon.maxHp;
+  mon.atk = Math.max(1, Math.round(atk));
+  mon.def = Math.max(0, Math.round(def));
+  mon.spd = Math.max(1, spd);
+  mon.exp = Math.max(1, Math.round(exp));
+  mon.gold = Math.max(0, Math.round(gold));
 
-  // 詞綴套用後強制數值合法，避免任何 NaN 進入戰鬥
-  mon.maxHp = Math.max(1, num(mon.maxHp, 1));
+  const wantAffix = rollAffixCount(tier, boss, pl, elite);
+  applyMonsterAffixes(mon, wantAffix, rng, elite); // 精英強制稀有詞條
+
+  // 數值淨化
+  mon.maxHp = Math.max(12, num(mon.maxHp, 12));
   mon.hp = clamp(num(mon.hp, mon.maxHp), 0, mon.maxHp);
   mon.atk = Math.max(1, num(mon.atk, 1));
   mon.def = Math.max(0, num(mon.def, 0));
-  // 防禦軟上限：約等於「同級期望物攻」的 1.1 倍，避免詞綴疊到無法輸出
-  const defCap = Math.round((8 + lvl * 1.2 + tier * 3) * (elite ? 1.25 : 1) * (boss ? 1.6 : 1));
-  if(mon.def > defCap) mon.def = defCap;
   mon.spd = Math.max(1, num(mon.spd, 1));
   mon.exp = Math.max(1, num(mon.exp, 1));
   mon.gold = Math.max(0, num(mon.gold, 0));
 
+  // 軟上限放寬：允許詞綴強化，但仍避免無限疊防
+  const atkCap = Math.round((18 + lvl * 2.20 + tier * 5) * (elite ? 1.40 : 1) * (boss ? 1.55 : 1));
+  const defCap = Math.round((8 + lvl * 1.10 + tier * 3) * (elite ? 1.30 : 1) * (boss ? 1.55 : 1));
+  if(mon.atk > atkCap) mon.atk = atkCap;
+  if(mon.def > defCap) mon.def = defCap;
+
+  // 血量軟上限（放寬，Boss／精英要能肉）
+  const hpCap = Math.round((70 + lvl * 18 + lvl * lvl * 0.12) * tierHp * (elite ? 1.85 : 1) * (boss ? 3.2 : 1));
+  if(mon.maxHp > hpCap){
+    mon.maxHp = hpCap;
+    mon.hp = Math.min(mon.hp, mon.maxHp);
+  }
+
   if(boss && mon.mech){
-    mon.exp = Math.max(1, Math.round(mon.exp * 1.25));
-    mon.gold = Math.max(0, Math.round(mon.gold * 1.25));
+    mon.exp = Math.max(1, Math.round(mon.exp * 1.15));
+    mon.gold = Math.max(0, Math.round(mon.gold * 1.15));
   }
   return mon;
 }
+
+/** Boss 專屬小怪：弱於 Boss，攻擊會為 Boss 吸血 */
+function makeBossMinion(boss, playerLevel, rng, idx){
+  rng = rng || Math.random;
+  const pl = clamp(num(playerLevel, boss && boss.level || 1), 1, MAX_PLAYER_LEVEL);
+  const lvl = clamp(num(boss && boss.level, pl), 1, MAX_PLAYER_LEVEL);
+  // 取同屬性低階模板當外觀
+  const typePool = MONSTER_TYPES.filter(m=>!m.boss && m.type===(boss && boss.type) && m.tier<=2);
+  const anyPool = MONSTER_TYPES.filter(m=>!m.boss && m.tier<=2);
+  const tmpl = choice(rng, typePool.length ? typePool : (anyPool.length ? anyPool : MONSTER_TYPES));
+  const mon = makeMonster(tmpl, Math.max(1, pl - 2), rng, { elite:false });
+  mon.name = (boss ? boss.name.replace(/^精英·/,'') : 'Boss') + '的眷屬' + (idx!=null ? (idx+1) : '');
+  mon.isBossMinion = true;
+  mon.bossUid = boss ? boss.seed : null; // 用 seed 當簡易關聯鍵
+  mon.bossLink = true;
+  // 小怪數值壓低：約 Boss 的一部分，但仍有威脅
+  mon.maxHp = Math.max(10, Math.round(num(boss.maxHp, 100) * 0.12));
+  mon.hp = mon.maxHp;
+  mon.atk = Math.max(1, Math.round(num(boss.atk, 20) * 0.28));
+  mon.def = Math.max(0, Math.round(num(boss.def, 8) * 0.35));
+  mon.spd = Math.max(1, Math.round(num(boss.spd, 8) * 0.95 + 2));
+  mon.exp = Math.max(1, Math.round(num(boss.exp, 50) * 0.08));
+  mon.gold = Math.max(0, Math.round(num(boss.gold, 30) * 0.06));
+  mon.boss = false;
+  mon.elite = false;
+  mon.mech = null;
+  mon.affixes = [];
+  mon.affixNames = ['Boss眷屬'];
+  mon.seed = 'minion_' + (boss && boss.seed || 'b') + '_' + idx + '_' + Math.floor(rng()*999);
+  return mon;
+}
+
+function getBattleBoss(b){
+  if(!b || !b.monsters) return null;
+  return b.monsters.find(m=>m.boss && m.hp>0) || b.monsters.find(m=>m.boss) || null;
+}
+
+/** 補滿 Boss 眷屬至目標數量（僅 Boss 仍存活時） */
+function refillBossMinions(b, force){
+  if(!b || b.over) return;
+  const boss = getBattleBoss(b);
+  if(!boss || boss.hp<=0) return;
+  const targetCount = b.bossMinionCount || 2;
+  const aliveMinions = b.monsters.filter(m=>m.isBossMinion && m.hp>0);
+  const need = targetCount - aliveMinions.length;
+  if(need <= 0 && !force) return;
+  // 移除已死眷屬欄位，再補新的
+  b.monsters = b.monsters.filter(m=> !(m.isBossMinion && m.hp<=0));
+  const stillAlive = b.monsters.filter(m=>m.isBossMinion && m.hp>0).length;
+  const toAdd = Math.max(0, targetCount - stillAlive);
+  if(toAdd <= 0) return;
+  const rng = Math.random;
+  const pl = avgPartyLevel();
+  for(let i=0;i<toAdd;i++){
+    b.monsters.push(makeBossMinion(boss, pl, rng, stillAlive + i));
+  }
+  // 補完後重建回合順序，讓新眷屬盡快插入行動
+  if(typeof buildTurnOrder==='function'){
+    const prevRef = b.order && b.order[b.turnIndex] ? b.order[b.turnIndex].ref : null;
+    b.order = buildTurnOrder(b.monsters);
+    if(prevRef){
+      const idx = b.order.findIndex(c=>c.ref===prevRef);
+      if(idx>=0) b.turnIndex = idx;
+    }
+  }
+  b.turnLog.unshift('⚠ '+boss.name+' 召喚眷屬補滿戰場！（'+toAdd+' 隻）');
+}
+
 
 /* ============ 資料：裝備（稀有度 12 階 + 詞條系統） ============ */
 /* 由低到高：粗製→一般→順手→常用→罕見→稀有→稀罕→史詩→傳奇→神話→千古→唯一 */
@@ -971,6 +1412,42 @@ const GENERIC_AFFIX_POOL = [
   {stat:'atk',v:3,label:'攻擊'},{stat:'matk',v:3,label:'魔攻'},{stat:'def',v:3,label:'防禦'},{stat:'spd',v:2,label:'速度'},
   {stat:'hp',v:12,label:'生命'},{stat:'mp',v:10,label:'魔力'}
 ];
+
+
+/** 裝備欄位（紙娃娃）— 飾品僅 1 格；其餘欄位保留供成長與劇情道具擴充 */
+const EQUIP_SLOT_DEFS = [
+  {id:'head',     label:'頭部',   area:'head',    icon:'head'},
+  {id:'weapon',   label:'主手',   area:'weapon',  icon:'weapon'},
+  {id:'armor',    label:'胸甲',   area:'chest',   icon:'armor'},
+  {id:'offhand',  label:'副手',   area:'offhand', icon:'weapon'},
+  {id:'hands',    label:'手套',   area:'hands',   icon:'armor'},
+  {id:'cape',     label:'披風',   area:'cape',    icon:'armor'},
+  {id:'accessory',label:'飾品',   area:'acc',     icon:'accessory'},
+  {id:'feet',     label:'鞋子',   area:'feet',    icon:'armor'}
+];
+const EQUIP_SLOT_IDS = EQUIP_SLOT_DEFS.map(s=>s.id);
+function emptyEquip(){
+  const e = {};
+  EQUIP_SLOT_IDS.forEach(id=> e[id]=null);
+  return e;
+}
+function ensureMemberEquip(m){
+  if(!m) return;
+  if(!m.equip) m.equip = emptyEquip();
+  EQUIP_SLOT_IDS.forEach(id=>{ if(m.equip[id]===undefined) m.equip[id]=null; });
+  // 舊 accessory2 → 若飾品空則挪入，否則退回背包／倉庫
+  if(m.equip.accessory2){
+    const extra = m.equip.accessory2;
+    if(!m.equip.accessory) m.equip.accessory = extra;
+    else if(typeof S!=='undefined' && S){
+      if(typeof backpackHasSpace==='function' && backpackHasSpace(1)) S.inventory.push(extra);
+      else if(typeof overflowDispose==='function') overflowDispose(extra, true);
+      else if(S.inventory) S.inventory.push(extra);
+    }
+    m.equip.accessory2 = null;
+    delete m.equip.accessory2;
+  }
+}
 
 const EQUIP_BASES = {
   weapon: [
@@ -1025,6 +1502,35 @@ const EQUIP_BASES = {
     {n:'法力珠',stat:'mp',v:15,mat:'silver',role:'mage'},{n:'秘術結晶',stat:'mp',v:22,mat:'silver',role:'mage'},
     {n:'賢者水晶',stat:'int',v:5,mat:'silver',role:'mage'},{n:'毒蛇之牙',stat:'agi',v:3,mat:'bone',role:'rogue'},
     {n:'巨人腰帶',stat:'con',v:4,mat:'iron',role:'tank'},{n:'暗影戒指',stat:'agi',v:3,mat:'bone',role:'rogue'}
+  ],
+  offhand: [
+    {n:'木盾',stat:'def',v:4,mat:'wood',role:'tank'},{n:'圓盾',stat:'def',v:5,mat:'iron',role:'tank'},
+    {n:'鳶盾',stat:'def',v:6,mat:'iron',role:'tank'},{n:'塔盾',stat:'def',v:8,mat:'iron',role:'tank'},
+    {n:'符文盾',stat:'def',v:5,mat:'silver',role:'mage'},{n:'典籍',stat:'matk',v:3,mat:'cloth',role:'mage'},
+    {n:'神聖盾',stat:'def',v:6,mat:'silver',role:'healer'},{n:'刺客副刃',stat:'atk',v:3,mat:'iron',role:'rogue'}
+  ],
+  head: [
+    {n:'布帽',stat:'def',v:2,mat:'cloth',role:'mage'},{n:'皮帽',stat:'def',v:3,mat:'leather',role:'archer'},
+    {n:'鐵盔',stat:'def',v:5,mat:'iron',role:'tank'},{n:'騎士盔',stat:'def',v:6,mat:'iron',role:'tank'},
+    {n:'法師兜帽',stat:'matk',v:3,mat:'cloth',role:'mage'},{n:'獵人帽',stat:'agi',v:3,mat:'leather',role:'archer'},
+    {n:'盜賊頭巾',stat:'spd',v:3,mat:'cloth',role:'rogue'},{n:'聖冠',stat:'int',v:3,mat:'silver',role:'healer'}
+  ],
+  cape: [
+    {n:'旅行披風',stat:'def',v:2,mat:'cloth',role:'archer'},{n:'暗影披肩',stat:'spd',v:3,mat:'cloth',role:'rogue'},
+    {n:'法師披風',stat:'matk',v:3,mat:'cloth',role:'mage'},{n:'勇者之氅',stat:'str',v:3,mat:'leather',role:'warrior'},
+    {n:'守護披風',stat:'def',v:4,mat:'iron',role:'tank'},{n:'聖光斗篷',stat:'int',v:3,mat:'silver',role:'healer'}
+  ],
+  hands: [
+    {n:'布手套',stat:'def',v:1,mat:'cloth',role:'mage'},{n:'皮手套',stat:'def',v:2,mat:'leather',role:'archer'},
+    {n:'鐵手套',stat:'def',v:3,mat:'iron',role:'tank'},{n:'戰拳套',stat:'atk',v:3,mat:'iron',role:'warrior'},
+    {n:'射手護腕',stat:'agi',v:3,mat:'leather',role:'archer'},{n:'法師手套',stat:'matk',v:2,mat:'cloth',role:'mage'},
+    {n:'盜賊手套',stat:'spd',v:3,mat:'leather',role:'rogue'}
+  ],
+  feet: [
+    {n:'布鞋',stat:'spd',v:2,mat:'cloth',role:'mage'},{n:'皮靴',stat:'spd',v:3,mat:'leather',role:'archer'},
+    {n:'鐵靴',stat:'def',v:3,mat:'iron',role:'tank'},{n:'疾風靴',stat:'spd',v:4,mat:'leather',role:'rogue'},
+    {n:'重裝戰靴',stat:'def',v:4,mat:'iron',role:'tank'},{n:'旅人靴',stat:'spd',v:3,mat:'leather',role:'warrior'},
+    {n:'賢者鞋',stat:'int',v:2,mat:'cloth',role:'mage'}
   ]
 };
 
@@ -1132,12 +1638,408 @@ const UNIQUE_ITEMS = [
     {stat:'agi',v:9,label:'終焉'},{stat:'spd',v:10,label:'倒數'},{stat:'atk',v:7,label:'最後一箭'},{stat:'int',v:5,label:'預見'}]}
 ];
 
+/** 唯一裝備專屬效果（裝備中生效；拉開與千古的差距） */
+/** 唯一專屬效果：刻意高於千古共鳴同類型約 1.6～2 倍 */
+const UNIQUE_EFFECTS = {
+  '灰燼君王劍': {type:'lifesteal', v:0.18, desc:'攻擊吸血 18%'},
+  '虛空法杖·終焉': {type:'mpOnHit', v:8, desc:'命中回復 8 MP'},
+  '聖光救贖之書': {type:'healBonus', v:0.28, desc:'治療量 +28%'},
+  '影殺·無聲': {type:'critBonus', v:0.18, desc:'爆擊率 +18%'},
+  '蒼穹長弓': {type:'pierceBonus', v:0.30, desc:'額外穿甲 30%'},
+  '不朽巨盾斧': {type:'thorns', v:0.22, desc:'反傷 22%'},
+  '龍骨戰錘': {type:'stunChance', v:0.18, desc:'18% 機率擊暈 1 回合'},
+  '烈陽權杖': {type:'burnBonus', v:0.22, desc:'魔法傷害 +22%'},
+  '灰燼聖鎧': {type:'dmgReduce', v:0.15, desc:'受傷 -15%'},
+  '虛空法袍': {type:'matkBonus', v:0.18, desc:'魔攻 +18%'},
+  '龍騎士鎧': {type:'dmgReduce', v:0.12, desc:'受傷 -12%'},
+  '深淵之眼': {type:'matkBonus', v:0.16, desc:'魔攻 +16%'},
+  '屠龍者徽章': {type:'atkBonus', v:0.16, desc:'物攻 +16%'},
+  '血怒戰斧·滅': {type:'lifesteal', v:0.16, desc:'攻擊吸血 16%'},
+  '星隕法球': {type:'mpOnHit', v:9, desc:'命中回復 9 MP'},
+  '鐵壁臂環': {type:'dmgReduce', v:0.12, desc:'受傷 -12%'},
+  '泰坦之心核': {type:'hpBonus', v:0.18, desc:'最大生命 +18%'},
+  '創世碎片': {type:'matkBonus', v:0.18, desc:'魔攻 +18%'},
+  '終焉沙漏': {type:'spdBonus', v:0.15, desc:'速度 +15%'}
+};
+const ROLE_UNIQUE_FALLBACK = {
+  warrior: {type:'lifesteal', v:0.14, desc:'攻擊吸血 14%'},
+  tank:    {type:'thorns', v:0.16, desc:'反傷 16%'},
+  archer:  {type:'pierceBonus', v:0.20, desc:'額外穿甲 20%'},
+  rogue:   {type:'critBonus', v:0.15, desc:'爆擊率 +15%'},
+  mage:    {type:'matkBonus', v:0.14, desc:'魔攻 +14%'},
+  healer:  {type:'healBonus', v:0.20, desc:'治療量 +20%'}
+};
+
+/**
+ * 唯一裝備專屬技能（裝備中可在戰鬥使用）
+ * 標記 fromUnique:true，UI 可辨識
+ */
+const UNIQUE_SKILLS = {
+  '灰燼君王劍': {name:'灰燼斬',mp:14,mult:2.6,type:'phys',desc:'【唯一】物攻×2.6；灰燼君王劍專屬'},
+  '虛空法杖·終焉': {name:'終焉之火',mp:22,mult:2.8,type:'magic',desc:'【唯一】魔攻×2.8；虛空終焉'},
+  '聖光救贖之書': {name:'救贖輝光',mp:20,heal:2.1,type:'heal',desc:'【唯一】強效單體治療'},
+  '影殺·無聲': {name:'無聲處刑',mp:12,mult:2.55,type:'phys_crit',crit:0.55,desc:'【唯一】高爆擊背刺'},
+  '蒼穹長弓': {name:'貫日一箭',mp:16,mult:2.7,type:'phys',desc:'【唯一】物攻×2.7 穿雲'},
+  '不朽巨盾斧': {name:'不朽壁壘',mp:14,type:'guard',buffDefRatio:0.75,buffTurns:2,desc:'【唯一】嘲諷+自身防+75%'},
+  '龍骨戰錘': {name:'碎顱轟擊',mp:15,mult:2.5,type:'phys',desc:'【唯一】物攻×2.5 重擊'},
+  '霜噬雙刃': {name:'霜噬連斬',mp:13,mult:1.2,type:'phys_multi2',hits:2,desc:'【唯一】2 連擊，每段×1.2'},
+  '烈陽權杖': {name:'烈陽焚天',mp:24,mult:1.5,type:'magic_aoe',desc:'【唯一】魔攻×1.5／敵'},
+  '荆棘王鞭': {name:'荆棘鞭笞',mp:12,mult:2.35,type:'phys',desc:'【唯一】物攻×2.35'},
+  '灰燼聖鎧': {name:'灰燼護持',mp:12,type:'buff',buffDefRatio:0.28,buffTurns:2,desc:'【唯一】全隊防禦+28%，2 回合'},
+  '虛空法袍': {name:'虛空裂隙',mp:20,mult:1.55,type:'magic_aoe',desc:'【唯一】魔攻×1.55／敵'},
+  '遊俠風衣': {name:'疾風步',mp:10,mult:2.2,type:'phys',desc:'【唯一】物攻×2.2 迅擊'},
+  '暗影潛行衣': {name:'影襲',mp:11,mult:2.4,type:'phys_crit',crit:0.50,desc:'【唯一】爆擊伏擊'},
+  '聖愈祭袍': {name:'聖域祈禱',mp:24,heal:1.15,type:'heal_aoe',desc:'【唯一】全隊強效治療'},
+  '狂戰士皮甲': {name:'血戰咆哮',mp:12,mult:2.45,type:'phys',desc:'【唯一】物攻×2.45'},
+  '龍騎士鎧': {name:'龍騎衝鋒',mp:14,mult:2.35,type:'phys',desc:'【唯一】物攻×2.35'},
+  '元素編織袍': {name:'元素奔流',mp:22,mult:1.45,type:'magic_aoe',desc:'【唯一】魔攻×1.45／敵'},
+  '亡者裹屍甲': {name:'亡語詛咒',mp:18,mult:1.35,type:'magic_dot',poisonTurns:3,desc:'【唯一】魔攻×1.35／敵+中毒'},
+  '黎明守衛甲': {name:'黎明守護',mp:14,type:'guard',buffDefRatio:0.70,buffTurns:2,desc:'【唯一】嘲諷+防+70%'},
+  '世界樹之心': {name:'樹心再生',mp:16,heal:0.35,mpGain:10,type:'self_heal',desc:'【唯一】自身最大HP×35%+10MP'},
+  '時間沙漏墜': {name:'時之矢',mp:14,mult:2.4,type:'phys',desc:'【唯一】物攻×2.4'},
+  '深淵之眼': {name:'深淵凝視',mp:20,mult:2.65,type:'magic',desc:'【唯一】魔攻×2.65'},
+  '屠龍者徽章': {name:'屠龍一擊',mp:15,mult:2.75,type:'phys',desc:'【唯一】物攻×2.75'},
+  '盜王之戒': {name:'神偷之手',mp:10,type:'steal',mult:1.35,stealMin:12,stealMax:28,desc:'【唯一】物傷+大額偷金'},
+  '大賢者眼鏡': {name:'洞察魔彈',mp:16,mult:2.5,type:'magic',desc:'【唯一】魔攻×2.5'},
+  '守護天使羽': {name:'羽翼庇護',mp:18,heal:1.9,type:'heal',desc:'【唯一】強效治療'},
+  '泰坦之握': {name:'泰坦碎擊',mp:14,mult:2.55,type:'phys',desc:'【唯一】物攻×2.55'},
+  '幻影斗篷扣': {name:'殘像斬',mp:12,mult:1.15,type:'phys_multi',hits:3,desc:'【唯一】3 連擊'},
+  '永恆沙漏戒': {name:'時止魔光',mp:22,mult:2.7,type:'magic',desc:'【唯一】魔攻×2.7'},
+  '血怒戰斧·滅': {name:'滅殺旋風',mp:16,mult:2.65,type:'phys',desc:'【唯一】物攻×2.65'},
+  '星隕法球': {name:'星隕降臨',mp:26,mult:1.6,type:'magic_aoe',desc:'【唯一】魔攻×1.6／敵'},
+  '月神銀弓': {name:'銀月箭雨',mp:18,mult:1.1,type:'phys_multi',hits:3,desc:'【唯一】3 連射'},
+  '審判之錘·神': {name:'神罰一擊',mp:16,mult:2.0,type:'magic',holy:true,desc:'【唯一】魔攻×2.0；對邪惡×1.25'},
+  '骨龍脊刃': {name:'龍脊裂斬',mp:15,mult:2.6,type:'phys',desc:'【唯一】物攻×2.6'},
+  '風暴鎖子甲': {name:'雷甲震擊',mp:14,type:'buff',buffDefRatio:0.25,buffTurns:2,desc:'【唯一】全隊防+25%'},
+  '蛛網輕甲': {name:'毒網纏繞',mp:13,mult:2.3,type:'phys',desc:'【唯一】物攻×2.3'},
+  '聖堂侍從甲': {name:'聖堂祝福',mp:20,heal:1.05,type:'heal_aoe',desc:'【唯一】全隊治療'},
+  '熔岩板甲': {name:'熔核護體',mp:12,type:'guard',buffDefRatio:0.72,buffTurns:2,desc:'【唯一】嘲諷+高防'},
+  '寒冰巫袍': {name:'極寒風暴',mp:24,mult:1.5,type:'magic_aoe',desc:'【唯一】魔攻×1.5／敵'},
+  '獵神徽章': {name:'獵神標記',mp:10,type:'mark',markTurns:3,markMult:1.4,desc:'【唯一】標記敵人受傷+40%'},
+  '血契戒指': {name:'血契斬',mp:13,mult:2.5,type:'phys',desc:'【唯一】物攻×2.5'},
+  '智慧蘋果墜': {name:'禁知衝擊',mp:18,mult:2.55,type:'magic',desc:'【唯一】魔攻×2.55'},
+  '鐵壁臂環': {name:'鐵壁格擋',mp:11,type:'guard',buffDefRatio:0.68,buffTurns:2,desc:'【唯一】嘲諷+防'},
+  '寧靜祈禱珠': {name:'寧靜聖歌',mp:22,heal:1.2,type:'heal_aoe',desc:'【唯一】全隊治療'},
+  '幽靈靴': {name:'穿影步',mp:11,mult:2.35,type:'phys_crit',crit:0.45,desc:'【唯一】爆擊突襲'},
+  '泰坦之心核': {name:'心核脈動',mp:14,heal:0.40,mpGain:8,type:'self_heal',desc:'【唯一】自身HP×40%+8MP'},
+  '混沌骰子': {name:'賭命一擊',mp:12,mult:2.8,type:'phys_crit',crit:0.40,desc:'【唯一】高倍率豪賭'},
+  '創世碎片': {name:'源初爆破',mp:25,mult:1.65,type:'magic_aoe',desc:'【唯一】魔攻×1.65／敵'},
+  '終焉沙漏': {name:'終焉之箭',mp:16,mult:2.65,type:'phys',desc:'【唯一】物攻×2.65'}
+};
+const ROLE_UNIQUE_SKILL_FALLBACK = {
+  warrior: {name:'唯一戰技',mp:12,mult:2.4,type:'phys',desc:'【唯一】物攻×2.4'},
+  tank:    {name:'唯一守御',mp:12,type:'guard',buffDefRatio:0.65,buffTurns:2,desc:'【唯一】嘲諷+防'},
+  archer:  {name:'唯一箭術',mp:12,mult:2.4,type:'phys',desc:'【唯一】物攻×2.4'},
+  rogue:   {name:'唯一暗技',mp:11,mult:2.35,type:'phys_crit',crit:0.45,desc:'【唯一】爆擊'},
+  mage:    {name:'唯一秘法',mp:18,mult:2.4,type:'magic',desc:'【唯一】魔攻×2.4'},
+  healer:  {name:'唯一聖療',mp:16,heal:1.8,type:'heal',desc:'【唯一】強效治療'}
+};
+function getUniqueSkill(item){
+  if(!item || !(item.isUnique || item.rarity==='unique')) return null;
+  const key = String(item.baseName || item.name || '').replace(/^【唯一】/, '');
+  const sk = item.uniqueSkill || UNIQUE_SKILLS[key] || ROLE_UNIQUE_SKILL_FALLBACK[item.role] || ROLE_UNIQUE_SKILL_FALLBACK.warrior;
+  if(!sk) return null;
+  // 回傳副本並標記來源，避免共用物件被改／舊存檔缺 fromUnique
+  return Object.assign({}, sk, {fromUnique:true, uniqueName: key});
+}
+/** 角色已裝備的唯一專屬技能列表 */
+function equippedUniqueSkills(member){
+  if(!member || !member.equip) return [];
+  const out = [];
+  const seen = new Set();
+  Object.values(member.equip).forEach(eq=>{
+    if(!eq) return;
+    const sk = getUniqueSkill(eq);
+    if(!sk) return;
+    const id = sk.name + '|' + (eq.baseName||eq.name);
+    if(seen.has(id)) return;
+    seen.add(id);
+    out.push(Object.assign({}, sk, {fromUnique:true, sourceItem: eq.baseName||eq.name}));
+  });
+  return out;
+}
+
+function getUniqueEffect(item){
+  if(!item || !(item.isUnique || item.rarity==='unique')) return null;
+  if(item.effect && item.effect.type) return item.effect;
+  const key = String(item.baseName || item.name || '').replace(/^【唯一】/, '');
+  if(UNIQUE_EFFECTS[key]) return UNIQUE_EFFECTS[key];
+  return ROLE_UNIQUE_FALLBACK[item.role] || ROLE_UNIQUE_FALLBACK.warrior;
+}
+/** 角色已裝備唯一效果列表 */
+function equippedUniqueEffects(member){
+  if(!member || !member.equip) return [];
+  const out = [];
+  Object.values(member.equip).forEach(eq=>{
+    if(!eq) return;
+    const eff = getUniqueEffect(eq);
+    if(eff) out.push({item:eq, effect:eff});
+  });
+  return out;
+}
+function sumUniqueEffect(member, type){
+  let s = 0;
+  equippedUniqueEffects(member).forEach(({effect})=>{
+    if(effect.type===type) s += num(effect.v, 0);
+  });
+  return s;
+}
+function uniqueEffectDesc(item){
+  const eff = getUniqueEffect(item);
+  return eff ? eff.desc : '';
+}
+
+/**
+ * 千古共鳴詞條設計
+ * ------------------------------------------------------------
+ * 定位：千古 = 高數值隨機裝 + 一條「具名共鳴」（弱於唯一專屬，但可疊出風格）
+ * 唯一 = 固定名稱 + 較強專屬效果
+ * 共鳴只出現在 rarity=ancient，永遠標為「千古共鳴·XXX」
+ * 每件千古恰好 1 條共鳴；數值隨 itemLevel／稀有倍率縮放
+ */
+const ANCIENT_RESONANCES = [
+  // —— 防禦／坦克向 ——
+  {id:'ironwall', name:'鐵壁', roles:['tank','warrior'], w:12,
+    flats:[{stat:'def',v:8},{stat:'hp',v:32}],
+    effect:null,
+    desc:'防禦與生命強化，站得更久'},
+  {id:'aegis', name:'聖盾', roles:['tank','healer'], w:10,
+    flats:[{stat:'def',v:6},{stat:'con',v:5}],
+    effect:{type:'dmgReduce', v:0.06},
+    desc:'受傷 -6%，並提升防禦／體質'},
+  {id:'thornroot', name:'荊根', roles:['tank','warrior'], w:8,
+    flats:[{stat:'def',v:5},{stat:'hp',v:20}],
+    effect:{type:'thorns', v:0.08},
+    desc:'反傷 8%，適合反打坦克'},
+  {id:'titanbone', name:'泰坦骨', roles:['tank','warrior'], w:8,
+    flats:[{stat:'hp',v:45},{stat:'str',v:4}],
+    effect:{type:'hpBonus', v:0.06},
+    desc:'最大生命 +6%，厚血線'},
+  // —— 物理輸出 ——
+  {id:'bloodrage', name:'血怒', roles:['warrior','rogue'], w:11,
+    flats:[{stat:'atk',v:7},{stat:'str',v:4}],
+    effect:{type:'lifesteal', v:0.06},
+    desc:'攻擊吸血 6%，對砍更穩'},
+  {id:'sunder', name:'裂甲', roles:['warrior','archer'], w:10,
+    flats:[{stat:'atk',v:6},{stat:'str',v:3}],
+    effect:{type:'pierceBonus', v:0.10},
+    desc:'額外穿甲 10%'},
+  {id:'eagleshot', name:'鷹眼', roles:['archer','rogue'], w:10,
+    flats:[{stat:'atk',v:5},{stat:'agi',v:5}],
+    effect:{type:'critBonus', v:0.07},
+    desc:'爆擊率 +7%'},
+  {id:'gale', name:'疾風', roles:['archer','rogue','warrior'], w:9,
+    flats:[{stat:'spd',v:5},{stat:'agi',v:4}],
+    effect:{type:'spdBonus', v:0.06},
+    desc:'速度 +6%，更容易先手'},
+  {id:'shadowfang', name:'影牙', roles:['rogue'], w:9,
+    flats:[{stat:'atk',v:5},{stat:'spd',v:4}],
+    effect:{type:'critBonus', v:0.05},
+    desc:'爆擊與速度兼顧的暗殺共鳴'},
+  // —— 魔法／治療 ——
+  {id:'arcane', name:'奧術', roles:['mage'], w:12,
+    flats:[{stat:'matk',v:7},{stat:'int',v:5}],
+    effect:{type:'matkBonus', v:0.07},
+    desc:'魔攻 +7%'},
+  {id:'manaspring', name:'法泉', roles:['mage','healer'], w:10,
+    flats:[{stat:'mp',v:28},{stat:'int',v:4}],
+    effect:{type:'mpOnHit', v:3},
+    desc:'命中回復 3 MP'},
+  {id:'sunfire', name:'日炎', roles:['mage','healer'], w:9,
+    flats:[{stat:'matk',v:6},{stat:'mp',v:16}],
+    effect:{type:'burnBonus', v:0.08},
+    desc:'魔法傷害 +8%'},
+  {id:'mercy', name:'慈恩', roles:['healer'], w:12,
+    flats:[{stat:'int',v:5},{stat:'mp',v:24}],
+    effect:{type:'healBonus', v:0.10},
+    desc:'治療量 +10%'},
+  {id:'dawn', name:'破曉', roles:['healer','tank'], w:8,
+    flats:[{stat:'con',v:4},{stat:'mp',v:18}],
+    effect:{type:'healBonus', v:0.06},
+    desc:'偏生存的治療共鳴'},
+  // —— 萬用／成長 ——
+  {id:'eternity', name:'永恆', roles:['tank','warrior','archer','rogue','mage','healer'], w:6,
+    flats:[{stat:'hp',v:24},{stat:'mp',v:16}],
+    effect:null,
+    desc:'生命與魔力雙成長'},
+  {id:'harmony', name:'調和', roles:['tank','warrior','archer','rogue','mage','healer'], w:5,
+    flats:[{stat:'str',v:3},{stat:'con',v:3},{stat:'agi',v:3},{stat:'int',v:3}],
+    effect:null,
+    desc:'四維各少量提升'},
+  {id:'apex', name:'極致', roles:['warrior','archer','rogue','mage'], w:5,
+    flats:[{stat:'atk',v:4},{stat:'matk',v:4}],
+    effect:{type:'critBonus', v:0.04},
+    desc:'物魔皆可、附帶一點爆擊'}
+];
+
+function pickAncientResonance(rng, role, slot){
+  rng = rng || Math.random;
+  role = role || 'warrior';
+  // 依角色權重過濾；若無命中則退回全池
+  let pool = ANCIENT_RESONANCES.filter(r=> (r.roles||[]).includes(role));
+  if(!pool.length) pool = ANCIENT_RESONANCES.slice();
+  // 防具略偏防禦向、武器略偏輸出向（權重微調）
+  const weighted = pool.map(r=>{
+    let w = r.w || 5;
+    if(slot==='armor' && (r.effect&& (r.effect.type==='dmgReduce'||r.effect.type==='thorns') || r.id==='ironwall'||r.id==='titanbone')) w *= 1.4;
+    if(slot==='weapon' && (r.effect&& (r.effect.type==='lifesteal'||r.effect.type==='pierceBonus'||r.effect.type==='burnBonus'))) w *= 1.3;
+    if(slot==='accessory' && (r.id==='eternity'||r.id==='harmony'||r.id==='manaspring')) w *= 1.25;
+    return {item:r, w};
+  });
+  return weightedChoice(rng, weighted);
+}
+
+/** 把共鳴寫進 affixes + item.resonance（戰鬥用） */
+function applyAncientResonance(item, rng, rarity, itemLevel){
+  if(!item) return item;
+  rng = rng || Math.random;
+  const res = pickAncientResonance(rng, item.role, item.slot);
+  if(!res) return item;
+  const lvlFactor = 1 + Math.max(0, (itemLevel||1)-1) * 0.05;
+  // 扁平數值：吃千古倍率，略高於普通附加
+  (res.flats||[]).forEach((f, idx)=>{
+    const baseV = f.v;
+    const value = Math.max(1, Math.round(baseV * (rarity?.mult||5.2) * 0.55 * lvlFactor * (0.92 + rng()*0.16)));
+    item.affixes = item.affixes || [];
+    item.affixes.push({
+      stat: f.stat,
+      value,
+      label: idx===0 ? ('千古共鳴·'+res.name) : ('共鳴·'+res.name)
+    });
+  });
+  item.resonance = {
+    id: res.id,
+    name: res.name,
+    desc: res.desc,
+    type: res.effect ? res.effect.type : null,
+    v: res.effect ? res.effect.v : 0
+  };
+  return item;
+}
+
+function resonanceDesc(item){
+  if(!item || !item.resonance) return '';
+  const r = item.resonance;
+  return r.name ? (r.name+'：'+(r.desc||'')) : '';
+}
+
+/** 唯一 + 千古共鳴 的特殊效果加總 */
+function sumEquipSpecial(member, type){
+  let s = 0;
+  if(typeof sumUniqueEffect === 'function') s += sumUniqueEffect(member, type);
+  if(!member || !member.equip) return s;
+  Object.values(member.equip).forEach(eq=>{
+    if(eq && eq.resonance && eq.resonance.type===type) s += num(eq.resonance.v, 0);
+  });
+  return s;
+}
+
 function avgPartyLevel(s){
   s = s || S;
   if(!s || !s.party || !s.party.length) return 1;
   const sum = s.party.reduce((a,m)=> a + num(m.level, 1), 0);
   const avg = Math.round(sum / s.party.length);
   return clamp(avg, 1, MAX_PLAYER_LEVEL);
+}
+
+/** 法杖／法器／書／球 等 → 主屬應為魔攻 */
+function isMagicWeaponName(name){
+  if(!name) return false;
+  const n = String(name);
+  return /法杖|權杖|魔杖|法球|法器|魔導|聖典|法典|魔導書|法書|奧術|水晶球|星隕|法袍|巫袍/.test(n);
+}
+
+/** 主詞條可否為 matk：法器武器，或法師／治療向裝備（含頭／披風／飾品等） */
+function canMainBeMatk(item){
+  if(!item) return false;
+  const nm = item.baseName || item.name || '';
+  if(item.slot==='weapon') return isMagicWeaponName(nm);
+  // 胸甲主屬仍應為防（即使 role=mage）
+  if(item.slot==='armor') return false;
+  // 法師／治療向的頭、披風、手、鞋、飾品、副手可主魔攻
+  if(item.role==='mage' || item.role==='healer'){
+    return item.stat==='matk' || item.stat==='int' || isMagicWeaponName(nm);
+  }
+  return false;
+}
+
+/** 依槽位／角色推一個合理的主詞條（當錯誤 matk 被擋下時用） */
+function fallbackMainStat(item){
+  if(!item) return 'atk';
+  if(item.slot==='armor') return 'def';
+  if(item.slot==='accessory'){
+    if(item.role==='tank') return 'con';
+    if(item.role==='mage' || item.role==='healer') return 'int';
+    if(item.role==='archer' || item.role==='rogue') return 'agi';
+    return 'str';
+  }
+  // weapon
+  if(item.role==='mage' || item.role==='healer'){
+    return isMagicWeaponName(item.baseName||item.name||'') ? 'matk' : 'atk';
+  }
+  return 'atk';
+}
+
+/** 法器主屬強制魔攻；非法器若主屬誤為 matk 則改回合理物攻／防／屬性 */
+function forceMagicMainStat(item){
+  if(!item || item.slot==='potion') return item;
+  const nm = item.baseName || item.name || '';
+  const main = (item.affixes && item.affixes.length)
+    ? (item.affixes.find(a=>a.label==='主屬性') || item.affixes[0])
+    : null;
+
+  // 1) 法器武器 → 主屬必須 matk
+  if(item.slot==='weapon' && isMagicWeaponName(nm)){
+    if(item.stat==='atk') item.stat = 'matk';
+    if(main && main.stat==='atk') main.stat = 'matk';
+    return item;
+  }
+
+  // 2) 非合法魔攻主詞條 → 改掉（坦克甲、物攻武器等不可主魔攻）
+  const mainStatNow = main ? main.stat : item.stat;
+  if(mainStatNow==='matk' && !canMainBeMatk(item)){
+    const fb = fallbackMainStat(item);
+    item.stat = fb;
+    if(main) main.stat = fb;
+  }
+  return item;
+}
+function itemStatSum(item, st){
+  if(!item) return 0;
+  if(item.affixes && item.affixes.length)
+    return item.affixes.filter(a=>a.stat===st).reduce((s,a)=>s+(num(a.value,0)),0);
+  let v=0;
+  if(item.stat===st) v+=num(item.value,0);
+  if(item.extraStat===st) v+=num(item.extraValue,0);
+  return v;
+}
+function itemPowerScore(item){
+  if(!item || item.slot==='potion') return 0;
+  const weights = {atk:1.2,matk:1.2,def:1.0,spd:0.9,hp:0.08,mp:0.06,str:1.1,con:1.0,agi:1.0,int:1.1};
+  let s = 0;
+  Object.keys(weights).forEach(st=>{ s += itemStatSum(item, st) * weights[st]; });
+  s += (item.itemLevel||1) * 0.5;
+  if(item.rarity==='unique' || item.isUnique) s += 45;
+  return s;
+}
+/** 全隊（含背包）是否已有同名唯一 */
+function uniqueAlreadyHeld(item, ignoreUid){
+  if(!item || !(item.isUnique || item.rarity==='unique')) return false;
+  if(typeof S==='undefined' || !S) return false;
+  const key = item.baseName || item.name;
+  const match = (eq)=> eq && (eq.baseName===key || eq.name===item.name || ((eq.isUnique||eq.rarity==='unique') && eq.baseName===key));
+  for(const p of (S.party||[])){
+    for(const eq of Object.values(p.equip||{})){
+      if(match(eq) && eq.uid!==ignoreUid) return true;
+    }
+  }
+  for(const i of (S.inventory||[])){
+    if(i.uid!==ignoreUid && match(i)) return true;
+  }
+  for(const i of (S.warehouse||[])){
+    if(i.uid!==ignoreUid && match(i)) return true;
+  }
+  return false;
 }
 
 function rarityById(id){
@@ -1152,12 +2054,16 @@ function scaleAffixValue(baseV, rarity, itemLevel, rng){
 }
 
 function pickRoleAffixes(rng, role, count, rarity, itemLevel, usedStats){
+  // 附加詞條：以角色池為主，約 25% 抽通用池（可出現魔攻等異屬）——僅附加，不影響主詞條
   const pool = (ROLE_AFFIX_POOL[role] || GENERIC_AFFIX_POOL).slice();
   const gen = GENERIC_AFFIX_POOL.slice();
   const result = [];
   usedStats = usedStats || new Set();
   for(let i=0;i<count;i++){
-    let src = pool.length ? pool : gen;
+    let src;
+    if(pool.length && rng() >= 0.25) src = pool;
+    else if(gen.length) src = gen;
+    else src = pool.length ? pool : GENERIC_AFFIX_POOL.slice();
     if(!src.length) src = GENERIC_AFFIX_POOL.slice();
     const idx = Math.floor(rng()*src.length);
     const template = src.splice(idx,1)[0] || choice(rng, GENERIC_AFFIX_POOL);
@@ -1179,30 +2085,53 @@ function rollEquip(rng, minRarity, itemLevel){
     return rollUniqueEquip(rng, itemLevel);
   }
 
-  const slot = choice(rng, ['weapon','armor','accessory']);
-  const base = choice(rng, EQUIP_BASES[slot]);
+  // 欄位權重：武器/胸甲常見，新欄位較少
+  const slot = weightedChoice(rng, [
+    {item:'weapon',w:28},{item:'armor',w:22},{item:'accessory',w:14},
+    {item:'offhand',w:10},{item:'head',w:9},{item:'cape',w:6},{item:'hands',w:6},{item:'feet',w:5}
+  ]);
+  const basePool = EQUIP_BASES[slot] || EQUIP_BASES.weapon;
+  const base = choice(rng, basePool);
   const minId = minRarity ? (RARITY_LEGACY_MAP[minRarity]||minRarity) : null;
   const minIdx = minId ? RARITIES.findIndex(r=>r.id===minId) : -1;
   const pool = RARITIES.filter((r,i)=> i>=Math.max(0,minIdx) && r.id!=='unique');
   const rarity = weightedChoice(rng, pool.map(r=>({item:r, w:r.w})));
   const lvlFactor = 1 + Math.max(0, itemLevel-1) * 0.05;
   const variance = 1 + ((rng()*2-1) * rarity.variance);
-  const mainValue = Math.max(1, Math.round(base.v * rarity.mult * lvlFactor * variance));
+  // 主詞條：法器→matk；防具→def；其餘用基底。附加詞條可跨屬（含魔攻）
+  let mainStat = base.stat;
+  if(slot==='armor') mainStat = 'def';
+  else if(slot==='weapon' && isMagicWeaponName(base.n)) mainStat = 'matk';
+  // 安全網：非魔攻合法件若基底誤標 matk，改回
+  if(mainStat==='matk'){
+    const tmp = {slot, baseName: base.n, name: base.n, role: base.role, stat: mainStat};
+    if(!canMainBeMatk(tmp)) mainStat = (slot==='armor' ? 'def' : 'atk');
+  }
+  let mainValue = Math.max(1, Math.round(base.v * rarity.mult * lvlFactor * variance));
 
-  const affixes = [{stat: base.stat, value: mainValue, label: '主屬性'}];
+  const affixes = [{stat: mainStat, value: mainValue, label: '主屬性'}];
   if(rarity.affixCount > 0){
-    const extras = pickRoleAffixes(rng, base.role, rarity.affixCount, rarity, itemLevel);
+    // 附加詞條：主池仍依角色；法器偏向法師池。附加允許出現異屬（含魔攻）
+    const affRole = (slot==='weapon' && isMagicWeaponName(base.n)) ? 'mage' : base.role;
+    const extras = pickRoleAffixes(rng, affRole, rarity.affixCount, rarity, itemLevel, new Set([mainStat]));
     affixes.push(...extras);
   }
 
-  return {
+  // 千古：主屬再強化；共鳴在物件組好後套用（具名詞條 + 可選戰鬥效果）
+  if(rarity.id === 'ancient'){
+    const boost = Math.max(1, Math.round(mainValue * 0.12));
+    mainValue += boost;
+    affixes[0].value = mainValue;
+  }
+
+  const item = {
     uid: 'eq_'+Math.floor(rng()*1e9),
     slot,
     name: rarity.name + base.n,
     baseName: base.n,
     material: base.mat,
     role: base.role,
-    stat: base.stat,
+    stat: mainStat,
     value: mainValue,
     affixes,
     // 相容舊欄位
@@ -1212,20 +2141,34 @@ function rollEquip(rng, minRarity, itemLevel){
     rarityName: rarity.name,
     rarityHex: rarity.hex,
     itemLevel,
+    locked: false,
     seed: base.n + rarity.id + Math.floor(rng()*999)
   };
+  if(rarity.id === 'ancient') applyAncientResonance(item, rng, rarity, itemLevel);
+  return item;
 }
 
 function rollUniqueEquip(rng, itemLevel){
   const template = choice(rng, UNIQUE_ITEMS);
   const rarity = RARITIES.find(r=>r.id==='unique');
-  const lvlFactor = 1 + Math.max(0, (itemLevel||1)-1) * 0.04;
-  const mainValue = Math.max(1, Math.round(template.v * rarity.mult * lvlFactor));
-  const affixes = [{stat: template.stat, value: mainValue, label: '主屬性'}];
+  // 唯一數值檔：等級係數略優於千古、主屬與專屬詞條再乘一檔
+  const lvlFactor = 1 + Math.max(0, (itemLevel||1)-1) * 0.055;
+  let mainStat = template.stat;
+  // 唯一裝也套用主詞條規則：非法器不可主魔攻
+  const probe = {slot: template.slot, baseName: template.n, name: template.n, role: template.role, stat: mainStat};
+  if(mainStat==='matk' && !canMainBeMatk(probe)){
+    mainStat = template.slot==='armor' ? 'def' : (template.slot==='accessory' ? fallbackMainStat(probe) : 'atk');
+  }
+  if(template.slot==='weapon' && isMagicWeaponName(template.n)) mainStat = 'matk';
+  if(template.slot==='armor') mainStat = 'def';
+  const UNIQUE_MAIN_BONUS = 1.20;   // 主屬比純倍率再高一檔
+  const UNIQUE_AFFIX_BONUS = 1.30;  // 專屬四詞條再高一檔
+  const mainValue = Math.max(1, Math.round(template.v * rarity.mult * lvlFactor * UNIQUE_MAIN_BONUS));
+  const affixes = [{stat: mainStat, value: mainValue, label: '主屬性'}];
   template.aff.forEach(a=>{
     affixes.push({
       stat: a.stat,
-      value: Math.max(1, Math.round(a.v * (0.95 + rng()*0.15) * lvlFactor)),
+      value: Math.max(1, Math.round(a.v * (1.05 + rng()*0.15) * lvlFactor * UNIQUE_AFFIX_BONUS)),
       label: a.label
     });
   });
@@ -1237,7 +2180,7 @@ function rollUniqueEquip(rng, itemLevel){
     baseName: template.n,
     material: template.mat,
     role: template.role,
-    stat: template.stat,
+    stat: mainStat,
     value: mainValue,
     affixes,
     extraStat: affixes[1]?affixes[1].stat:null,
@@ -1247,6 +2190,9 @@ function rollUniqueEquip(rng, itemLevel){
     rarityHex: rarity.hex,
     itemLevel: itemLevel||1,
     isUnique: true,
+    locked: false,
+    effect: getUniqueEffect({baseName:template.n, role:template.role, isUnique:true, rarity:'unique'}),
+    uniqueSkill: getUniqueSkill({baseName:template.n, role:template.role, isUnique:true, rarity:'unique'}),
     seed: 'unique_'+template.n
   };
 }
@@ -1259,49 +2205,77 @@ function equipPrice(item){
   return Math.max(8, Math.round((base*8 + affixSum*6) * (r.mult||1) + (item.itemLevel||1)*3));
 }
 
-/** 把舊裝備資料升級成新 affixes 格式（避免把新「常用 common」誤映射成「一般」） */
+/** 把舊裝備資料升級成新 affixes 格式；修正法器主屬、唯一旗標 */
 function normalizeItem(item){
   if(!item || item.slot==='potion') return item;
   const isLegacy = !item.affixes || !item.affixes.length;
-  // 僅舊存檔（沒有 affixes）才做稀有度對照：舊 common(普通)→normal(一般)
   if(isLegacy && RARITY_LEGACY_MAP[item.rarity]){
     item.rarity = RARITY_LEGACY_MAP[item.rarity];
     const r = rarityById(item.rarity);
     item.rarityName = r.name;
     item.rarityHex = r.hex;
   } else if(item.rarity){
-    // 確保 rarityName/hex 與現行表一致
     const r = rarityById(item.rarity);
     if(!item.rarityName) item.rarityName = r.name;
     if(!item.rarityHex) item.rarityHex = r.hex;
   }
+  if(item.rarity==='unique') item.isUnique = true;
   if(isLegacy){
     item.affixes = [];
     if(item.stat && item.value) item.affixes.push({stat:item.stat, value:item.value, label:'主屬性'});
     if(item.extraStat && item.extraValue) item.affixes.push({stat:item.extraStat, value:item.extraValue, label:'附加'});
   }
+  // 法杖類主屬強制魔攻（修正舊存檔／錯誤 roll）
+  forceMagicMainStat(item);
+  // 保證主屬性與 item.stat/value 同步（equipBonus 以 affixes 為準）
+  if(item.affixes && item.affixes.length){
+    const main = item.affixes.find(a=>a.label==='主屬性') || item.affixes[0];
+    if(main){
+      item.stat = main.stat;
+      item.value = main.value;
+    }
+  }
+  // 唯一：補齊專屬技能／被動（舊存檔可能沒有）
+  if(item.isUnique || item.rarity==='unique'){
+    if(!item.baseName && item.name){
+      item.baseName = String(item.name).replace(/^【唯一】/, '');
+    }
+    if(!item.uniqueSkill && typeof getUniqueSkill === 'function'){
+      const sk = getUniqueSkill(item);
+      if(sk) item.uniqueSkill = sk;
+    }
+    if(!item.effect && typeof getUniqueEffect === 'function'){
+      const eff = getUniqueEffect(item);
+      if(eff) item.effect = eff;
+    }
+  }
   return item;
 }
 
-/** 安全加入背包：正規化 + 唯一裝備不重複 */
+/** 安全加入背包：正規化 + 唯一不重複 + 滿包自動進倉庫 */
 function addToInventory(item){
   if(!item) return false;
+  if(!S) return false;
+  if(!S.inventory) S.inventory = [];
+  ensureWarehouse();
   if(item.slot==='potion'){
     addPotion(item.kind, item.value, item.name);
     return true;
   }
   normalizeItem(item);
   if(item.isUnique || item.rarity==='unique'){
-    const nameKey = item.baseName || item.name;
-    const exists = S.inventory.some(i=>i.baseName===nameKey || i.name===item.name) ||
-      S.party.some(p=>Object.values(p.equip||{}).some(eq=>eq && (eq.baseName===nameKey || eq.name===item.name)));
-    if(exists){
-      if(S && S.log) S.log.unshift('【唯一】'+nameKey+' 已擁有，無法再取得。');
+    if(uniqueAlreadyHeld(item, item.uid)){
+      if(S.log) S.log.unshift('【唯一】'+(item.baseName||item.name)+' 已擁有，無法再取得。');
       return false;
     }
   }
-  S.inventory.push(item);
-  return true;
+  // 背包未滿 → 進背包；已滿 → 倉庫／折價
+  if(backpackHasSpace(1)){
+    S.inventory.push(item);
+    return true;
+  }
+  const fate = overflowDispose(item, false);
+  return fate === 'warehouse' || fate === 'sold';
 }
 
 /* ============ 資料：隨機事件 ============ */
@@ -1367,7 +2341,27 @@ const EVENTS = [
     ]}
 ];
 function dealTrapDamage(s,dmg){ s.hero.hp=clamp(s.hero.hp-dmg,1,s.hero.maxHp); return '陷阱造成了 '+dmg+' 點傷害！'; }
-function healParty(s,amt){ s.party.forEach(m=>{ if(m.hp>0) m.hp=clamp(m.hp+amt,0,m.maxHp); }); }
+/** 對存活隊友治療；倒地可選復活（回復量＝治療量×reviveRatio，預設 0.25） */
+function applyHealToMember(m, amt, opts){
+  opts = opts || {};
+  amt = Math.max(0, num(amt, 0));
+  if(!m) return {healed:0, revived:false};
+  if(m.hp > 0){
+    const before = m.hp;
+    m.hp = clamp(m.hp + amt, 0, m.maxHp);
+    return {healed: m.hp - before, revived:false};
+  }
+  // 倒地
+  if(!opts.canRevive) return {healed:0, revived:false};
+  const ratio = opts.reviveRatio != null ? opts.reviveRatio : 0.25;
+  const reviveHp = Math.max(1, Math.round(amt * ratio));
+  m.hp = clamp(reviveHp, 1, m.maxHp);
+  return {healed: m.hp, revived:true};
+}
+function healParty(s, amt, opts){
+  opts = opts || {};
+  (s.party||[]).forEach(m=> applyHealToMember(m, amt, opts));
+}
 // 全隊滿血滿魔（含倒地隊友，用於休息／特殊事件）
 function restorePartyFull(s){ s.party.forEach(m=>{ m.hp=m.maxHp; m.mp=m.maxMp; }); }
 
@@ -1392,17 +2386,23 @@ function makeRandomAlly(){
 }
 
 /* ============ 角色成員建構 / 升級 / 職業成長 ============ */
-/** 從裝備加總某一屬性（支援 affixes 陣列 + 舊格式） */
+/** 從裝備加總某一屬性（affixes 為準；無則回退舊欄位） */
 function equipBonus(m, stat){
   let v = 0;
-  if(!m.equip) return 0;
-  Object.values(m.equip).forEach(eq=>{
+  if(!m || !m.equip) return 0;
+  const slots = EQUIP_SLOT_IDS;
+  slots.forEach(slot=>{
+    const eq = m.equip[slot];
     if(!eq) return;
+    // 讀取時再保險正規化一次，避免舊資料沒詞綴
+    if(!eq.affixes || !eq.affixes.length) normalizeItem(eq);
     if(eq.affixes && eq.affixes.length){
-      eq.affixes.forEach(a=>{ if(a.stat===stat) v += a.value||0; });
+      eq.affixes.forEach(a=>{
+        if(a && a.stat===stat) v += num(a.value, 0);
+      });
     } else {
-      if(eq.stat===stat) v += eq.value||0;
-      if(eq.extraStat===stat) v += eq.extraValue||0;
+      if(eq.stat===stat) v += num(eq.value, 0);
+      if(eq.extraStat===stat) v += num(eq.extraValue, 0);
     }
   });
   return v;
@@ -1501,9 +2501,15 @@ function computeStats(m){
 }
 function applyComputedStats(m){
   const s = computeStats(m);
-  const dHp = s.maxHp - num(m.maxHp, 0);
+  let maxHp = s.maxHp;
+  // 唯一／共鳴：最大生命% 寫入實際 maxHp（避免只在 statTotal 顯示）
+  if(typeof sumEquipSpecial === 'function'){
+    const hpB = sumEquipSpecial(m, 'hpBonus');
+    if(hpB > 0) maxHp = Math.max(1, Math.round(maxHp * (1 + hpB)));
+  }
+  const dHp = maxHp - num(m.maxHp, 0);
   const dMp = s.maxMp - num(m.maxMp, 0);
-  m.maxHp=s.maxHp; m.maxMp=s.maxMp;
+  m.maxHp=maxHp; m.maxMp=s.maxMp;
   m.atk=s.atk; m.matk=s.matk; m.def=s.def; m.spd=s.spd;
   m.str=s.str; m.con=s.con; m.agi=s.agi; m.int=s.int;
   m.hp = clamp(num(m.hp, 0)+dHp, 0, m.maxHp);
@@ -1563,6 +2569,10 @@ function getSkills(m){
       if(adv && adv.skill) skills.push(adv.skill);
     }
   }
+  // 已裝備唯一：附加專屬技能
+  if(typeof equippedUniqueSkills === 'function'){
+    skills = skills.concat(equippedUniqueSkills(m));
+  }
   return skills;
 }
 function buildMember(name, level){
@@ -1576,7 +2586,7 @@ function buildMember(name, level){
     maxHp:0, hp:0, maxMp:0, mp:0,
     atk:0, matk:0, def:0, spd:0,
     str:0, con:0, agi:0, int:0,
-    equip:{weapon:null,armor:null,accessory:null,accessory2:null},
+    equip:emptyEquip(),
     buffDef:0, buffTurns:0, guarding:false, taunting:false,
     usedGuardianAngel:false
   };
@@ -1600,7 +2610,7 @@ function expForLevel(lv){
   return Math.round(30 * Math.pow(lv, 1.5) * (1 + lv * 0.008));
 }
 function statTotal(m, stat){
-  // 裝備與主屬性已計入 m.*，此處只加戰鬥中臨時 buff
+  // 裝備與主屬性已計入 m.*，此處加戰鬥 buff + 唯一%加成
   let v;
   if(stat==='hp') v = m.maxHp;
   else if(stat==='mp') v = m.maxMp;
@@ -1609,7 +2619,14 @@ function statTotal(m, stat){
   else if(stat==='spd') v = (m.spd||0) - num(m.spdDebuff, 0);
   else v = m[stat];
   if(stat==='def' && m.buffTurns>0) v = num(v,0) + num(m.buffDef,0);
-  return Math.max(0, num(v, 0));
+  v = num(v, 0);
+  if(typeof sumEquipSpecial === 'function'){
+    if(stat==='atk') v *= (1 + sumEquipSpecial(m, 'atkBonus'));
+    if(stat==='matk') v *= (1 + sumEquipSpecial(m, 'matkBonus'));
+    if(stat==='spd') v *= (1 + sumEquipSpecial(m, 'spdBonus'));
+    // hpBonus 已在 applyComputedStats 寫入 maxHp，此處不再乘
+  }
+  return Math.max(0, Math.round(v));
 }
 function evaluateEvolution(m){
   if(m.level>=PROFESSION_LEVEL && !m.professionId){ S.pendingStage='profession'; return; }
@@ -1643,12 +2660,16 @@ function autoEvolveAll(m, log){
   }
 }
 function gainExp(m, amt, log){
+  if(!m) return;
+  log = log || [];
+  amt = Math.max(0, Math.round(num(amt, 0)));
+  if(amt <= 0) return;
   if(m.level >= MAX_PLAYER_LEVEL){
     m.exp = 0;
     m.nextExp = expForLevel(MAX_PLAYER_LEVEL);
     return;
   }
-  m.exp += amt;
+  m.exp = num(m.exp, 0) + amt;
   while(m.exp >= m.nextExp && m.level < MAX_PLAYER_LEVEL){
     m.exp -= m.nextExp;
     m.level++;
@@ -1681,6 +2702,7 @@ function newGame(){
     hero,
     party:[hero],
     inventory:[{uid:'pot_start',slot:'potion',kind:'hp',name:'治療藥水',value:60,count:1}],
+    warehouse:[],
     log:[],
     battle:null,
     daysSurvived:0,
@@ -1689,7 +2711,8 @@ function newGame(){
     shopStock:null,
     shopTab:'buy',
     invSelectedUid:hero.uid,
-    tavernStock:null
+    tavernStock:null,
+    wareFilter:'all'
   };
   render();
 }
@@ -1706,34 +2729,60 @@ function routeHome(){
 function startBattle(){
   const rng = Math.random;
   const avgLevel = avgPartyLevel();
+  // 解鎖階級：偏「當前可打」而非一次全開
   const availableTiers = [1];
-  if(avgLevel>=4) availableTiers.push(2);
-  if(avgLevel>=10) availableTiers.push(3);
-  if(avgLevel>=18) availableTiers.push(4);
-  // Boss 僅 50 等後出現
-  const bossRoll = avgLevel>=50 && rng()<0.08;
+  if(avgLevel>=5) availableTiers.push(2);
+  if(avgLevel>=12) availableTiers.push(3);
+  if(avgLevel>=22) availableTiers.push(4);
+  // Boss 僅 50 等後、較低機率
+  const bossRoll = avgLevel>=50 && rng()<0.10;
   let pool = bossRoll
     ? MONSTER_TYPES.filter(m=>m.boss)
     : MONSTER_TYPES.filter(m=>!m.boss && availableTiers.includes(m.tier));
   if(pool.length===0) pool = MONSTER_TYPES.filter(m=>m.tier===1 && !m.boss);
 
+  // 遇敵數量：前期少、後期多，但權重偏少隻（避免每場都滿編）
   let count;
   if(bossRoll){
     count = 1;
   } else {
-    // 隨等級可遇到更多怪，上限 6
     let maxC = 2;
     if(avgLevel>=8) maxC = 3;
-    if(avgLevel>=15) maxC = 4;
-    if(avgLevel>=25) maxC = 5;
-    if(avgLevel>=35) maxC = MAX_MONSTER_PARTY;
-    count = rint(rng, 1, maxC);
+    if(avgLevel>=16) maxC = 4;
+    if(avgLevel>=28) maxC = 5;
+    if(avgLevel>=40) maxC = MAX_MONSTER_PARTY;
+    // 權重：1 隻 > 2 隻 > 更多
+    const weights = [];
+    for(let c=1;c<=maxC;c++) weights.push({item:c, w: Math.max(1, (maxC-c+1)*3)});
+    count = weightedChoice(rng, weights);
   }
+
+  // 階級權重：較高機率抽接近玩家等級的階級，少量低階雜兵
+  function pickTier(){
+    if(availableTiers.length===1) return availableTiers[0];
+    const top = availableTiers[availableTiers.length-1];
+    const wmap = availableTiers.map(ti=>{
+      let w = 10;
+      if(ti===top) w = 40;
+      else if(ti===top-1) w = 30;
+      else w = 12;
+      return {item:ti, w};
+    });
+    return weightedChoice(rng, wmap);
+  }
+
   const monsters=[];
   for(let i=0;i<count;i++){
-    const tmpl = choice(rng, pool);
-    // 精英：非 Boss、20 等後約 12%（高等更高）
-    const eliteChance = avgLevel>=20 ? Math.min(0.08 + (avgLevel-20)*0.002, 0.22) : 0;
+    const tPick = bossRoll ? 5 : pickTier();
+    const sub = pool.filter(m=> bossRoll ? true : m.tier===tPick);
+    const tmpl = choice(rng, sub.length ? sub : pool);
+    // 精英：18 等起出現，中期約 10%，後期最高約 20%；多隻時較不易全精英
+    let eliteChance = 0;
+    if(!bossRoll && avgLevel>=15){
+      eliteChance = Math.min(0.08 + (avgLevel-15)*0.003, 0.24);
+      if(count>=3) eliteChance *= 0.75;
+      if(count>=5) eliteChance *= 0.75;
+    }
     const elite = !bossRoll && rng() < eliteChance;
     monsters.push(makeMonster(tmpl, avgLevel, rng, { elite }));
   }
@@ -1744,10 +2793,18 @@ function startBattle(){
   });
   S.battle = {
     monsters, turnLog:[], selectedActor:null, selectedAction:null, over:false, win:null,
-    order: buildTurnOrder(monsters), turnIndex:0, roundNum:1
+    order: buildTurnOrder(monsters), turnIndex:0, roundNum:1,
+    bossMinionCount: 2, lastMinionRefillRound: 0
   };
   if(bossRoll){
-    S.battle.turnLog.unshift('⚠ 強大的 Boss「'+monsters[0].name+'」擋在前方！');
+    const boss = monsters.find(m=>m.boss) || monsters[0];
+    S.battle.bossMinionCount = 2;
+    for(let i=0;i<S.battle.bossMinionCount;i++){
+      S.battle.monsters.push(makeBossMinion(boss, avgLevel, rng, i));
+    }
+    S.battle.order = buildTurnOrder(S.battle.monsters);
+    S.battle.turnLog.unshift('⚠ 強大的 Boss「'+boss.name+'」帶著眷屬擋在前方！');
+    S.battle.turnLog.unshift('（眷屬攻擊會為 Boss 回復傷害 25% 的生命；每 2 回合補滿眷屬）');
   }
   S.screen='battle';
   advanceBattleTurn(true);
@@ -1764,10 +2821,20 @@ function advanceBattleTurn(first){
   if(!b || b.over) return;
   // rebuild order excluding dead
   b.order = buildTurnOrder(b.monsters);
-  if(b.order.length===0){ return; }
+  if(b.order.length===0){
+    checkBattleEnd();
+    return;
+  }
   if(!first) b.turnIndex++;
   if(b.turnIndex >= b.order.length){
     b.turnIndex=0; b.roundNum++;
+    // Boss 戰：每 2 回合補滿眷屬
+    if(b.roundNum > 1 && b.roundNum % 2 === 1){
+      const boss = getBattleBoss(b);
+      if(boss && boss.hp>0){
+        refillBossMinions(b, false);
+      }
+    }
     S.party.forEach(m=>{
       if(m.buffTurns>0){
         m.buffTurns--;
@@ -1807,7 +2874,13 @@ function advanceBattleTurn(first){
     tickMonsterStatus(current.ref);
     checkBattleEnd();
     if(!b.over && current.ref.hp>0){
-      monsterAct(current.ref);
+      const mon = current.ref;
+      if(num(mon.stunnedTurns, 0) > 0){
+        mon.stunnedTurns--;
+        b.turnLog.unshift(mon.name+' 處於暈眩，本回合無法行動！');
+      } else {
+        monsterAct(mon);
+      }
       checkBattleEnd();
     }
     if(!b.over) setTimeout(()=>{ advanceBattleTurn(false); render(); }, 550);
@@ -1867,11 +2940,30 @@ function applyDamageToMonster(actor, mon, rawDmg, isMagic, b){
     b.turnLog.unshift(mon.name+' 的護盾抵銷了部分傷害（剩餘 '+mon.shieldCharges+'）。');
   }
   if(dmg > 0) mon.hp = clamp(mon.hp - dmg, 0, mon.maxHp);
+  // 唯一裝備：吸血／回魔／擊暈
+  if(dmg > 0 && actor && actor.hp > 0 && typeof equippedUniqueEffects === 'function'){
+    const ls = sumEquipSpecial(actor, 'lifesteal');
+    if(ls > 0){
+      const heal = Math.max(1, Math.round(dmg * ls));
+      actor.hp = clamp(actor.hp + heal, 0, actor.maxHp);
+      b.turnLog.unshift(actor.name+' 的唯一裝備吸血恢復了 '+heal+' HP。');
+    }
+    const mpHit = sumEquipSpecial(actor, 'mpOnHit');
+    if(mpHit > 0){
+      actor.mp = clamp(actor.mp + Math.round(mpHit), 0, actor.maxMp);
+    }
+    const stun = sumEquipSpecial(actor, 'stunChance');
+    if(stun > 0 && Math.random() < stun){
+      mon.stunnedTurns = Math.max(num(mon.stunnedTurns, 0), 1);
+      b.turnLog.unshift(actor.name+' 的唯一裝備使 '+mon.name+' 暈眩！');
+    }
+  }
   if(mon.thorns && actor && actor.hp > 0){
     const ref = Math.max(1, Math.round(dmg * mon.thorns));
     actor.hp = clamp(actor.hp - ref, 0, actor.maxHp);
     b.turnLog.unshift(mon.name+' 反彈了 '+ref+' 點傷害！');
   }
+  // 唯一反傷（穿在身上時，被打才觸發 — 見 monsterAct）
   if(mon.hp <= 0 && mon.undying){
     mon.undying = false;
     mon.hp = Math.max(1, Math.round(mon.maxHp * 0.2));
@@ -2044,11 +3136,15 @@ const EVIL_TYPES = ['undead','shadow'];
 function isEvilMon(mon){ return !!(mon && EVIL_TYPES.indexOf(mon.type)>=0); }
 function critChance(actor, sk){
   if(sk && sk.crit != null) return clamp(sk.crit, 0, 0.95);
-  return clamp(CF.BASE_CRIT + (actor.agi||0) * CF.AGI_CRIT, 0, 0.75);
+  let c = CF.BASE_CRIT + (actor.agi||0) * CF.AGI_CRIT;
+  if(typeof sumEquipSpecial === 'function') c += sumEquipSpecial(actor, 'critBonus');
+  return clamp(c, 0, 0.85);
 }
 function rollCrit(actor, sk){ return Math.random() < critChance(actor, sk); }
 function pierceIgnore(actor, targetDef){
-  return hasPassive(actor,'pierce') ? targetDef * CF.PIERCE_RATIO : 0;
+  let ratio = hasPassive(actor,'pierce') ? CF.PIERCE_RATIO : 0;
+  if(typeof sumEquipSpecial === 'function') ratio += sumEquipSpecial(actor, 'pierceBonus');
+  return targetDef * Math.min(0.6, ratio);
 }
 function markMultOf(target){
   let m = (target && target.marked && target.markMult) ? target.markMult : 1;
@@ -2081,7 +3177,11 @@ function calcMagicDmg(actor, target, opts){
   const mult = num(opts.mult != null ? opts.mult : 1, 1);
   const matk = Math.max(1, num(statTotal(actor,'matk'), 1));
   const def = Math.max(0, num(target && target.def, 0));
-  const raw = matk * mult;
+  let raw = matk * mult;
+  if(typeof sumUniqueEffect === 'function'){
+    const burn = sumEquipSpecial(actor, 'burnBonus');
+    if(burn > 0) raw *= (1 + burn);
+  }
   const mitigated = raw - def * CF.MAG_DEF;
   const floor = raw * (CF.MAG_FLOOR != null ? CF.MAG_FLOOR : 0.30);
   let dmg = Math.max(1, Math.round(Math.max(floor, mitigated)));
@@ -2093,7 +3193,9 @@ function calcMagicDmg(actor, target, opts){
 function calcHealAmt(actor, healCoef){
   const matk = statTotal(actor,'matk');
   const intel = actor.int || 0;
-  return Math.max(1, Math.round(matk * (healCoef||1) + intel * 0.6 + actor.level * 2));
+  let amt = matk * (healCoef||1) + intel * 0.6 + actor.level * 2;
+  if(typeof sumEquipSpecial === 'function') amt *= (1 + sumEquipSpecial(actor, 'healBonus'));
+  return Math.max(1, Math.round(amt));
 }
 function dmgTag(r){
   let t = '';
@@ -2112,18 +3214,41 @@ function monsterAct(mon){
   const attackOnce = (target)=>{
     let atk = Math.max(1, num(effectiveMonAtk(mon), 1));
     if(mon.execute && target.hp < target.maxHp * 0.5) atk = Math.round(atk * num(mon.execute, 1));
-    // 怪物打人：攻擊略高方差、防禦折算較低、保底較高 → 有威脅但不秒殺
-    const rawM = atk * (0.95 + Math.random()*0.25);
-    const mitM = rawM - num(statTotal(target,'def'),0)*0.22;
-    let dmg = Math.max(1, Math.round(Math.max(rawM*0.42, mitM)));
+    // 怪物打人：同級要有痛感（保底提高、防禦折算再降）
+    const rawM = atk * (1.00 + Math.random()*0.28);
+    const mitM = rawM - num(statTotal(target,'def'),0)*0.18;
+    let dmg = Math.max(1, Math.round(Math.max(rawM*0.48, mitM)));
     if(mon.arcBonus) dmg = Math.round(dmg * (1 + mon.arcBonus * 0.5));
     let blocked = false;
     if(hasPassive(target,'block') && Math.random()<0.18){
       dmg = Math.max(1, Math.round(dmg*0.65));
       blocked = true;
     }
+    // 唯一：受傷減免
+    if(typeof sumUniqueEffect === 'function'){
+      const dr = sumEquipSpecial(target, 'dmgReduce');
+      if(dr > 0) dmg = Math.max(1, Math.round(dmg * (1 - Math.min(0.4, dr))));
+    }
     target.hp = clamp(target.hp-dmg,0,target.maxHp);
     b.turnLog.unshift(mon.name+' 攻擊了 '+target.name+'，造成 '+dmg+' 點傷害。'+(blocked?'（格擋減傷！）':''));
+    // 唯一：反傷
+    if(typeof sumUniqueEffect === 'function' && dmg > 0 && mon.hp > 0){
+      const th = sumEquipSpecial(target, 'thorns');
+      if(th > 0){
+        const ref = Math.max(1, Math.round(dmg * th));
+        mon.hp = clamp(mon.hp - ref, 0, mon.maxHp);
+        b.turnLog.unshift(target.name+' 的唯一裝備反彈了 '+ref+' 點傷害！');
+      }
+    }
+    // Boss 眷屬：攻擊傷害的 25% 轉為 Boss 回血
+    if(mon.isBossMinion && dmg > 0){
+      const boss = getBattleBoss(b);
+      if(boss && boss.hp > 0){
+        const heal = Math.max(1, Math.round(dmg * 0.25));
+        boss.hp = clamp(boss.hp + heal, 0, boss.maxHp);
+        b.turnLog.unshift('🩸 眷屬為 '+boss.name+' 吸收生命 +'+heal+'！');
+      }
+    }
     if(mon.vampiric){
       const heal = Math.max(1, Math.round(dmg * mon.vampiric));
       mon.hp = clamp(mon.hp+heal, 0, mon.maxHp);
@@ -2216,8 +3341,9 @@ function playerAction(actorUid, action, targetIdx, skillIdx, potionUid){
   } else if(action==='skill'){
     const sk = getSkills(actor)[skillIdx];
     if(!sk){ render(); return; }
-    if(actor.mp < sk.mp){ b.turnLog.unshift(actor.name+' 的MP不足以使用 '+sk.name+'！'); render(); return; }
-    actor.mp -= sk.mp;
+    const needMp = num(sk.mp, 0);
+    if(actor.mp < needMp){ b.turnLog.unshift(actor.name+' 的MP不足以使用 '+sk.name+'！'); render(); return; }
+    actor.mp -= needMp;
     applySkill(actor, sk, targetIdx, b);
   } else if(action==='item'){
     const item = potionUid ? S.inventory.find(i=>i.uid===potionUid) : S.inventory.find(i=>i.slot==='potion');
@@ -2307,13 +3433,23 @@ function applySkill(actor, sk, targetIdx, b){
     const target = S.party[targetIdx];
     if(!target) return;
     let amt = calcHealAmt(actor, sk.heal||1);
-    if(hasPassive(actor,'mercyHeal') && target.hp < target.maxHp*0.3) amt = Math.round(amt*1.25);
-    target.hp = clamp(target.hp+amt,0,target.maxHp);
-    b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」為 '+target.name+' 恢復 '+amt+' HP。');
+    if(hasPassive(actor,'mercyHeal') && target.hp > 0 && target.hp < target.maxHp*0.3) amt = Math.round(amt*1.25);
+    const r = applyHealToMember(target, amt, {canRevive:true, reviveRatio:0.25});
+    if(r.revived){
+      b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」救起了 '+target.name+'（回復 '+r.healed+' HP，為治療量的 25%）！');
+    } else {
+      b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」為 '+target.name+' 恢復 '+r.healed+' HP。');
+    }
   } else if(type==='heal_aoe'){
     const amt = calcHealAmt(actor, sk.heal||0.8);
-    healParty(S, amt);
-    b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」為全隊恢復 '+amt+' HP。');
+    const revived = [];
+    S.party.forEach(m=>{
+      const r = applyHealToMember(m, amt, {canRevive:true, reviveRatio:0.25});
+      if(r.revived) revived.push(m.name);
+    });
+    let msg = actor.name+' 使用了「'+sk.name+'」為全隊恢復 '+amt+' HP。';
+    if(revived.length) msg += ' '+revived.join('、')+' 被救起（回復治療量的 25%）！';
+    b.turnLog.unshift(msg);
   } else if(type==='buff'){
     const turns = sk.buffTurns||2;
     const ratio = sk.buffDefRatio != null ? sk.buffDefRatio : 0.20;
@@ -2354,12 +3490,12 @@ function checkKillReward(mon, b){
   mon.rewarded = true;
   const affixCount = mon.affixes ? mon.affixes.length : 0;
   const mult = 1 + affixCount*0.2;
-  const exp = Math.round(mon.exp*mult);
-  const gold = Math.round(mon.gold*mult);
+  const exp = Math.max(0, Math.round(num(mon.exp, 0)*mult));
+  const gold = Math.max(0, Math.round(num(mon.gold, 0)*mult));
   const log=[];
-  // 修復：主角倒地仍拿經驗，避免卡在轉職門檻
-  S.party.forEach(m=>{ if(m.isHero || m.hp>0) gainExp(m, exp, log); });
-  S.hero.gold += gold;
+  // 倒地隊友也拿經驗（避免落後等級／卡成長）
+  S.party.forEach(m=> gainExp(m, exp, log));
+  S.hero.gold = num(S.hero.gold, 0) + gold;
   b.turnLog.unshift('獲得 '+exp+' 經驗值與 '+gold+' 金幣。'+(affixCount>0?'（詞綴加成 x'+mult.toFixed(1)+'）':''));
   log.forEach(l=> b.turnLog.unshift(l));
 }
@@ -2422,39 +3558,125 @@ function resolveEvent(choiceIdx){
   render();
 }
 
+/* ============ 背包容量 / 倉庫 / 鎖定 ============ */
+/** 背包裝備格硬上限（藥水可堆疊，不占此上限）；超出自動進倉庫 */
+const BACKPACK_CAP = 30;
+const WAREHOUSE_CAP = 80;
+function ensureWarehouse(){
+  if(!S) return;
+  if(!Array.isArray(S.warehouse)) S.warehouse = [];
+}
+function backpackGearCount(){
+  if(!S || !S.inventory) return 0;
+  return S.inventory.filter(i=>i && i.slot!=='potion').length;
+}
+function backpackHasSpace(n){
+  n = n==null ? 1 : n;
+  return backpackGearCount() + n <= BACKPACK_CAP;
+}
+function toggleItemLock(item){
+  if(!item || item.slot==='potion') return;
+  item.locked = !item.locked;
+  if(S && S.log) S.log.unshift((item.locked?'🔒 已鎖定：':'🔓 已解鎖：') + item.name);
+}
+/** 背包滿時：進倉庫；倉庫也滿：折價金幣（鎖定物不自動賣） */
+function overflowDispose(item, silent){
+  ensureWarehouse();
+  if(!item || item.slot==='potion') return 'potion';
+  if(S.warehouse.length < WAREHOUSE_CAP){
+    S.warehouse.push(item);
+    if(!silent && S.log) S.log.unshift('📦 背包已滿（'+BACKPACK_CAP+'），'+item.name+' 已自動存入倉庫。');
+    return 'warehouse';
+  }
+  // 倉庫滿 → 折價（鎖定則無法取得）
+  if(item.locked){
+    if(!silent && S.log) S.log.unshift('倉庫與背包皆滿，且 '+item.name+' 已鎖定，無法收納。');
+    return 'reject';
+  }
+  const gold = Math.max(1, Math.floor(equipPrice(item) * 0.35));
+  if(S.hero) S.hero.gold = (S.hero.gold||0) + gold;
+  if(!silent && S.log) S.log.unshift('📦 背包與倉庫皆滿，'+item.name+' 已折價出售 +'+gold+' 金。');
+  return 'sold';
+}
+function depositToWarehouse(uid){
+  ensureWarehouse();
+  const item = S.inventory.find(i=>i.uid===uid);
+  if(!item || item.slot==='potion') return false;
+  if(S.warehouse.length >= WAREHOUSE_CAP){
+    if(S.log) S.log.unshift('倉庫已滿（'+WAREHOUSE_CAP+'），無法存入。');
+    return false;
+  }
+  S.inventory = S.inventory.filter(i=>i.uid!==uid);
+  S.warehouse.push(item);
+  if(S.log) S.log.unshift('已將 '+item.name+' 存入倉庫。');
+  return true;
+}
+function withdrawFromWarehouse(uid){
+  ensureWarehouse();
+  const item = S.warehouse.find(i=>i.uid===uid);
+  if(!item) return false;
+  if(!backpackHasSpace(1)){
+    if(S.log) S.log.unshift('背包已滿（'+BACKPACK_CAP+'），請先整理或存倉後再取出。');
+    return false;
+  }
+  S.warehouse = S.warehouse.filter(i=>i.uid!==uid);
+  S.inventory.push(item);
+  if(S.log) S.log.unshift('已從倉庫取出 '+item.name+'。');
+  return true;
+}
+
 /* ============ 裝備 / 背包 ============ */
+
 function equipItem(item, memberUid){
   const m = S.party.find(p=>p.uid===(memberUid||S.invSelectedUid)) || S.hero;
+  if(!m || !item || item.slot==='potion') return;
   normalizeItem(item);
-  // 唯一裝備：全隊只能有一件（含已裝備）
+  ensureMemberEquip(m);
+
   if(item.isUnique || item.rarity==='unique'){
-    const held = [];
-    S.party.forEach(p=>{
-      Object.values(p.equip||{}).forEach(eq=>{ if(eq && eq.baseName===item.baseName) held.push({p, eq}); });
-    });
-    S.inventory.forEach(i=>{ if(i.uid!==item.uid && i.baseName===item.baseName) held.push({inv:true, eq:i}); });
-    if(held.length){
-      S.log.unshift('【唯一】'+item.baseName+' 全隊僅能持有一件。');
+    if(uniqueAlreadyHeld(item, item.uid)){
+      if(S.log) S.log.unshift('【唯一】「'+(item.baseName||item.name)+'」全隊僅能持有一件，無法裝備。');
       render();
       return;
     }
   }
+
+  // 僅允許已知裝備欄；未知 slot 進不去紙娃娃
   let targetSlot = item.slot;
-  if(item.slot==='accessory'){
-    targetSlot = !m.equip.accessory ? 'accessory' : (!m.equip.accessory2 ? 'accessory2' : 'accessory');
+  if(!EQUIP_SLOT_IDS.includes(targetSlot)){
+    if(S.log) S.log.unshift('此物品目前無法裝備。');
+    render();
+    return;
   }
   const cur = m.equip[targetSlot];
-  if(cur) S.inventory.push(cur);
-  m.equip[targetSlot]=item;
+  // 先從背包移除要穿的，再放回舊裝備（避免暫時超過格數）
   S.inventory = S.inventory.filter(i=>i.uid!==item.uid);
+  m.equip[targetSlot] = item;
+  if(cur){
+    if(backpackHasSpace(1)) S.inventory.push(cur);
+    else overflowDispose(cur, false);
+  }
   applyComputedStats(m);
+  if(S.log) S.log.unshift(m.name+' 裝備了 '+item.name+'（'+equipAffixText(item)+'）');
+  S.invSelectedItemUid = null;
   render();
 }
 function unequipItem(slot, memberUid){
   const m = S.party.find(p=>p.uid===(memberUid||S.invSelectedUid)) || S.hero;
   const cur = m.equip[slot];
-  if(cur){ S.inventory.push(cur); m.equip[slot]=null; }
-  applyComputedStats(m); // 卸下後重算屬性
+  if(cur){
+    m.equip[slot]=null;
+    if(backpackHasSpace(1)) S.inventory.push(cur);
+    else {
+      const fate = overflowDispose(cur, false);
+      if(fate==='reject'){
+        // 放不回去就重新穿上
+        m.equip[slot]=cur;
+        if(S.log) S.log.unshift('無法卸下：背包與倉庫皆滿。');
+      }
+    }
+  }
+  applyComputedStats(m);
   render();
 }
 function addPotion(kind, value, name){
@@ -2511,9 +3733,60 @@ function stackExistingPotions(){
 let uiTab = 'inv';
 /* ============ 存檔系統（localStorage） ============ */
 const SAVE_KEY = 'ashfall_era_save_v1';
-function saveGame(){
+const SAVE_VERSION = 2;
+function saveGame(manual){
+  if(!S) return false;
+  try{
+    S.saveVersion = SAVE_VERSION;
+    S.savedAt = Date.now();
+    // 戰鬥／事件中不寫入（避免 ref／函式問題）；手動存檔除外且僅在安全畫面
+    const payload = JSON.stringify(S);
+    localStorage.setItem(SAVE_KEY, payload);
+    if(manual && S.log) S.log.unshift('💾 進度已手動存檔。');
+    return true;
+  }catch(e){
+    if(manual && S.log) S.log.unshift('存檔失敗：儲存空間不足或瀏覽器限制。');
+    return false;
+  }
+}
+function exportSave(){
   if(!S) return;
-  try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){ /* 儲存空間不可用時安靜失敗 */ }
+  try{
+    S.saveVersion = SAVE_VERSION;
+    S.savedAt = Date.now();
+    const blob = new Blob([JSON.stringify(S, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'ashfall_save_'+new Date().toISOString().slice(0,10)+'.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    if(S.log) S.log.unshift('📤 存檔已匯出為檔案。');
+  }catch(e){
+    alert('匯出失敗');
+  }
+}
+function importSaveFromText(text){
+  try{
+    const data = JSON.parse(text);
+    if(!data || !data.party || !data.party.length) throw new Error('格式錯誤');
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    if(loadGame()){
+      if(S.log) S.log.unshift('📥 存檔已匯入。');
+      render();
+      return true;
+    }
+    throw new Error('讀取失敗');
+  }catch(e){
+    alert('匯入失敗：'+ (e.message||'未知錯誤'));
+    return false;
+  }
+}
+function formatSavedAt(ts){
+  if(!ts) return '尚無';
+  try{
+    const d = new Date(ts);
+    return d.toLocaleString('zh-TW', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  }catch(e){ return '—'; }
 }
 function loadGame(){
   try{
@@ -2557,13 +3830,33 @@ function loadGame(){
     const idx = S.party.findIndex(m=>m.uid===hero.uid);
     if(idx>=0) S.party[idx] = hero; else S.party.unshift(hero);
     if(!S.inventory) S.inventory = [];
+    if(!Array.isArray(S.warehouse)) S.warehouse = [];
     if(!S.log) S.log = [];
     if(S.pendingStage==null) S.pendingStage = null;
     // 合併舊存檔散落藥水 + 正規化裝備 + 重算屬性
     stackExistingPotions();
     S.inventory.forEach(normalizeItem);
+    S.warehouse.forEach(normalizeItem);
+    // 舊存檔若背包裝備超過上限 → 溢出進倉庫
+    ensureWarehouse();
+    const gear = S.inventory.filter(i=>i.slot!=='potion');
+    const pots = S.inventory.filter(i=>i.slot==='potion');
+    if(gear.length > BACKPACK_CAP){
+      const keep = gear.slice(0, BACKPACK_CAP);
+      const overflow = gear.slice(BACKPACK_CAP);
+      overflow.forEach(it=>{
+        if(S.warehouse.length < WAREHOUSE_CAP) S.warehouse.push(it);
+        else {
+          const g = Math.max(1, Math.floor(equipPrice(it)*0.35));
+          S.hero.gold = (S.hero.gold||0)+g;
+        }
+      });
+      S.inventory = keep.concat(pots);
+      S.log.unshift('讀檔整理：多餘裝備已移入倉庫（背包上限 '+BACKPACK_CAP+' 格）。');
+    }
+
     S.party.forEach(m=>{
-      if(!m.equip) m.equip={weapon:null,armor:null,accessory:null,accessory2:null};
+      ensureMemberEquip(m);
       Object.keys(m.equip).forEach(k=>{ if(m.equip[k]) normalizeItem(m.equip[k]); });
       applyComputedStats(m);
     });
@@ -2613,6 +3906,7 @@ function render(){
   else if(S.screen==='battle') { root.innerHTML = renderBattle(); bindBattle(); }
   else if(S.screen==='event') { root.innerHTML = renderEvent(); bindEvent(); }
   else if(S.screen==='inventory') { root.innerHTML = renderInventory(); bindInventory(); }
+  else if(S.screen==='warehouse') { root.innerHTML = renderWarehouse(); bindWarehouse(); }
   else if(S.screen==='shop') { root.innerHTML = renderShop(); bindShop(); }
   else if(S.screen==='tavern') { root.innerHTML = renderTavern(); bindTavern(); }
   else if(S.screen==='party') { root.innerHTML = renderParty(); bindParty(); }
@@ -2626,14 +3920,16 @@ function render(){
   if(S.screen!=='battle' && S.screen!=='event') saveGame();
 }
 let pendingSprites = [];
-function queueSprite(id, seed, palette, size){ pendingSprites.push({id,seed,palette,size}); }
+function queueSprite(id, seed, palette, size, opts){
+  pendingSprites.push({id, seed, palette, size, opts: opts||{}});
+}
 function queueEquipIcon(id, seed, kind, color){ pendingSprites.push({id,seed,kind,color,equip:true}); }
 function paintSprites(){
   pendingSprites.forEach(p=>{
     const c = document.getElementById(p.id);
     if(!c) return;
     if(p.equip) drawEquipIcon(c, p.seed, p.kind, p.color);
-    else drawSprite(c, p.seed, p.palette, p.size||14);
+    else drawSprite(c, p.seed, p.palette, p.size||14, p.opts||{});
   });
   pendingSprites = [];
 }
@@ -2649,11 +3945,32 @@ function renderCharCreate(){
     Lv.${BRANCH_LEVEL} 時再進行最終的<b style="color:var(--gold)">職業分支</b>（3選1）。<br>
     每一步的選擇都將深刻影響你的成長方向。</p>
     <button class="btn gold" id="start-btn" style="margin-top:10px;">踏上旅程</button>
+    ${hasSaveGame()?`<button class="btn" id="continue-btn" style="margin-top:8px;">繼續冒險（讀取存檔）</button>
+    <button class="btn" id="import-save-btn-title" style="margin-top:6px;">📥 匯入存檔檔案</button>
+    <input type="file" id="import-save-file-title" accept="application/json,.json" style="display:none"/>`:''}
   </div>`;
 }
 function bindCharCreate(){
-  queueSprite('cc-commoner', 'commoner_preview', COMMONER.palette, 14);
+  queueSprite('cc-commoner', 'commoner_preview', COMMONER.palette, 14, {kind:'human'});
   document.getElementById('start-btn').addEventListener('click', ()=> newGame());
+  const cont = document.getElementById('continue-btn');
+  if(cont) cont.addEventListener('click', ()=>{
+    if(loadGame()) render();
+    else alert('讀檔失敗');
+  });
+  const impBtn = document.getElementById('import-save-btn-title');
+  const impFile = document.getElementById('import-save-file-title');
+  if(impBtn && impFile){
+    impBtn.addEventListener('click', ()=> impFile.click());
+    impFile.addEventListener('change', ()=>{
+      const f = impFile.files && impFile.files[0];
+      if(!f) return;
+      const reader = new FileReader();
+      reader.onload = ()=> importSaveFromText(String(reader.result||''));
+      reader.readAsText(f);
+      impFile.value = '';
+    });
+  }
 }
 
 function memberCardHtml(m, idx, opts){
@@ -2732,11 +4049,12 @@ function renderHub(){
     <button class="btn gold btn-primary" id="explore-btn">🧭 前往探索</button>
     <div class="nav-grid nav-grid-4">
       <button class="btn btn-nav" id="inv-btn"><span class="nav-icon">🎒</span>背包</button>
+      <button class="btn btn-nav" id="ware-btn"><span class="nav-icon">📦</span>倉庫</button>
       <button class="btn btn-nav" id="shop-btn"><span class="nav-icon">🏪</span>商店</button>
       <button class="btn btn-nav" id="tavern-btn"><span class="nav-icon">🍺</span>酒館</button>
-      <button class="btn btn-nav" id="party-btn"><span class="nav-icon">👥</span>隊伍</button>
     </div>
     <div class="utility-row" style="margin-top:10px;">
+      <button class="btn btn-compact" id="party-btn">👥 隊伍</button>
       <button class="btn btn-compact ${canAffordHP?'gold':'danger'}" id="rest-hp-btn" ${canAffordHP?'':'disabled'}>💗 回HP（${costHP}）</button>
       <button class="btn btn-compact ${canAffordMP?'gold':'danger'}" id="rest-mp-btn" ${canAffordMP?'':'disabled'}>💧 回MP（${costMP}）</button>
     </div>
@@ -2747,12 +4065,15 @@ function renderHub(){
   </div>`;
 }
 function bindHub(){
-  S.party.forEach((m,i)=> queueSprite('hub-'+i, (m.classId||m.professionId||'commoner')+'_'+m.uid, memberPalette(m), 12));
+  S.party.forEach((m,i)=> queueSprite('hub-'+i, (m.name||'hero')+'_'+m.uid, memberPalette(m), 14, {kind:'human'}));
   document.getElementById('explore-btn').addEventListener('click', explore);
   document.getElementById('inv-btn').addEventListener('click', ()=>{ S.screen='inventory'; render(); });
+  const wareBtn = document.getElementById('ware-btn');
+  if(wareBtn) wareBtn.addEventListener('click', ()=>{ S.screen='warehouse'; render(); });
   document.getElementById('shop-btn').addEventListener('click', ()=>{ S.screen='shop'; render(); });
   document.getElementById('tavern-btn').addEventListener('click', ()=>{ S.screen='tavern'; render(); });
-  document.getElementById('party-btn').addEventListener('click', ()=>{ S.screen='party'; render(); });
+  const partyBtn = document.getElementById('party-btn');
+  if(partyBtn) partyBtn.addEventListener('click', ()=>{ S.screen='party'; render(); });
   const restHpBtn = document.getElementById('rest-hp-btn');
   if(restHpBtn) restHpBtn.addEventListener('click', restHP);
   const restMpBtn = document.getElementById('rest-mp-btn');
@@ -2787,7 +4108,7 @@ function renderBattle(){
       ? `<div class="small" style="color:${m.elite?'var(--legend)':'var(--epic)'};">${m.affixNames.map(esc).join(' · ')}</div>`
       : ((m.affixes&&m.affixes.length) ? `<div class="small" style="color:var(--epic);">${m.affixes.map(id=>{ const a=MONSTER_AFFIXES.find(x=>x.id===id); return esc(a?a.name:id); }).join(' · ')}</div>` : '');
     const markTag = (m.marked && m.markTurns>0) ? `<div class="small" style="color:var(--gold);">◎ 追蹤標記 ${m.markTurns}回合</div>` : '';
-    const eliteTag = m.elite ? `<div class="small" style="color:var(--legend);">◆ 精英</div>` : '';
+    const eliteTag = m.elite ? `<div class="small" style="color:var(--legend);">◆ 精英</div>` : (m.isBossMinion ? `<div class="small" style="color:var(--hp);">⛓ Boss眷屬</div>` : '');
     return `
     <div class="monster-box ${dead?'dead':'target-selectable'}" data-tidx="${i}">
       <canvas class="sprite" id="mon-${i}" width="72" height="72"></canvas>
@@ -2814,8 +4135,9 @@ function renderBattle(){
   } else if(isPlayerTurn){
     const skillBtns = getSkills(actor).map((sk,i)=>{
       const est = skillEstimate(actor, sk);
-      return `<button class="btn skill-btn" data-skill="${i}" ${actor.mp<sk.mp?'disabled':''}>
-        <div class="skill-btn-head"><span>${esc(sk.name)}</span><span class="mp-cost">MP${sk.mp}</span></div>
+      const uTag = sk.fromUnique ? '⚔' : '';
+      return `<button class="btn skill-btn ${sk.fromUnique?'skill-unique':''}" data-skill="${i}" ${actor.mp<num(sk.mp,0)?'disabled':''}>
+        <div class="skill-btn-head"><span>${uTag}${esc(sk.name)}</span><span class="mp-cost">MP${sk.mp}</span></div>
         <div class="small skill-btn-desc">${esc(sk.desc)}</div>
         <div class="small skill-btn-est">${esc(est)}</div>
       </button>`;
@@ -2862,8 +4184,8 @@ let pendingAction=null;
 let actionToken=0;
 function bindBattle(){
   const b=S.battle;
-  b.monsters.forEach((m,i)=> queueSprite('mon-'+i, m.seed, PALETTES[m.type], 16));
-  S.party.forEach((m,i)=> queueSprite('bp-'+i, (m.classId||m.professionId||'commoner')+'_'+m.uid, memberPalette(m), 12));
+  b.monsters.forEach((m,i)=> queueSprite('mon-'+i, m.seed||m.name, PALETTES[m.type]||PALETTES.beast, 16, {kind:'monster', type:m.type}));
+  S.party.forEach((m,i)=> queueSprite('bp-'+i, (m.name||'hero')+'_'+m.uid, memberPalette(m), 14, {kind:'human'}));
   const backBtn = document.getElementById('back-hub');
   if(backBtn) backBtn.addEventListener('click', ()=>{ routeHome(); render(); });
 
@@ -2921,11 +4243,14 @@ function promptTarget(actor, token){
   });
 }
 function promptAllyTarget(actor, token){
-  document.querySelectorAll('.member-card').forEach((card,idx)=>{
+  // 用 data-uid 對應隊友（避免 DOM 順序與 party 索引不一致）；允許倒地（可復活）
+  document.querySelectorAll('.member-card').forEach((card)=>{
     card.style.cursor='pointer';
     card.addEventListener('click', function handler(){
       if(!pendingAction || pendingAction.token!==token) return;
-      if(S.party[idx].hp<=0) return;
+      const uid = card.getAttribute('data-uid');
+      const idx = S.party.findIndex(m=>m.uid===uid);
+      if(idx < 0) return;
       playerAction(actor.uid,'skill',idx,pendingAction.skillIdx);
       pendingAction=null;
     }, {once:true});
@@ -2933,151 +4258,253 @@ function promptAllyTarget(actor, token){
 }
 
 /** 推估裝備後相對目前裝備的屬性差（僅顯示主要戰鬥屬性） */
-function invCompareHtml(member, item){
-  if(!item || item.slot==='potion') return '';
-  let slot = item.slot;
-  if(slot==='accessory'){
-    // 對比空槽或數值較低的那一格
-    const a = member.equip.accessory, b = member.equip.accessory2;
-    if(!a) slot = 'accessory';
-    else if(!b) slot = 'accessory2';
-    else {
-      const score = (eq)=> (eq.affixes||[]).reduce((s,x)=>s+(x.value||0),0) + (eq.value||0);
-      slot = score(a) <= score(b) ? 'accessory' : 'accessory2';
-    }
-  }
+function resolveCompareSlot(member, item){
+  ensureMemberEquip(member);
+  if(item && EQUIP_SLOT_IDS.includes(item.slot)) return item.slot;
+  return item ? item.slot : 'weapon';
+}
+function invCompareMeta(member, item){
+  if(!item || item.slot==='potion') return {html:'', delta:0, empty:false, upgrade:false};
+  ensureMemberEquip(member);
+  const slot = resolveCompareSlot(member, item);
   const cur = member.equip[slot];
+  const empty = !cur;
   const stats = ['atk','matk','def','spd','hp','mp','str','con','agi','int'];
-  const sumOf = (eq, st)=>{
-    if(!eq) return 0;
-    if(eq.affixes&&eq.affixes.length) return eq.affixes.filter(a=>a.stat===st).reduce((s,a)=>s+(a.value||0),0);
-    let v=0; if(eq.stat===st) v+=eq.value||0; if(eq.extraStat===st) v+=eq.extraValue||0; return v;
-  };
   const parts=[];
+  let deltaScore = 0;
+  const weights = {atk:1.2,matk:1.2,def:1.0,spd:0.9,hp:0.08,mp:0.06,str:1.1,con:1.0,agi:1.0,int:1.1};
   stats.forEach(st=>{
-    const d = sumOf(item, st) - sumOf(cur, st);
+    const d = itemStatSum(item, st) - itemStatSum(cur, st);
     if(d===0) return;
+    deltaScore += d * (weights[st]||1);
     const cls = d>0 ? 'delta-up' : 'delta-down';
     const sign = d>0 ? '+' : '';
     parts.push(`<span class="${cls}">${statLabel(st)} ${sign}${d}</span>`);
   });
-  if(!parts.length) return `<div class="inv-compare delta-same">與目前裝備數值相近</div>`;
-  return `<div class="inv-compare">相對已裝備：${parts.join(' · ')}</div>`;
+  let html;
+  if(empty) html = `<div class="inv-compare"><span class="delta-up">空槽可直接裝備</span></div>`;
+  else if(!parts.length) html = `<div class="inv-compare delta-same">與目前裝備數值相近</div>`;
+  else html = `<div class="inv-compare">相對已裝備：${parts.join(' · ')}</div>`;
+  return {html, delta:deltaScore, empty, upgrade: empty || deltaScore > 0.5};
+}
+function invCompareHtml(member, item){
+  return invCompareMeta(member, item).html;
+}
+function slotLabelOf(slot){
+  const d = EQUIP_SLOT_DEFS.find(s=>s.id===slot);
+  return d ? d.label : (slot||'');
+}
+function sortInventory(mode){
+  if(!S || !S.inventory) return;
+  const rank = (id)=>{ const i=RARITIES.findIndex(r=>r.id===id); return i<0?0:i; };
+  const pots = S.inventory.filter(i=>i.slot==='potion');
+  const gear = S.inventory.filter(i=>i.slot!=='potion');
+  if(mode==='rarity'){
+    gear.sort((a,b)=> rank(b.rarity)-rank(a.rarity) || itemPowerScore(b)-itemPowerScore(a));
+  } else if(mode==='slot'){
+    const order = ['weapon','offhand','armor','head','cape','hands','feet','accessory'];
+    gear.sort((a,b)=>{
+      const ia = order.indexOf(a.slot), ib = order.indexOf(b.slot);
+      return (ia<0?99:ia)-(ib<0?99:ib) || rank(b.rarity)-rank(a.rarity);
+    });
+  } else if(mode==='level'){
+    gear.sort((a,b)=> (b.itemLevel||1)-(a.itemLevel||1) || rank(b.rarity)-rank(a.rarity));
+  } else {
+    // name
+    gear.sort((a,b)=> String(a.name).localeCompare(String(b.name),'zh'));
+  }
+  pots.sort((a,b)=> String(a.kind).localeCompare(String(b.kind)) || (b.value||0)-(a.value||0));
+  S.inventory = gear.concat(pots);
+  if(S.log) S.log.unshift('背包已整理（'+({rarity:'稀有度',slot:'欄位',level:'等級',name:'名稱'}[mode]||mode)+'）。');
 }
 function renderInventory(){
+  S.party.forEach(m=>{ ensureMemberEquip(m); applyComputedStats(m); });
   const selMember = S.party.find(m=>m.uid===S.invSelectedUid) || S.hero;
+  ensureMemberEquip(selMember);
   if(!S.invFilter) S.invFilter = 'all';
+  if(!S.invSort) S.invSort = 'rarity';
   const filter = S.invFilter;
-  const slots = ['weapon','armor','accessory','accessory2'];
-  const slotLabel = {weapon:'武器',armor:'防具',accessory:'飾品',accessory2:'飾品2'};
+  const GRID = BACKPACK_CAP; // 背包硬上限；多的自動進倉庫
+
   const memberTabs = S.party.map(m=>`
     <button class="btn ${m.uid===selMember.uid?'active':''}" data-selmember="${m.uid}">
       ${esc(m.name)}${m.isHero?' ★':''}
     </button>`).join('');
 
-  const equippedHtml = slots.map(slot=>{
-    const item = selMember.equip[slot];
-    const label = slotLabel[slot];
+  const hpPct = Math.max(0, Math.min(100, Math.round((selMember.hp/Math.max(1,selMember.maxHp))*100)));
+  const mpPct = Math.max(0, Math.min(100, Math.round((selMember.mp/Math.max(1,selMember.maxMp||1))*100)));
+
+  // 紙娃娃裝備格
+  const dollHtml = EQUIP_SLOT_DEFS.map(def=>{
+    const item = selMember.equip[def.id];
+    const can = !item && S.inventory.some(i=>i.slot===def.id);
     if(!item){
-      return `<div class="equip-slot empty">
-        <div class="equip-slot-label">${label}</div>
-        <div class="small" style="margin:auto 0;">空槽 — 從下方背包裝備</div>
+      return `<div class="bp-slot empty ${can?'empty-can':''}" data-area="${def.area}" data-dollslot="${def.id}">
+        <div class="sl">${def.label}</div>
+        <div class="sn">${can?'可裝備':'空'}</div>
       </div>`;
     }
-    return `<div class="equip-slot">
-      <div class="equip-slot-label">${label}</div>
-      <div class="equip-slot-body">
-        <canvas class="sprite" id="eq-${slot}" width="40" height="40"></canvas>
-        <div>
-          <div class="rarity-${item.rarity}">${esc(item.name)}</div>
-          <div class="meta">${equipAffixText(item)} · Lv.${item.itemLevel||1}</div>
-        </div>
-      </div>
-      <button class="btn" data-unequip="${slot}">卸下</button>
+    return `<div class="bp-slot ${S.invSelectedItemUid===item.uid?'selected':''}" data-area="${def.area}" data-dollslot="${def.id}" data-equid="${item.uid}">
+      <canvas class="sprite" id="eq-${def.id}" width="40" height="40"></canvas>
+      <div class="sl">${def.label}</div>
+      <div class="sn rarity-${item.rarity}">${esc(item.name)}</div>
     </div>`;
   }).join('');
 
+  // 篩選
+  ensureWarehouse();
+  const bagMode = filter === 'warehouse' ? 'warehouse' : 'bag';
   const filters = [
-    {id:'all', label:'全部'},
-    {id:'weapon', label:'武器'},
-    {id:'armor', label:'防具'},
-    {id:'accessory', label:'飾品'},
-    {id:'potion', label:'藥水'}
+    {id:'all',label:'全部'},{id:'weapon',label:'武器'},{id:'offhand',label:'副手'},
+    {id:'armor',label:'胸甲'},{id:'head',label:'頭部'},{id:'cape',label:'披風'},
+    {id:'hands',label:'手套'},{id:'feet',label:'鞋子'},{id:'accessory',label:'飾品'},
+    {id:'potion',label:'藥水'},{id:'upgrade',label:'可升級'},{id:'warehouse',label:'倉庫'}
   ];
   const filterHtml = filters.map(f=>`
     <button class="btn ${filter===f.id?'active':''}" data-invfilter="${f.id}">${f.label}</button>
   `).join('');
 
-  const filtered = S.inventory.filter(item=>{
-    if(filter==='all') return true;
-    if(filter==='potion') return item.slot==='potion';
-    if(filter==='accessory') return item.slot==='accessory';
-    return item.slot===filter;
-  });
+  let filtered;
+  if(filter==='warehouse'){
+    filtered = (S.warehouse||[]).slice();
+  } else {
+    filtered = S.inventory.filter(item=>{
+      if(filter==='all') return true;
+      if(filter==='potion') return item.slot==='potion';
+      if(filter==='upgrade'){
+        if(item.slot==='potion') return false;
+        return invCompareMeta(selMember, item).upgrade;
+      }
+      return item.slot===filter;
+    });
+  }
 
-  const invItems = filtered.map((item,i)=>{
-    const realIdx = S.inventory.indexOf(item);
+  // 背包格（固定 GRID 格，預留空位）
+  const cells = [];
+  const cellCap = filter==='warehouse' ? Math.max(GRID, Math.min(WAREHOUSE_CAP, Math.max(filtered.length, GRID))) : GRID;
+  for(let i=0;i<cellCap;i++){
+    const item = filtered[i];
+    if(!item){
+      cells.push(`<div class="bp-cell empty" title="${filter==='warehouse'?'倉庫空位':'背包空位'}"></div>`);
+      continue;
+    }
+    const realIdx = filter==='warehouse' ? -1 : S.inventory.indexOf(item);
+    const sel = S.invSelectedItemUid===item.uid ? 'selected' : '';
     if(item.slot==='potion'){
       const icon = item.kind==='mp' ? '💧' : '🧪';
-      const statName = item.kind==='mp' ? 'MP' : 'HP';
       const cnt = item.count||1;
-      return `<div class="inv-card">
-        <div class="inv-card-top">
-          <div>
-            <div>${icon} <b>${esc(item.name)}</b> ×${cnt}</div>
-            <div class="meta">恢復 ${item.value} ${statName}</div>
-          </div>
-        </div>
-        <div class="inv-card-actions">
-          <button class="btn gold" data-usepot="${item.uid}">對 ${esc(selMember.name)} 使用</button>
-        </div>
-      </div>`;
+      cells.push(`<div class="bp-cell ${sel}" data-invuid="${item.uid}" title="${esc(item.name)}">
+        <span style="font-size:22px;line-height:1;">${icon}</span>
+        ${cnt>1?`<span class="cnt">×${cnt}</span>`:''}
+      </div>`);
+    } else {
+      const meta = invCompareMeta(selMember, item);
+      const tag = filter==='warehouse' ? '<span class="tag fit">倉</span>' : (meta.empty ? '<span class="tag fit">裝</span>' : (meta.upgrade ? '<span class="tag up">↑</span>' : ''));
+      const canvasId = filter==='warehouse' ? ('wh-'+i) : ('inv-'+realIdx);
+      const uidAttr = filter==='warehouse' ? `data-invuid="${item.uid}"` : `data-invuid="${item.uid}"`;
+      cells.push(`<div class="bp-cell ${sel}" ${uidAttr} title="${esc(item.name)}">
+        ${tag}
+        <canvas class="sprite" id="${canvasId}" width="40" height="40"></canvas>
+      </div>`);
     }
-    const label = slotLabel[item.slot] || item.slot;
-    return `<div class="inv-card">
-      <div class="inv-card-top">
-        <canvas class="sprite" id="inv-${realIdx}" width="40" height="40"></canvas>
-        <div>
-          <div class="rarity-${item.rarity}">${esc(item.name)}</div>
-          <div class="meta">${label} · ${equipAffixText(item)} · Lv.${item.itemLevel||1}</div>
-          ${invCompareHtml(selMember, item)}
-        </div>
+  }
+
+  // 詳情面板
+  let detailHtml = '';
+  const selItem = S.invSelectedItemUid
+    ? (S.inventory.find(i=>i.uid===S.invSelectedItemUid)
+        || (S.warehouse||[]).find(i=>i.uid===S.invSelectedItemUid)
+        || EQUIP_SLOT_IDS.map(s=>selMember.equip[s]).find(eq=>eq && eq.uid===S.invSelectedItemUid))
+    : null;
+  if(!selItem){
+    detailHtml = `<div class="meta">點選背包中的物品或左側裝備，查看詳情。<br>空槽已預留，之後可放劇情／收藏道具。</div>`;
+  } else if(selItem.slot==='potion'){
+    const statName = selItem.kind==='mp' ? 'MP' : 'HP';
+    detailHtml = `
+      <div class="ttl">${selItem.kind==='mp'?'💧':'🧪'} <b>${esc(selItem.name)}</b> ×${selItem.count||1}</div>
+      <div class="meta">類型：消耗品<br>效果：恢復 ${selItem.value} ${statName}</div>
+      <div class="bp-detail-actions">
+        <button class="btn gold" data-usepot="${selItem.uid}">對 ${esc(selMember.name)} 使用</button>
+      </div>`;
+  } else {
+    const onDoll = EQUIP_SLOT_IDS.some(s=>selMember.equip[s] && selMember.equip[s].uid===selItem.uid);
+    const meta = invCompareMeta(selMember, selItem);
+    const uEff = (selItem.isUnique||selItem.rarity==='unique') ? uniqueEffectDesc(selItem) : '';
+    const uSk = (selItem.isUnique||selItem.rarity==='unique') ? getUniqueSkill(selItem) : null;
+    const resNote = resonanceDesc(selItem);
+    detailHtml = `
+      <div class="ttl"><span class="rarity-${selItem.rarity}">${esc(selItem.name)}</span></div>
+      <div class="meta">
+        欄位：${slotLabelOf(selItem.slot)} · Lv.${selItem.itemLevel||1}${(selItem.isUnique||selItem.rarity==='unique')?' · 唯一':''}${selItem.rarity==='ancient'?' · 千古':''}<br>
+        ${equipAffixText(selItem)}
+        ${uEff?`<br><span style="color:var(--r-unique)">✦ 被動：${esc(uEff)}</span>`:''}
+        ${uSk?`<br><span style="color:var(--r-unique)">⚔ 專屬技能「${esc(uSk.name)}」MP${uSk.mp} — ${esc(uSk.desc||'')}</span>`:''}
+        ${resNote?`<br><span style="color:var(--r-ancient)">✦ 共鳴·${esc(resNote)}</span>`:''}
+        ${meta.html}
       </div>
-      <div class="inv-card-actions">
-        <button class="btn gold" data-equip="${item.uid}">裝備給 ${esc(selMember.name)}</button>
-      </div>
-    </div>`;
-  }).join('') || '<p class="small" style="text-align:center;padding:16px 0;">此分類沒有物品。</p>';
+      <div class="bp-detail-actions">
+        ${onDoll
+          ? `<button class="btn" data-unequip="${selItem.slot}">卸下</button>`
+          : (filter==='warehouse'
+              ? `<button class="btn gold" data-withdraw="${selItem.uid}">取出到背包</button>`
+              : `<button class="btn gold" data-equip="${selItem.uid}">裝備 → ${esc(selMember.name)}</button>
+                 <button class="btn" data-deposit="${selItem.uid}">存入倉庫</button>`)}
+      </div>`;
+  }
+
+  const bonusBits = ['atk','matk','def','spd','hp','str','int'].map(st=>{
+    const b = equipBonus(selMember, st);
+    if(!b) return '';
+    return `<span>${statLabel(st)} <b class="delta-up">+${b}</b></span>`;
+  }).filter(Boolean).join(' · ') || '<span class="delta-same">無裝備加成</span>';
 
   return `
-  <div class="panel">
-    <p class="section-title">隊伍整備</p>
-    <div class="segmented" style="flex-wrap:wrap;width:100%;">${memberTabs}</div>
-
-    <p class="section-title">${esc(selMember.name)} · Lv.${selMember.level} · ${esc(displayClassName(selMember))}</p>
-    <div class="inv-stats">
-      <span>力量 <b>${selMember.str||0}</b></span>
-      <span>體質 <b>${selMember.con||0}</b></span>
-      <span>敏捷 <b>${selMember.agi||0}</b></span>
-      <span>智力 <b>${selMember.int||0}</b></span>
-      <span>物攻 <b>${statTotal(selMember,'atk')}</b></span>
-      <span>魔攻 <b>${statTotal(selMember,'matk')}</b></span>
-      <span>防禦 <b>${statTotal(selMember,'def')}</b></span>
-      <span>速度 <b>${statTotal(selMember,'spd')}</b></span>
-      <span>HP <b>${selMember.hp}/${selMember.maxHp}</b></span>
-      <span>MP <b>${selMember.mp}/${selMember.maxMp}</b></span>
-      <span>金幣 <b>${S.hero.gold||0}</b></span>
-      <span>背包 <b>${S.inventory.length}</b></span>
+  <div class="panel bp-wrap">
+    <p class="section-title">BACKPACK · 隊伍整備</p>
+    <div class="inv-bonus-line" style="margin-bottom:6px;">
+      背包裝備 <b>${backpackGearCount()}/${BACKPACK_CAP}</b>
+      · 倉庫 <b>${(S.warehouse||[]).length}/${WAREHOUSE_CAP}</b>
+      · 滿包掉落會自動進倉庫，倉庫滿則折價出售
     </div>
-
-    <p class="section-title">已裝備</p>
-    <div class="equip-grid">${equippedHtml}</div>
-
-    <hr class="divider">
-    <p class="section-title">背包 · 點選分類篩選</p>
-    <div class="inv-filter">${filterHtml}</div>
-    ${invItems}
-    <div style="text-align:center;margin-top:12px;"><button class="btn" id="back-hub2">返回營地</button></div>
+    <div class="bp-member-tabs">${memberTabs}</div>
+    <div class="bp-main">
+      <div class="bp-left">
+        <div class="bp-char">
+          <canvas class="sprite" id="inv-hero-sprite" width="64" height="64" style="width:64px;height:64px;"></canvas>
+          <div class="bp-char-meta">
+            <div class="nm">${esc(selMember.name)}</div>
+            <div>Lv.${selMember.level} · ${esc(displayClassName(selMember))}</div>
+            <div class="bp-bars">
+              <div class="bp-bar-row"><span>HP</span><div class="bp-bar hp"><i style="width:${hpPct}%"></i></div><b>${selMember.hp}/${selMember.maxHp}</b></div>
+              <div class="bp-bar-row"><span>MP</span><div class="bp-bar mp"><i style="width:${mpPct}%"></i></div><b>${selMember.mp}/${selMember.maxMp}</b></div>
+            </div>
+            <div class="bp-gold-exp">
+              <span>金幣 <b>${S.hero.gold||0}</b></span>
+              <span>EXP <b>${selMember.exp||0}/${selMember.nextExp||expForLevel(selMember.level)}</b></span>
+            </div>
+          </div>
+        </div>
+        <p class="bp-equip-title">EQUIPMENT</p>
+        <div class="bp-doll">${dollHtml}</div>
+        <div class="inv-bonus-line" style="margin-top:8px;">裝備加成：${bonusBits}</div>
+        <div class="inv-bonus-line">物攻 ${statTotal(selMember,'atk')} · 魔攻 ${statTotal(selMember,'matk')} · 防 ${statTotal(selMember,'def')} · 速 ${statTotal(selMember,'spd')}</div>
+      </div>
+      <div class="bp-right">
+        <div class="bp-toolbar">
+          ${filterHtml}
+        </div>
+        <div class="bp-toolbar">
+          <span class="small" style="margin-right:4px;">整理</span>
+          <button class="btn" data-invsort="rarity">稀有度</button>
+          <button class="btn" data-invsort="slot">欄位</button>
+          <button class="btn" data-invsort="level">等級</button>
+          <button class="btn" data-invsort="name">名稱</button>
+        </div>
+        <div class="bp-grid">${cells.join('')}</div>
+      </div>
+    </div>
+    <div class="bp-detail">${detailHtml}</div>
+    <div style="text-align:center;margin-top:4px;"><button class="btn" id="back-hub2">返回營地</button></div>
   </div>`;
 }
 function statLabel(s){
@@ -3138,20 +4565,53 @@ function skillEstimate(actor, sk){
 }
 function bindInventory(){
   const selMember = S.party.find(m=>m.uid===S.invSelectedUid) || S.hero;
-  ['weapon','armor','accessory','accessory2'].forEach(slot=>{
+  ensureMemberEquip(selMember);
+  // 角色立繪
+  const heroCv = document.getElementById('inv-hero-sprite');
+  if(heroCv) drawSprite(heroCv, (selMember.name||'hero')+'_'+selMember.uid, memberPalette(selMember), 16, {kind:'human'});
+  EQUIP_SLOT_IDS.forEach(slot=>{
     const item = selMember.equip[slot];
-    if(item) queueEquipIcon('eq-'+slot, item.seed, item.slot, item.rarityHex);
+    const cv = document.getElementById('eq-'+slot);
+    if(item && cv){
+      const kind = (slot==='weapon'||slot==='offhand') ? 'weapon' : (slot==='accessory' ? 'accessory' : 'armor');
+      drawEquipIcon(cv, item.seed, kind, item.rarityHex);
+    }
   });
-  S.inventory.forEach((item,i)=>{ if(item.slot!=='potion') queueEquipIcon('inv-'+i, item.seed, item.slot, item.rarityHex); });
+  S.inventory.forEach((item,i)=>{
+    if(item.slot==='potion') return;
+    const el = document.getElementById('inv-'+i);
+    if(el){
+      const kind = (item.slot==='weapon'||item.slot==='offhand') ? 'weapon' : (item.slot==='accessory' ? 'accessory' : 'armor');
+      drawEquipIcon(el, item.seed, kind, item.rarityHex);
+    }
+  });
+
   document.querySelectorAll('[data-selmember]').forEach(btn=> btn.addEventListener('click', ()=>{
     S.invSelectedUid = btn.dataset.selmember;
+    S.invSelectedItemUid = null;
     render();
   }));
   document.querySelectorAll('[data-invfilter]').forEach(btn=> btn.addEventListener('click', ()=>{
     S.invFilter = btn.dataset.invfilter;
+    S.invSelectedItemUid = null;
     render();
   }));
-  document.querySelectorAll('[data-unequip]').forEach(btn=> btn.addEventListener('click', ()=> unequipItem(btn.dataset.unequip, selMember.uid)));
+  document.querySelectorAll('[data-invsort]').forEach(btn=> btn.addEventListener('click', ()=>{
+    sortInventory(btn.dataset.invsort);
+    render();
+  }));
+  document.querySelectorAll('[data-invuid]').forEach(btn=> btn.addEventListener('click', ()=>{
+    S.invSelectedItemUid = btn.dataset.invuid;
+    render();
+  }));
+  document.querySelectorAll('[data-equid]').forEach(btn=> btn.addEventListener('click', ()=>{
+    S.invSelectedItemUid = btn.dataset.equid;
+    render();
+  }));
+  document.querySelectorAll('[data-unequip]').forEach(btn=> btn.addEventListener('click', ()=> {
+    unequipItem(btn.dataset.unequip, selMember.uid);
+    S.invSelectedItemUid = null;
+  }));
   document.querySelectorAll('[data-equip]').forEach(btn=> btn.addEventListener('click', ()=>{
     const item = S.inventory.find(i=>i.uid===btn.dataset.equip);
     if(item) equipItem(item, selMember.uid);
@@ -3160,6 +4620,27 @@ function bindInventory(){
     const item = S.inventory.find(i=>i.uid===btn.dataset.usepot);
     if(item) usePotionOutOfBattle(item, selMember.uid);
   }));
+  document.querySelectorAll('[data-deposit]').forEach(btn=> btn.addEventListener('click', ()=>{
+    depositToWarehouse(btn.dataset.deposit);
+    S.invSelectedItemUid = null;
+    render();
+  }));
+  document.querySelectorAll('[data-withdraw]').forEach(btn=> btn.addEventListener('click', ()=>{
+    withdrawFromWarehouse(btn.dataset.withdraw);
+    S.invSelectedItemUid = null;
+    render();
+  }));
+  // 倉庫頁 icon
+  if(S.invFilter==='warehouse'){
+    (S.warehouse||[]).forEach((item,i)=>{
+      if(item.slot==='potion') return;
+      const el = document.getElementById('wh-'+i);
+      if(el){
+        const kind = (item.slot==='weapon'||item.slot==='offhand') ? 'weapon' : (item.slot==='accessory' ? 'accessory' : 'armor');
+        drawEquipIcon(el, item.seed, kind, item.rarityHex);
+      }
+    });
+  }
   const back = document.getElementById('back-hub2');
   if(back) back.addEventListener('click', ()=>{ routeHome(); render(); });
 }
@@ -3209,7 +4690,7 @@ function renderShop(){
           <button class="btn ${canAfford?'gold':''}" data-buy="${i}" ${canAfford?'':'disabled'}>💰 ${entry.price}</button>
         </div>`;
       }
-      const label = {weapon:'武器',armor:'防具',accessory:'飾品'}[it.slot];
+      const label = slotLabelOf(it.slot);
       return `<div class="item-row">
         <div style="display:flex;align-items:center;gap:8px;">
           <canvas class="sprite" id="shop-${i}" width="40" height="40"></canvas>
@@ -3222,16 +4703,17 @@ function renderShop(){
   } else {
     const equipItems = S.inventory.filter(i=>i.slot!=='potion');
     body = equipItems.map(it=>{
-      const label = {weapon:'武器',armor:'防具',accessory:'飾品'}[it.slot];
+      const label = slotLabelOf(it.slot);
       const sellPrice = Math.round(equipPrice(it)*0.4);
+      const lockNote = it.locked ? ' · 🔒已鎖定' : '';
       return `<div class="item-row">
-        <div><div class="rarity-${it.rarity}">${esc(it.name)}</div><div class="meta">${label} ${equipAffixText(it)} · Lv.${it.itemLevel||1}</div></div>
-        <button class="btn danger" data-sell="${it.uid}">賣出 💰${sellPrice}</button>
+        <div><div class="rarity-${it.rarity}">${esc(it.name)}</div><div class="meta">${label} ${equipAffixText(it)} · Lv.${it.itemLevel||1}${lockNote}</div></div>
+        <button class="btn danger" data-sell="${it.uid}" ${it.locked?'disabled':''}>${it.locked?'已鎖定':'賣出 💰'+sellPrice}</button>
       </div>`;
     }).join('') || '<p class="small">背包裡沒有可以出售的裝備。</p>';
   }
   const rerollAfford = hero.gold >= SHOP_REROLL_COST;
-  const sellCount = S.inventory.filter(i=>i.slot!=='potion').length;
+  const sellCount = S.inventory.filter(i=>i.slot!=='potion' && !i.locked).length;
   return `
   <div class="panel">
     <div class="topbar">
@@ -3284,6 +4766,7 @@ function bindShop(){
   document.querySelectorAll('[data-sell]').forEach(btn=> btn.addEventListener('click', ()=>{
     const item = S.inventory.find(i=>i.uid===btn.dataset.sell);
     if(!item) return;
+    if(item.locked){ S.log.unshift('無法賣出：'+item.name+' 已鎖定。'); render(); return; }
     const sellPrice = Math.round(equipPrice(item)*0.4);
     S.inventory = S.inventory.filter(i=>i.uid!==item.uid);
     S.hero.gold += sellPrice;
@@ -3300,11 +4783,12 @@ function bindShop(){
   });
   const sellAllBtn = document.getElementById('sell-all-btn');
   if(sellAllBtn) sellAllBtn.addEventListener('click', ()=>{
-    const items = S.inventory.filter(i=>i.slot!=='potion');
-    if(items.length===0) return;
+    const items = S.inventory.filter(i=>i.slot!=='potion' && !i.locked);
+    if(items.length===0){ S.log.unshift('沒有可賣出的裝備（鎖定中的不會被賣）。'); render(); return; }
     let total = 0;
+    const ids = new Set(items.map(it=>it.uid));
     items.forEach(it=> total += Math.round(equipPrice(it)*0.4));
-    S.inventory = S.inventory.filter(i=>i.slot==='potion');
+    S.inventory = S.inventory.filter(i=>i.slot==='potion' || i.locked || !ids.has(i.uid));
     S.hero.gold += total;
     S.log.unshift('一鍵賣出了 '+items.length+' 件裝備，獲得 '+total+' 金幣。');
     render();
@@ -3365,7 +4849,7 @@ function renderTavern(){
   </div>`;
 }
 function bindTavern(){
-  S.tavernStock.forEach((entry,i)=>{ if(!entry.recruited) queueSprite('tavern-'+i, 'commoner_'+entry.npc.uid, memberPalette(entry.npc), 12); });
+  S.tavernStock.forEach((entry,i)=>{ if(!entry.recruited) queueSprite('tavern-'+i, (entry.npc.name||'npc')+'_'+entry.npc.uid, memberPalette(entry.npc), 14, {kind:'human'}); });
   document.querySelectorAll('[data-recruit]').forEach(btn=> btn.addEventListener('click', ()=>{
     const idx = parseInt(btn.dataset.recruit);
     const entry = S.tavernStock[idx];
@@ -3410,11 +4894,18 @@ function renderParty(){
     ${cards}
     <div style="text-align:center;margin-top:10px;"><button class="btn" id="back-hub3">返回營地</button></div>
     <hr class="divider">
+    <div class="inv-bonus-line" style="text-align:center;margin:8px 0 4px;">存檔 · 上次：<b id="save-time-label">${formatSavedAt(S.savedAt)}</b></div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:6px;">
+      <button class="btn" id="manual-save-btn">💾 手動存檔</button>
+      <button class="btn" id="export-save-btn">📤 匯出</button>
+      <button class="btn" id="import-save-btn">📥 匯入</button>
+    </div>
+    <input type="file" id="import-save-file" accept="application/json,.json" style="display:none"/>
     <div style="text-align:center;"><button class="flee-link" id="restart-game-btn">🗑️ 放棄進度，重新開始遊戲</button></div>
   </div>`;
 }
 function bindParty(){
-  S.party.forEach((m,i)=> queueSprite('pty-'+i, (m.classId||m.professionId||'commoner')+'_'+m.uid, memberPalette(m), 12));
+  S.party.forEach((m,i)=> queueSprite('pty-'+i, (m.name||'hero')+'_'+m.uid, memberPalette(m), 14, {kind:'human'}));
   document.querySelectorAll('[data-dismiss]').forEach(btn=> btn.addEventListener('click', ()=>{
     S.party = S.party.filter(m=>m.uid!==btn.dataset.dismiss);
     render();
@@ -3423,6 +4914,23 @@ function bindParty(){
   if(back) back.addEventListener('click', ()=>{ routeHome(); render(); });
   const restartBtn = document.getElementById('restart-game-btn');
   if(restartBtn) restartBtn.addEventListener('click', restartGame);
+  const manSave = document.getElementById('manual-save-btn');
+  if(manSave) manSave.addEventListener('click', ()=>{ saveGame(true); render(); });
+  const expBtn = document.getElementById('export-save-btn');
+  if(expBtn) expBtn.addEventListener('click', ()=>{ exportSave(); render(); });
+  const impBtn = document.getElementById('import-save-btn');
+  const impFile = document.getElementById('import-save-file');
+  if(impBtn && impFile){
+    impBtn.addEventListener('click', ()=> impFile.click());
+    impFile.addEventListener('change', ()=>{
+      const f = impFile.files && impFile.files[0];
+      if(!f) return;
+      const reader = new FileReader();
+      reader.onload = ()=> importSaveFromText(String(reader.result||''));
+      reader.readAsText(f);
+      impFile.value = '';
+    });
+  }
 }
 
 function bonusSummary(b){
@@ -3455,7 +4963,7 @@ function renderEvolveProfession(){
   </div>`;
 }
 function bindEvolveProfession(){
-  PROFESSIONS.forEach((p,i)=> queueSprite('prof-'+i, 'prof_'+p.id, p.palette, 14));
+  PROFESSIONS.forEach((p,i)=> queueSprite('prof-'+i, 'prof_'+p.id+'_face', p.palette, 14, {kind:'human'}));
   document.querySelectorAll('[data-prof]').forEach(card=>{
     card.addEventListener('click', ()=>{
       const hero = S.hero;
@@ -3504,7 +5012,7 @@ function bindEvolveClass(){
   const prof = PROFESSIONS.find(p=>p.id===hero.professionId);
   if(!prof || !prof.leadsTo) return;
   const opts = CLASSES.filter(c=>prof.leadsTo.includes(c.id));
-  opts.forEach((c,i)=> queueSprite('clschoice-'+i, 'class_'+c.id, c.palette, 14));
+  opts.forEach((c,i)=> queueSprite('clschoice-'+i, 'class_'+c.id+'_face', c.palette, 14, {kind:'human'}));
   document.querySelectorAll('[data-cls]').forEach(card=>{
     card.addEventListener('click', ()=>{
       setClass(hero, card.dataset.cls);
@@ -3545,7 +5053,7 @@ function bindEvolveBranch(){
   const hero = S.hero;
   const cls = CLASSES.find(c=>c.id===hero.classId);
   if(!cls || !cls.advancements) return;
-  cls.advancements.forEach((adv,i)=> queueSprite('adv-'+i, 'adv_'+adv.id, cls.palette, 14));
+  cls.advancements.forEach((adv,i)=> queueSprite('adv-'+i, 'adv_'+adv.id+'_face', cls.palette, 14, {kind:'human'}));
   document.querySelectorAll('[data-adv]').forEach(card=>{
     card.addEventListener('click', ()=>{
       setAdvancement(hero, card.dataset.adv);
