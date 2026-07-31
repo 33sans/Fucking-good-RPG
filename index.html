@@ -347,6 +347,26 @@ canvas.sprite{image-rendering:pixelated;background:#0a0807;border:1px solid var(
 .bp-detail .meta{font-size:11px;color:var(--text-dim);line-height:1.45;}
 .bp-detail-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
 .bp-detail-actions .btn{flex:1;min-width:90px;text-align:center;}
+/* 裝備詳情疊層 */
+.item-modal-mask{
+  position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:200;
+  display:flex; align-items:flex-end; justify-content:center;
+  padding:12px; padding-bottom:calc(12px + var(--safe-bottom,0px));
+}
+.item-modal{
+  width:min(420px,100%); max-height:78vh; overflow:auto;
+  background:var(--bg-panel); border:1px solid var(--gold-dim); border-radius:12px;
+  padding:14px 14px 12px; box-shadow:0 12px 40px rgba(0,0,0,.55);
+}
+.item-modal .im-title{font-size:15px; margin:0 0 6px; line-height:1.3;}
+.item-modal .im-meta{font-size:12px; color:var(--text-dim); line-height:1.5; margin-bottom:10px;}
+.item-modal .im-actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
+.item-modal .im-actions .btn{flex:1; min-width:110px; text-align:center;}
+.item-modal .im-close{position:absolute; right:10px; top:8px;}
+.mon-affix-line{max-width:100px;margin:0 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:help;font-size:10px;}
+@media (min-width:600px){
+  .item-modal-mask{align-items:center;}
+}
 .bp-member-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
 .inv-compare{font-size:11px;margin-top:3px;line-height:1.35;}
 .delta-up{color:#7dcea0;}
@@ -1241,6 +1261,105 @@ function applyMonsterAffixes(mon, count, rng, forceRare){
  *   Boss：耐力戰，失誤會倒，獎勵豐厚
  * 曲線高於裸裝玩家期望，靠裝備／職業／操作拉開差距
  */
+
+const MONSTER_RANKS = {
+  normal:   {id:'normal',   prefix:'',     name:'普通', multHp:1,    multAtk:1,    multDef:1,    multRew:1,    extraAffix:0},
+  elite:    {id:'elite',    prefix:'精英·', name:'精英', multHp:1.65, multAtk:1.32, multDef:1.20, multRew:1.80, extraAffix:0},
+  veteran:  {id:'veteran',  prefix:'百戰·', name:'百戰', multHp:1.95, multAtk:1.45, multDef:1.30, multRew:2.20, extraAffix:1},
+  refined:  {id:'refined',  prefix:'千煉·', name:'千煉', multHp:2.35, multAtk:1.60, multDef:1.42, multRew:2.70, extraAffix:2},
+  king:     {id:'king',     prefix:'王者·', name:'王者', multHp:2.90, multAtk:1.78, multDef:1.55, multRew:3.40, extraAffix:3},
+  emperor:  {id:'emperor',  prefix:'帝王·', name:'帝王', multHp:3.60, multAtk:2.00, multDef:1.70, multRew:4.20, extraAffix:4}
+};
+const EMPEROR_TRAITS_BY_NAME = {
+  '史萊姆': {id:'emp_史萊姆', name:'黏帝', apply:(m)=>{ m.maxHp=Math.round(m.maxHp*1.18);m.hp=m.maxHp;m.physResist=Math.min(0.25,(m.physResist||0)+0.08); }},
+  '哥布林': {id:'emp_哥布林', name:'狡帝', apply:(m)=>{ m.spd=Math.round(m.spd*1.2);m.atk=Math.round(m.atk*1.08);m.evade=Math.min(0.28,(m.evade||0)+0.08); }},
+  '野狼': {id:'emp_野狼', name:'血帝', apply:(m)=>{ m.vampiric=true;m._vampRate=0.70;m.atk=Math.round(m.atk*1.1); }},
+  '巨蝠': {id:'emp_巨蝠', name:'夜帝', apply:(m)=>{ m.evade=Math.min(0.32,(m.evade||0)+0.12);m.spd=Math.round(m.spd*1.12); }},
+  '骷髏兵': {id:'emp_骷髏兵', name:'骨帝', apply:(m)=>{ m.def=Math.round(m.def*1.25);m.maxHp=Math.round(m.maxHp*1.1);m.hp=m.maxHp; }},
+  '毒蜘蛛': {id:'emp_毒蜘蛛', name:'毒帝', apply:(m)=>{ m._poisonOnHit=true;m.atk=Math.round(m.atk*1.08); }},
+  '盜賊鼠人': {id:'emp_盜賊鼠人', name:'竊帝', apply:(m)=>{ m.spd=Math.round(m.spd*1.18);m._goldSteal=true; }},
+  '沼地蛙': {id:'emp_沼地蛙', name:'沼帝', apply:(m)=>{ m.hasRegen=true;m.regenRate=0.07;m.maxHp=Math.round(m.maxHp*1.12);m.hp=m.maxHp; }},
+  '炭火小鬼': {id:'emp_炭火小鬼', name:'燼帝', apply:(m)=>{ m.atk=Math.round(m.atk*1.15);m._burnAura=true; }},
+  '碎石怪': {id:'emp_碎石怪', name:'岩帝', apply:(m)=>{ m.def=Math.round(m.def*1.3);m.physResist=Math.min(0.3,(m.physResist||0)+0.1); }},
+  '迷霧幽魂': {id:'emp_迷霧幽魂', name:'霧帝', apply:(m)=>{ m.evade=Math.min(0.35,(m.evade||0)+0.15);m.magResist=Math.min(0.25,(m.magResist||0)+0.1); }},
+  '鐵銹械': {id:'emp_鐵銹械', name:'銹帝', apply:(m)=>{ m.def=Math.round(m.def*1.22);m._thorns=0.15; }},
+  '沼澤鱷': {id:'emp_沼澤鱷', name:'淵鱷帝', apply:(m)=>{ m.maxHp=Math.round(m.maxHp*1.2);m.hp=m.maxHp;m.atk=Math.round(m.atk*1.1); }},
+  '火蜥蜴': {id:'emp_火蜥蜴', name:'焰蜥帝', apply:(m)=>{ m.atk=Math.round(m.atk*1.14);m._burnAura=true; }},
+  '冰霜狼': {id:'emp_冰霜狼', name:'霜狼帝', apply:(m)=>{ m._frostAura=true;m.spd=Math.round(m.spd*1.1);m.atk=Math.round(m.atk*1.08); }},
+  '食屍鬼': {id:'emp_食屍鬼', name:'腐帝', apply:(m)=>{ m.vampiric=true;m._vampRate=0.55;m.maxHp=Math.round(m.maxHp*1.12);m.hp=m.maxHp; }},
+  '暗影刺客': {id:'emp_暗影刺客', name:'刃帝', apply:(m)=>{ m.atk=Math.round(m.atk*1.2);m.spd=Math.round(m.spd*1.15);m.evade=Math.min(0.3,(m.evade||0)+0.08); }},
+  '鐵甲蟲': {id:'emp_鐵甲蟲', name:'甲帝', apply:(m)=>{ m.def=Math.round(m.def*1.35);m.physResist=Math.min(0.28,(m.physResist||0)+0.12); }},
+  '毒囊蠍': {id:'emp_毒囊蠍', name:'蠍帝', apply:(m)=>{ m._poisonOnHit=true;m.atk=Math.round(m.atk*1.12); }},
+  '血蝠群': {id:'emp_血蝠群', name:'血翼帝', apply:(m)=>{ m.vampiric=true;m._vampRate=0.65;m.spd=Math.round(m.spd*1.1); }},
+  '符文守衛': {id:'emp_符文守衛', name:'符帝', apply:(m)=>{ m.magResist=Math.min(0.3,(m.magResist||0)+0.15);m.def=Math.round(m.def*1.15); }},
+  '凍土熊': {id:'emp_凍土熊', name:'凍熊帝', apply:(m)=>{ m.maxHp=Math.round(m.maxHp*1.22);m.hp=m.maxHp;m._frostAura=true; }},
+  '腐木樹人': {id:'emp_腐木樹人', name:'朽帝', apply:(m)=>{ m.hasRegen=true;m.regenRate=0.08;m.def=Math.round(m.def*1.15); }},
+  '鹽沼巫妖雛': {id:'emp_鹽沼巫妖雛', name:'沼巫帝', apply:(m)=>{ m.maxHp=Math.round(m.maxHp*1.15);m.hp=m.maxHp;m._lifeTap=true; }},
+  '半獸人戰士': {id:'emp_半獸人戰士', name:'戰牙帝', apply:(m)=>{ m.atk=Math.round(m.atk*1.18);m.maxHp=Math.round(m.maxHp*1.1);m.hp=m.maxHp; }},
+  '幽靈法師': {id:'emp_幽靈法師', name:'靈法帝', apply:(m)=>{ m.atk=Math.round(m.atk*1.16);m.magResist=Math.min(0.28,(m.magResist||0)+0.12); }},
+  '石像鬼': {id:'emp_石像鬼', name:'石翼帝', apply:(m)=>{ m.def=Math.round(m.def*1.28);m.spd=Math.round(m.spd*1.08); }},
+  '血刃狂戰士': {id:'emp_血刃狂戰士', name:'狂刃帝', apply:(m)=>{ m.atk=Math.round(m.atk*1.22);m.vampiric=true;m._vampRate=0.4; }},
+  '深淵觸手': {id:'emp_深淵觸手', name:'觸帝', apply:(m)=>{ m.atk=Math.round(m.atk*1.12);m._rootOnHit=true; }},
+  '冰霜巨魔': {id:'emp_冰霜巨魔', name:'霜魔帝', apply:(m)=>{ m.maxHp=Math.round(m.maxHp*1.2);m.hp=m.maxHp;m._frostAura=true;m.def=Math.round(m.def*1.1); }},
+  '熔核犬': {id:'emp_熔核犬', name:'熔犬帝', apply:(m)=>{ m.atk=Math.round(m.atk*1.18);m.spd=Math.round(m.spd*1.12);m._burnAura=true; }},
+  '荊棘騎士': {id:'emp_荊棘騎士', name:'棘騎帝', apply:(m)=>{ m.def=Math.round(m.def*1.2);m._thorns=0.2;m.atk=Math.round(m.atk*1.08); }},
+  '深海祭司': {id:'emp_深海祭司', name:'海祭帝', apply:(m)=>{ m.hasRegen=true;m.regenRate=0.09;m.maxHp=Math.round(m.maxHp*1.12);m.hp=m.maxHp; }},
+  '銅皮魔像': {id:'emp_銅皮魔像', name:'銅帝', apply:(m)=>{ m.def=Math.round(m.def*1.4);m.physResist=Math.min(0.32,(m.physResist||0)+0.12); }},
+  '骸骨弓手': {id:'emp_骸骨弓手', name:'骨弓帝', apply:(m)=>{ m.atk=Math.round(m.atk*1.15);m.spd=Math.round(m.spd*1.1); }},
+  '影刃雙生': {id:'emp_影刃雙生', name:'雙影帝', apply:(m)=>{ m.atk=Math.round(m.atk*1.14);m.evade=Math.min(0.3,(m.evade||0)+0.1);m.spd=Math.round(m.spd*1.12); }},
+  '骸骨法王': {id:'emp_骸骨法王', name:'骨法帝', apply:(m)=>{ m.atk=Math.round(m.atk*1.18);m.maxHp=Math.round(m.maxHp*1.15);m.hp=m.maxHp;m._lifeTap=true; }},
+  '熔岩魔像': {id:'emp_熔岩魔像', name:'熔像帝', apply:(m)=>{ m.atk=Math.round(m.atk*1.15);m.def=Math.round(m.def*1.2);m._burnAura=true; }},
+  '劇毒女王': {id:'emp_劇毒女王', name:'毒后帝', apply:(m)=>{ m._poisonOnHit=true;m.atk=Math.round(m.atk*1.16);m.spd=Math.round(m.spd*1.08); }},
+  '暗夜領主': {id:'emp_暗夜領主', name:'夜領帝', apply:(m)=>{ m.evade=Math.min(0.33,(m.evade||0)+0.12);m.atk=Math.round(m.atk*1.14); }},
+  '風暴獅鷲': {id:'emp_風暴獅鷲', name:'嵐鷲帝', apply:(m)=>{ m.spd=Math.round(m.spd*1.2);m.atk=Math.round(m.atk*1.12); }},
+  '寒晶巨人': {id:'emp_寒晶巨人', name:'晶巨帝', apply:(m)=>{ m.maxHp=Math.round(m.maxHp*1.25);m.hp=m.maxHp;m.def=Math.round(m.def*1.15);m._frostAura=true; }},
+  '血潮督軍': {id:'emp_血潮督軍', name:'血督帝', apply:(m)=>{ m.vampiric=true;m._vampRate=0.7;m.atk=Math.round(m.atk*1.15); }},
+  '遠古石衛': {id:'emp_遠古石衛', name:'古衛帝', apply:(m)=>{ m.def=Math.round(m.def*1.38);m.maxHp=Math.round(m.maxHp*1.15);m.hp=m.maxHp; }},
+  '深淵海妖': {id:'emp_深淵海妖', name:'海妖帝', apply:(m)=>{ m.atk=Math.round(m.atk*1.14);m.hasRegen=true;m.regenRate=0.07; }},
+  '灰燼巫妖': {id:'emp_灰燼巫妖', name:'燼巫帝', apply:(m)=>{ m.atk=Math.round(m.atk*1.16);m.maxHp=Math.round(m.maxHp*1.12);m.hp=m.maxHp;m._burnAura=true; }},
+};
+const EMPEROR_TRAITS = {
+  fire:    {id:'emp_fire',    name:'炎帝', apply:(m)=>{ m.atk=Math.round(m.atk*1.12); m._burnAura=true; }},
+  water:   {id:'emp_water',   name:'潮帝', apply:(m)=>{ m.maxHp=Math.round(m.maxHp*1.15); m.hp=m.maxHp; m.hasRegen=true; m.regenRate=0.06; }},
+  nature:  {id:'emp_nature',  name:'蔓帝', apply:(m)=>{ m.def=Math.round(m.def*1.2); m._poisonOnHit=true; }},
+  shadow:  {id:'emp_shadow',  name:'影帝', apply:(m)=>{ m.evade=Math.min(0.35,(m.evade||0)+0.12); m.spd=Math.round(m.spd*1.1); }},
+  undead:  {id:'emp_undead',  name:'骸帝', apply:(m)=>{ m.maxHp=Math.round(m.maxHp*1.2); m.hp=m.maxHp; m._lifeTap=true; }},
+  beast:   {id:'emp_beast',   name:'血帝', apply:(m)=>{ m.vampiric=true; m._vampRate=0.70; }},
+  metal:   {id:'emp_metal',   name:'鋼帝', apply:(m)=>{ m.def=Math.round(m.def*1.35); m.physResist=Math.min(0.35,(m.physResist||0)+0.12); }},
+  blood:   {id:'emp_blood',   name:'血帝', apply:(m)=>{ m.vampiric=true; m._vampRate=0.70; m.atk=Math.round(m.atk*1.08); }},
+  ice:     {id:'emp_ice',     name:'霜帝', apply:(m)=>{ m._frostAura=true; m.def=Math.round(m.def*1.1); }},
+  holy:    {id:'emp_holy',    name:'聖帝', apply:(m)=>{ m.magResist=Math.min(0.3,(m.magResist||0)+0.15); m.maxHp=Math.round(m.maxHp*1.1); m.hp=m.maxHp; }}
+};
+function getEmperorTrait(mon){
+  const base = (mon && (mon.baseName || mon.name)) ? String(mon.baseName || mon.name).replace(/^(精英|百戰|千煉|王者|帝王)·/g,'') : '';
+  if(typeof EMPEROR_TRAITS_BY_NAME !== 'undefined' && EMPEROR_TRAITS_BY_NAME[base]) return EMPEROR_TRAITS_BY_NAME[base];
+  const ty = (mon && mon.type) || 'beast';
+  return (EMPEROR_TRAITS && EMPEROR_TRAITS[ty]) || EMPEROR_TRAITS.beast;
+}
+
+function shortMonsterBaseName(n){
+  let s = String(n||'怪').replace(/^(精英|百戰|千煉|王者|帝王)·/g,'');
+  if(s.length > 6) s = s.slice(0, 5) + '…';
+  return s;
+}
+function formatMonsterName(rank, baseName){
+  const r = MONSTER_RANKS[rank] || MONSTER_RANKS.normal;
+  return (r.prefix||'') + shortMonsterBaseName(baseName);
+}
+function rollMonsterRank(avgLevel, rng){
+  rng = rng || Math.random;
+  const lv = num(avgLevel, 1);
+  const w = [
+    {id:'normal', w: 52},
+    {id:'elite',  w: lv>=8  ? 20 : 10},
+    {id:'veteran',w: lv>=14 ? 12 : 0},
+    {id:'refined',w: lv>=22 ? 9  : 0},
+    {id:'king',   w: lv>=32 ? 4.5: 0},
+    {id:'emperor',w: lv>=42 ? 2.2: 0}
+  ].filter(x=>x.w>0);
+  return weightedChoice(rng, w.map(x=>({item:x.id, w:x.w})));
+}
+
 function makeMonster(tmpl, playerLevel, rng, opts){
   opts = opts || {};
   rng = rng || Math.random;
@@ -1248,7 +1367,11 @@ function makeMonster(tmpl, playerLevel, rng, opts){
   const pl = clamp(num(playerLevel, 1), 1, MAX_PLAYER_LEVEL);
   const lvl = clamp(pl + rint(rng, -1, 2), 1, MAX_PLAYER_LEVEL);
   const boss = !!(tmpl && tmpl.boss);
-  const elite = !!opts.elite && !boss;
+  let rank = opts.rank || (opts.elite ? 'elite' : 'normal');
+  if(boss) rank = 'normal';
+  if(typeof MONSTER_RANKS === 'undefined' || !MONSTER_RANKS[rank]) rank = 'normal';
+  const rankDef = (typeof MONSTER_RANKS !== 'undefined' && MONSTER_RANKS[rank]) ? MONSTER_RANKS[rank] : {multHp:1,multAtk:1,multDef:1,multRew:1,extraAffix:0,prefix:'',name:'普通'};
+  const elite = rank === 'elite' || (!!opts.elite && rank==='normal');
 
   // 階級倍率：同等級也要有壓力，高階更耐打、更疼
   const tierHp = [1, 1, 1.28, 1.62, 2.05, 2.55][tier];
@@ -1257,9 +1380,10 @@ function makeMonster(tmpl, playerLevel, rng, opts){
   const tierRew = [1, 1, 1.25, 1.55, 1.90, 2.40][tier];
 
   let mon = {
-    name: (elite ? '精英·' : '') + ((tmpl && tmpl.n) || '未知生物'),
+    name: (typeof formatMonsterName==='function' ? formatMonsterName(rank, (tmpl && tmpl.n) || '未知生物') : ((elite ? '精英·' : '') + ((tmpl && tmpl.n) || '未知生物'))),
+    baseName: (tmpl && tmpl.n) || '未知生物',
     type: (tmpl && tmpl.type) || 'beast',
-    tier, boss, elite,
+    tier, boss, elite, rank, rankName: rankDef.name,
     level: lvl,
     hp: 0, maxHp: 0, atk: 0, def: 0, spd: 0,
     exp: 0, gold: 0,
@@ -1280,13 +1404,13 @@ function makeMonster(tmpl, playerLevel, rng, opts){
   let exp   = (30 + lvl * 5.5 + tier * 8) * tierRew;
   let gold  = (18 + lvl * 3.2 + tier * 5) * tierRew * (0.75 + rng() * 0.5);
 
-  if(elite){
-    maxHp *= 1.65;
-    atk   *= 1.32;
-    def   *= 1.20;
-    exp   *= 1.85;
-    gold  *= 1.70;
-    spd    = Math.round(spd * 1.10);
+  if(rank !== 'normal' && !boss){
+    maxHp *= rankDef.multHp;
+    atk   *= rankDef.multAtk;
+    def   *= rankDef.multDef;
+    exp   *= rankDef.multRew;
+    gold  *= rankDef.multRew * 0.95;
+    spd    = Math.round(spd * (1 + (rankDef.extraAffix||0) * 0.03));
   }
   if(boss){
     // Boss：血厚、攻高但不秒殺；靠機制+持續壓力取勝
@@ -1306,8 +1430,19 @@ function makeMonster(tmpl, playerLevel, rng, opts){
   mon.exp = Math.max(1, Math.round(exp));
   mon.gold = Math.max(0, Math.round(gold));
 
-  const wantAffix = rollAffixCount(tier, boss, pl, elite);
-  applyMonsterAffixes(mon, wantAffix, rng, elite); // 精英強制稀有詞條
+  let wantAffix = rollAffixCount(tier, boss, pl, elite);
+  wantAffix += (rankDef.extraAffix || 0);
+  applyMonsterAffixes(mon, wantAffix, rng, elite || rank==='veteran');
+  if(rank === 'emperor'){
+    const trait = typeof getEmperorTrait === 'function' ? getEmperorTrait(mon) : null;
+    if(trait){
+      trait.apply(mon);
+      mon.affixes.push(trait.id);
+      mon.affixNames = mon.affixNames || [];
+      if(!mon.affixNames.includes(trait.name)) mon.affixNames.unshift(trait.name);
+      mon.emperorTrait = trait.name;
+    }
+  }
 
   // 數值淨化
   mon.maxHp = Math.max(12, num(mon.maxHp, 12));
@@ -1339,34 +1474,613 @@ function makeMonster(tmpl, playerLevel, rng, opts){
 }
 
 /** Boss 專屬小怪：弱於 Boss，攻擊會為 Boss 吸血 */
+
+/** 各 Boss（依 mech）的 5 眷屬編成：強化戰力／續戰，彼此不同 */
+const BOSS_MINION_ROSTERS = {
+  inferno: [
+    {id:'ember_whelp', n:'餘燼幼龍', hp:0.11, atk:0.34, def:0.28, spd:1.05, role:'burn_hit', note:'灼燒'},
+    {id:'scale_guard', n:'熔鱗護衛', hp:0.16, atk:0.22, def:0.45, spd:0.85, role:'atk_link', note:'傷轉攻'},
+    {id:'flame_priest', n:'焰心祭司', hp:0.10, atk:0.20, def:0.25, spd:0.95, role:'breath_charge', note:'強化吐息'},
+    {id:'scorch_walker', n:'焦土行者', hp:0.12, atk:0.26, def:0.30, spd:0.90, role:'scorch_field', note:'焦土'},
+    {id:'ignite_crows', n:'點火鴉群', hp:0.09, atk:0.36, def:0.20, spd:1.15, role:'focus_burn', note:'點燃'}
+  ],
+  void: [
+    {id:'void_worm', n:'虛蝕蟲', hp:0.10, atk:0.30, def:0.22, spd:1.05, role:'mp_drain', note:'吸魔'},
+    {id:'rift_guard', n:'裂隙守衛', hp:0.15, atk:0.22, def:0.42, spd:0.88, role:'boss_guard', note:'護主'},
+    {id:'silent_shade', n:'沉默影', hp:0.10, atk:0.28, def:0.24, spd:1.10, role:'skill_jam', note:'干擾技能'},
+    {id:'void_mirror', n:'虛空鏡像', hp:0.11, atk:0.27, def:0.26, spd:1.00, role:'echo_void', note:'連汲'},
+    {id:'entropy_acolyte', n:'熵增使徒', hp:0.10, atk:0.25, def:0.24, spd:0.98, role:'entropy_aura', note:'空乏光環'}
+  ],
+  reaper: [
+    {id:'funeral_skel', n:'葬儀骷兵', hp:0.16, atk:0.24, def:0.40, spd:0.85, role:'funeral_stack', note:'葬儀'},
+    {id:'death_bell', n:'喪鐘', hp:0.10, atk:0.33, def:0.22, spd:1.08, role:'hunt_low', note:'追殘'},
+    {id:'ash_guide', n:'灰袍引路人', hp:0.11, atk:0.22, def:0.28, spd:0.95, role:'lowhp_vamp', note:'低血吸血'},
+    {id:'martyr_doll', n:'殉葬偶', hp:0.09, atk:0.18, def:0.20, spd:0.90, role:'sacrifice_heal', note:'犧牲回血'},
+    {id:'end_crow', n:'終末鴉', hp:0.10, atk:0.30, def:0.22, spd:1.12, role:'on_ko_buff', note:'倒地強化'}
+  ],
+  tide: [
+    {id:'tide_maid', n:'潮汐侍女', hp:0.11, atk:0.22, def:0.28, spd:0.95, role:'tide_echo', note:'回血連攜'},
+    {id:'vortex_guard', n:'漩渦盾衛', hp:0.15, atk:0.20, def:0.42, spd:0.85, role:'share_dmg', note:'分攤'},
+    {id:'foam_mage', n:'泡沫法師', hp:0.10, atk:0.28, def:0.22, spd:1.00, role:'wet', note:'潮濕'},
+    {id:'deep_singer', n:'深海歌者', hp:0.11, atk:0.20, def:0.26, spd:0.92, role:'tide_amp', note:'潮汐增幅'},
+    {id:'pearl_box', n:'珍珠匣', hp:0.13, atk:0.18, def:0.38, spd:0.80, role:'pearl_shield', note:'珍珠盾'}
+  ],
+  roots: [
+    {id:'root_worm', n:'根須蠕蟲', hp:0.11, atk:0.30, def:0.26, spd:0.95, role:'extra_root', note:'補控'},
+    {id:'spore_sac', n:'孢子囊', hp:0.10, atk:0.20, def:0.22, spd:0.90, role:'death_spore', note:'死爆毒'},
+    {id:'parasite_vine', n:'寄生藤', hp:0.10, atk:0.26, def:0.24, spd:1.00, role:'leech_cc', note:'控場吸血'},
+    {id:'wood_warden', n:'林衛木人', hp:0.16, atk:0.22, def:0.40, spd:0.82, role:'root_up', note:'控場強化'},
+    {id:'pollen_fae', n:'花粉妖', hp:0.09, atk:0.24, def:0.20, spd:1.05, role:'anti_heal', note:'抑治'}
+  ],
+  colossus: [
+    {id:'rivet_bot', n:'鉚釘修復體', hp:0.12, atk:0.18, def:0.35, spd:0.90, role:'repair_shield', note:'修盾'},
+    {id:'magnet_guard', n:'磁鎖衛士', hp:0.15, atk:0.26, def:0.40, spd:0.85, role:'taunt', note:'嘲諷'},
+    {id:'overload_turret', n:'過載砲台', hp:0.10, atk:0.38, def:0.20, spd:0.95, role:'shield_dps', note:'結界炮'},
+    {id:'alloy_tech', n:'合金技師', hp:0.11, atk:0.20, def:0.30, spd:0.92, role:'def_link', note:'轉防'},
+    {id:'scrap_storm', n:'碎屑風暴', hp:0.10, atk:0.28, def:0.22, spd:1.00, role:'shield_break_nova', note:'破盾爆'}
+  ],
+  bloodmoon: [
+    {id:'blood_thrall', n:'血僕', hp:0.11, atk:0.32, def:0.24, spd:1.00, role:'bleed_hit', note:'流血'},
+    {id:'blood_priest', n:'血契祭司', hp:0.10, atk:0.20, def:0.22, spd:0.95, role:'self_buff_boss', note:'血契'},
+    {id:'eclipse_wolf', n:'月蝕狼', hp:0.11, atk:0.36, def:0.20, spd:1.15, role:'bleed_crit', note:'血暴'},
+    {id:'clot_shield', n:'凝血盾', hp:0.14, atk:0.18, def:0.40, spd:0.85, role:'bleed_shield', note:'凝血'},
+    {id:'blood_mirror', n:'鮮血鏡', hp:0.10, atk:0.24, def:0.28, spd:0.95, role:'reflect_bleed', note:'反血'}
+  ],
+  frost: [
+    {id:'frost_stele', n:'霜碑', hp:0.14, atk:0.16, def:0.38, spd:0.70, role:'spd_aura', note:'減速光環'},
+    {id:'ice_archer', n:'冰棘射手', hp:0.10, atk:0.34, def:0.20, spd:1.05, role:'slow_crit', note:'寒暴'},
+    {id:'snow_mage', n:'雪葬法師', hp:0.10, atk:0.28, def:0.22, spd:0.95, role:'freeze_chance', note:'冰封'},
+    {id:'cold_core', n:'寒核', hp:0.13, atk:0.18, def:0.36, spd:0.80, role:'frost_shield', note:'寒盾'},
+    {id:'blizzard_wisp', n:'暴風雪靈', hp:0.09, atk:0.26, def:0.18, spd:1.10, role:'blizzard', note:'暴風雪'}
+  ],
+  plague: [
+    {id:'plague_rat', n:'疫鼠群', hp:0.10, atk:0.30, def:0.20, spd:1.10, role:'poison_hit', note:'上毒'},
+    {id:'miasma_sac', n:'瘟氣囊', hp:0.11, atk:0.18, def:0.22, spd:0.90, role:'death_poison', note:'死延毒'},
+    {id:'rot_medic', n:'腐醫', hp:0.10, atk:0.22, def:0.24, spd:0.95, role:'anti_heal', note:'抑治'},
+    {id:'pustule_guard', n:'膿皰守衛', hp:0.15, atk:0.24, def:0.38, spd:0.85, role:'poison_thorns', note:'反毒'},
+    {id:'plague_flag', n:'疫旗手', hp:0.11, atk:0.26, def:0.26, spd:0.98, role:'plague_flag', note:'疫爆'}
+  ],
+  shadowcourt: [
+    {id:'shadow_squire', n:'影侍', hp:0.14, atk:0.22, def:0.36, spd:0.95, role:'boss_guard', note:'替傷'},
+    {id:'false_visage', n:'偽相', hp:0.12, atk:0.24, def:0.28, spd:1.00, role:'fake_death', note:'偽死'},
+    {id:'dark_assassin', n:'暗契刺客', hp:0.10, atk:0.38, def:0.18, spd:1.18, role:'hunt_healer', note:'斬療'},
+    {id:'veil', n:'影帷', hp:0.11, atk:0.20, def:0.26, spd:0.95, role:'miss_aura', note:'命中↓'},
+    {id:'court_guard', n:'殿守衛', hp:0.13, atk:0.26, def:0.34, spd:0.90, role:'shadow_scale', note:'殘影'}
+  ],
+  titan: [
+    {id:'cool_valve', n:'冷卻閥', hp:0.12, atk:0.16, def:0.32, spd:0.88, role:'heat_valve', note:'穩熔核'},
+    {id:'slag_golem', n:'熔渣巨人', hp:0.16, atk:0.28, def:0.40, spd:0.80, role:'death_magma', note:'熔池'},
+    {id:'spark_wright', n:'火花工', hp:0.10, atk:0.30, def:0.22, spd:1.05, role:'heat_charge', note:'充能'},
+    {id:'rock_shell', n:'岩殼', hp:0.14, atk:0.18, def:0.42, spd:0.75, role:'anti_crit', note:'抗暴'},
+    {id:'geo_vein', n:'地熱脈', hp:0.11, atk:0.24, def:0.26, spd:0.90, role:'geothermal', note:'地熱'}
+  ],
+  kraken: [
+    {id:'tentacle_a', n:'攫奪觸手', hp:0.12, atk:0.30, def:0.28, spd:0.95, role:'root_hit', note:'抓取'},
+    {id:'tentacle_b', n:'碎擊觸手', hp:0.12, atk:0.34, def:0.26, spd:0.95, role:'cleave', note:'掃擊'},
+    {id:'ink_fiend', n:'墨囊妖', hp:0.10, atk:0.24, def:0.22, spd:1.05, role:'miss_aura', note:'墨盲'},
+    {id:'deep_pressure', n:'深壓', hp:0.13, atk:0.20, def:0.30, spd:0.85, role:'pressure', note:'深壓'},
+    {id:'shell_crab', n:'寄居鎧', hp:0.15, atk:0.18, def:0.45, spd:0.80, role:'shell', note:'甲殼'}
+  ],
+  boneking: [
+    {id:'bone_shield', n:'骨盾兵', hp:0.16, atk:0.22, def:0.42, spd:0.85, role:'taunt', note:'盾牆'},
+    {id:'bone_archer', n:'骨弓手', hp:0.10, atk:0.34, def:0.20, spd:1.08, role:'hunt_healer', note:'射療'},
+    {id:'bone_witch', n:'骸巫', hp:0.11, atk:0.24, def:0.24, spd:0.95, role:'mini_rez', note:'再起'},
+    {id:'bone_altar', n:'碎骨祭壇', hp:0.14, atk:0.10, def:0.40, spd:0.50, role:'bone_aura', note:'骨祭'},
+    {id:'royal_guard', n:'帝皇親衛', hp:0.13, atk:0.28, def:0.36, spd:0.95, role:'bodyguard_low', note:'親衛'}
+  ],
+  berserk: [
+    {id:'war_slave', n:'戰奴', hp:0.11, atk:0.32, def:0.22, spd:1.05, role:'rage_feed', note:'餵狂'},
+    {id:'blood_drummer', n:'血鼓手', hp:0.10, atk:0.22, def:0.22, spd:1.10, role:'haste_boss', note:'戰鼓'},
+    {id:'guillotine', n:'斷頭台', hp:0.11, atk:0.36, def:0.20, spd:1.00, role:'execute', note:'處刑'},
+    {id:'mad_flag', n:'狂旗', hp:0.10, atk:0.24, def:0.24, spd:0.95, role:'mutual_vuln', note:'互傷'},
+    {id:'chain_jailer', n:'鎖鏈獄卒', hp:0.14, atk:0.26, def:0.34, spd:0.90, role:'taunt', note:'鎖鏈'}
+  ],
+  starseal: [
+    {id:'star_priest', n:'星印祭司', hp:0.11, atk:0.26, def:0.24, spd:0.98, role:'star_mark', note:'星印'},
+    {id:'orbit_mirror', n:'軌道鏡', hp:0.12, atk:0.18, def:0.36, spd:0.90, role:'reflect_magic', note:'反魔'},
+    {id:'meteor_caller', n:'隕石招呼使', hp:0.10, atk:0.32, def:0.22, spd:0.95, role:'meteor', note:'隕石'},
+    {id:'star_drone', n:'星屑無人機', hp:0.09, atk:0.28, def:0.18, spd:1.15, role:'death_charge', note:'充能'},
+    {id:'seal_anchor', n:'封印錨', hp:0.14, atk:0.16, def:0.40, spd:0.70, role:'skill_dampen', note:'封印'}
+  ],
+  nightmare: [
+    {id:'nightmare_horse', n:'夢魘馬', hp:0.11, atk:0.28, def:0.24, spd:1.05, role:'fear', note:'恐懼'},
+    {id:'liar_mirror', n:'謊言鏡', hp:0.11, atk:0.22, def:0.28, spd:0.95, role:'threat_heal', note:'誤導'},
+    {id:'sleep_demon', n:'睡魔', hp:0.10, atk:0.24, def:0.22, spd:0.95, role:'delay', note:'遲緩'},
+    {id:'dream_spider', n:'織夢蛛', hp:0.12, atk:0.20, def:0.34, spd:0.90, role:'dream_cocoon', note:'夢繭'},
+    {id:'horror_shade', n:'魘影', hp:0.10, atk:0.30, def:0.22, spd:1.08, role:'echo_hit', note:'魘擊'}
+  ],
+  judgment: [
+    {id:'flame_warden', n:'執法焰衛', hp:0.12, atk:0.32, def:0.28, spd:0.95, role:'sin_hunter', note:'討罪'},
+    {id:'penance_bell', n:'懺悔鐘', hp:0.11, atk:0.24, def:0.26, spd:0.90, role:'judgment_bell', note:'懺悔'},
+    {id:'sin_scribe', n:'聖焰書記', hp:0.10, atk:0.22, def:0.24, spd:1.00, role:'sin_scribe', note:'記罪'},
+    {id:'atonement_altar', n:'贖罪祭壇', hp:0.14, atk:0.12, def:0.38, spd:0.60, role:'sin_altar', note:'祭壇'},
+    {id:'radiant_plume', n:'白熾羽', hp:0.10, atk:0.26, def:0.22, spd:1.05, role:'cleanse_boss', note:'淨化'}
+  ],
+  garden: [
+    {id:'rot_flower', n:'腐花', hp:0.10, atk:0.22, def:0.20, spd:0.85, role:'flower', note:'盤根'},
+    {id:'briar_weed', n:'荊莠', hp:0.11, atk:0.28, def:0.24, spd:0.95, role:'flower_thorn', note:'護花'},
+    {id:'gardener', n:'園丁骸', hp:0.12, atk:0.20, def:0.28, spd:0.90, role:'plant', note:'栽種'},
+    {id:'venom_bee', n:'蜜毒蜂', hp:0.09, atk:0.34, def:0.18, spd:1.15, role:'bee', note:'蜂群'},
+    {id:'root_tumor', n:'枯根巨瘤', hp:0.17, atk:0.18, def:0.42, spd:0.70, role:'tumor', note:'巨瘤'}
+  ]
+};
+
+function getBossMinionRoster(boss){
+  const mech = (boss && boss.mech) || '';
+  if(BOSS_MINION_ROSTERS[mech]) return BOSS_MINION_ROSTERS[mech];
+  // fallback: generic 5
+  return [
+    {id:'g1', n:'護衛', hp:0.14, atk:0.25, def:0.35, spd:0.90, role:'taunt', note:'護衛'},
+    {id:'g2', n:'先鋒', hp:0.11, atk:0.32, def:0.24, spd:1.05, role:'burn_hit', note:'先鋒'},
+    {id:'g3', n:'咒師', hp:0.10, atk:0.28, def:0.22, spd:0.98, role:'poison_hit', note:'咒師'},
+    {id:'g4', n:'祭司', hp:0.11, atk:0.20, def:0.26, spd:0.95, role:'tide_echo', note:'祭司'},
+    {id:'g5', n:'刺客', hp:0.09, atk:0.36, def:0.18, spd:1.12, role:'hunt_healer', note:'刺客'}
+  ];
+}
+
 function makeBossMinion(boss, playerLevel, rng, idx){
   rng = rng || Math.random;
   const pl = clamp(num(playerLevel, boss && boss.level || 1), 1, MAX_PLAYER_LEVEL);
-  const lvl = clamp(num(boss && boss.level, pl), 1, MAX_PLAYER_LEVEL);
-  // 取同屬性低階模板當外觀
+  const roster = getBossMinionRoster(boss);
+  const def = roster[num(idx, 0) % roster.length];
+  // 取同屬性低階模板當外觀底
   const typePool = MONSTER_TYPES.filter(m=>!m.boss && m.type===(boss && boss.type) && m.tier<=2);
   const anyPool = MONSTER_TYPES.filter(m=>!m.boss && m.tier<=2);
   const tmpl = choice(rng, typePool.length ? typePool : (anyPool.length ? anyPool : MONSTER_TYPES));
   const mon = makeMonster(tmpl, Math.max(1, pl - 2), rng, { elite:false });
-  mon.name = (boss ? boss.name.replace(/^精英·/,'') : 'Boss') + '的眷屬' + (idx!=null ? (idx+1) : '');
+  const bossName = boss ? String(boss.name).replace(/^精英·/,'') : 'Boss';
+  mon.name = def.n;
   mon.isBossMinion = true;
-  mon.bossUid = boss ? boss.seed : null; // 用 seed 當簡易關聯鍵
+  mon.minionId = def.id;
+  mon.minionRole = def.role;
+  mon.minionNote = def.note;
+  mon.bossUid = boss ? boss.seed : null;
   mon.bossLink = true;
-  // 小怪數值壓低：約 Boss 的一部分，但仍有威脅
-  mon.maxHp = Math.max(10, Math.round(num(boss.maxHp, 100) * 0.12));
+  mon.bossMech = boss ? boss.mech : null;
+  mon.maxHp = Math.max(12, Math.round(num(boss.maxHp, 100) * num(def.hp, 0.12)));
   mon.hp = mon.maxHp;
-  mon.atk = Math.max(1, Math.round(num(boss.atk, 20) * 0.28));
-  mon.def = Math.max(0, Math.round(num(boss.def, 8) * 0.35));
-  mon.spd = Math.max(1, Math.round(num(boss.spd, 8) * 0.95 + 2));
-  mon.exp = Math.max(1, Math.round(num(boss.exp, 50) * 0.08));
-  mon.gold = Math.max(0, Math.round(num(boss.gold, 30) * 0.06));
+  mon.atk = Math.max(1, Math.round(num(boss.atk, 20) * num(def.atk, 0.28)));
+  mon.def = Math.max(0, Math.round(num(boss.def, 8) * num(def.def, 0.35)));
+  mon.spd = Math.max(1, Math.round(num(boss.spd, 8) * num(def.spd, 1) + 1));
+  mon.exp = Math.max(1, Math.round(num(boss.exp, 50) * 0.07));
+  mon.gold = Math.max(0, Math.round(num(boss.gold, 30) * 0.05));
   mon.boss = false;
   mon.elite = false;
   mon.mech = null;
   mon.affixes = [];
-  mon.affixNames = ['Boss眷屬'];
-  mon.seed = 'minion_' + (boss && boss.seed || 'b') + '_' + idx + '_' + Math.floor(rng()*999);
+  mon.affixNames = ['眷屬·'+(def.note||def.role)];
+  mon.seed = 'minion_' + (boss && boss.seed || 'b') + '_' + def.id + '_' + Math.floor(rng()*999);
+  // 鎖定 Boss 基底屬性，避免光環每回合複利暴衝
+  if(boss){
+    if(boss.baseAtk == null) boss.baseAtk = num(boss.atk, 1);
+    if(boss.baseDef == null) boss.baseDef = num(boss.def, 0);
+    if(boss.baseSpd == null) boss.baseSpd = num(boss.spd, 1);
+  }
+  // 角色特殊起始狀態
+  if(def.role==='pearl_shield' || def.role==='frost_shield' || def.role==='shell'){
+    mon.shieldCharges = (mon.shieldCharges||0) + 2;
+    mon.shieldReduce = 0.35;
+  }
+  if(def.role==='flower') mon.flower = true;
   return mon;
+}
+
+
+/** 眷屬光環／回合效果（每回合開始掃一次） */
+function tickBossMinionAuras(b){
+  if(!b || !b.monsters) return;
+  if(typeof S === 'undefined' || !S || !Array.isArray(S.party)) return;
+  const boss = getBattleBoss(b);
+  if(!boss || boss.hp<=0) return;
+  if(boss.baseAtk == null) boss.baseAtk = num(boss.atk, 1);
+  if(boss.baseDef == null) boss.baseDef = num(boss.def, 0);
+  if(boss.baseSpd == null) boss.baseSpd = num(boss.spd, 1);
+  const party = S.party.filter(p=>p && p.hp>0);
+  if(!party.length) return;
+  const minions = b.monsters.filter(m=>m.isBossMinion && m.hp>0);
+  let breathCharge = 0, funeral = 0, flowers = 0, entropy = 0, rootUp = 0;
+  let pearl = 0, frostShield = 0, shell = 0, bodyguard = 0, tumor = 0;
+  minions.forEach(m=>{
+    const role = m.minionRole;
+    if(role==='breath_charge') breathCharge++;
+    if(role==='funeral_stack') funeral++;
+    if(role==='flower' || m.flower) flowers++;
+    if(role==='entropy_aura') entropy++;
+    if(role==='root_up') rootUp++;
+    if(role==='pearl_shield') pearl++;
+    if(role==='frost_shield') frostShield++;
+    if(role==='shell') shell++;
+    if(role==='bodyguard_low') bodyguard++;
+    if(role==='tumor') tumor++;
+
+    if(role==='scorch_field'){
+      party.forEach(p=>{ p.hp = clamp(p.hp - Math.max(1, Math.round(p.maxHp * 0.02)), 0, p.maxHp); });
+      b.turnLog.unshift(m.name+' 的焦土灼燒了隊伍！');
+      boss._scorchActive = true;
+    }
+    if(role==='spd_aura'){
+      party.forEach(p=>{ p.spdDebuff = (p.spdDebuff||0) + 1; });
+    }
+    if(role==='anti_heal'){
+      b._antiHeal = Math.min(0.55, (b._antiHeal||0) + 0.1);
+    }
+    if(role==='miss_aura'){
+      b._missAura = Math.min(0.35, (b._missAura||0) + 0.07);
+    }
+    if(role==='pressure'){
+      party.forEach(p=>{ p._pressure = true; });
+      b._pressureAura = true;
+    }
+    if(role==='geothermal'){
+      party.forEach(p=>{
+        p.hp = clamp(p.hp - Math.max(1, Math.round(num(boss.atk,20) * 0.12)), 0, p.maxHp);
+      });
+      b.turnLog.unshift(m.name+' 釋出地熱！');
+    }
+    if(role==='mutual_vuln'){ b._mutualVuln = true; }
+    if(role==='skill_dampen'){
+      b._skillDampen = Math.min(0.45, (b._skillDampen||0) + 0.12);
+    }
+    if(role==='bone_aura'){
+      boss.def = Math.round(num(boss.baseDef, boss.def) * (1 + 0.04 * minions.filter(x=>x.minionRole==='bone_aura').length));
+    }
+    if(role==='repair_shield' && (boss.shieldCharges||0) < 6 && Math.random() < 0.45){
+      boss.shieldCharges = (boss.shieldCharges||0) + 1;
+      boss.shieldReduce = boss.shieldReduce || 0.35;
+      b.turnLog.unshift(m.name+' 修復了 '+boss.name+' 的結界！');
+    }
+    if(role==='plant'){
+      boss.hp = clamp(boss.hp + Math.round(boss.maxHp * 0.015), 0, boss.maxHp);
+      if(flowers < 5 && Math.random() < 0.3){
+        b.turnLog.unshift(m.name+' 正在栽種腐花……（盤根加深）');
+        boss._gardenStacks = (boss._gardenStacks||0) + 1;
+      }
+    }
+    if(role==='tide_amp'){ boss._tideAmp = (boss._tideAmp||0) + 0.04; }
+    if(role==='lowhp_vamp' && boss.hp < boss.maxHp * 0.5){ boss._bonusLifesteal = 0.12; }
+    if(role==='haste_boss'){
+      if(boss.baseSpd == null) boss.baseSpd = num(boss.spd, 1);
+      boss.spd = Math.round(num(boss.baseSpd, boss.spd) * 1.08);
+    }
+    if(role==='rage_feed' && Math.random() < 0.3){
+      const cut = Math.max(1, Math.round(boss.maxHp * 0.012));
+      boss.hp = clamp(boss.hp - cut, 1, boss.maxHp);
+      boss.atk = Math.round(num(boss.baseAtk, boss.atk) * 1.05);
+      b.turnLog.unshift(m.name+' 以血餵養，'+boss.name+' 攻擊上升！');
+    }
+    if(role==='self_buff_boss' && Math.random() < 0.35){
+      const cut = Math.max(1, Math.round(m.maxHp * 0.08));
+      m.hp = clamp(m.hp - cut, 1, m.maxHp);
+      if(boss.baseAtk == null) boss.baseAtk = num(boss.atk, 1);
+      boss._bloodPact = (boss._bloodPact||0) + 1;
+      boss.atk = Math.round(num(boss.baseAtk, boss.atk) * (1 + 0.03 * Math.min(8, boss._bloodPact)));
+      b.turnLog.unshift(m.name+' 締下血契，'+boss.name+' 攻擊提升！');
+    }
+    if(role==='shadow_scale' && boss.hp < boss.maxHp * 0.4){
+      boss.evade = Math.min(0.5, (boss.evade||0) + 0.04);
+    }
+    if(role==='dream_cocoon' && !boss._cocoon){
+      boss._cocoon = 3;
+      boss.shieldCharges = Math.max(boss.shieldCharges||0, 2);
+      boss.shieldReduce = Math.max(boss.shieldReduce||0, 0.3);
+      b.turnLog.unshift(m.name+' 為 '+boss.name+' 織上夢繭！');
+    }
+    if(role==='heat_valve'){ boss._heatStable = true; }
+    if(role==='heat_charge'){
+      boss._heat = (boss._heat||0) + 1;
+      if(boss._heat >= 5){
+        boss._heat = 0;
+        party.forEach(p=>{ p.hp = clamp(p.hp - Math.max(1, Math.round(boss.atk * 0.45)), 0, p.maxHp); });
+        b.turnLog.unshift(m.name+' 填滿熔核！'+boss.name+' 爆發熱浪！');
+      }
+    }
+    if(role==='blizzard' && b.roundNum % 3 === 0){
+      party.forEach(p=>{
+        p.hp = clamp(p.hp - Math.max(1, Math.round(num(m.atk,10)*0.7)), 0, p.maxHp);
+        p.spdDebuff = (p.spdDebuff||0) + 1;
+      });
+      b.turnLog.unshift(m.name+' 掀起暴風雪！');
+    }
+    if(role==='meteor' && b.roundNum % 4 === 0){
+      const p = choice(Math.random, party);
+      const d = Math.max(1, Math.round(num(m.atk,10) * 1.8));
+      p.hp = clamp(p.hp - d, 0, p.maxHp);
+      b.turnLog.unshift(m.name+' 召來隕石，砸向 '+p.name+'（'+d+'）！');
+    }
+    if(role==='judgment_bell' && b.roundNum % 3 === 0){
+      const p = choice(Math.random, party);
+      if(!(p.buffDef > 0)){
+        const d = Math.max(1, Math.round(num(boss.atk,20) * 0.85));
+        p.hp = clamp(p.hp - d, 0, p.maxHp);
+        b.turnLog.unshift(m.name+' 敲響懺悔鐘！'+p.name+' 未防禦，受到 '+d+' 傷害！');
+      } else {
+        b.turnLog.unshift(m.name+' 敲響懺悔鐘，'+p.name+' 以防禦撐過審判。');
+      }
+    }
+    if(role==='echo_void' && b.roundNum % 4 === 0){
+      const p = choice(Math.random, party);
+      p.mp = clamp((p.mp||0) - Math.round((p.maxMp||10)*0.12), 0, p.maxMp||0);
+      b.turnLog.unshift(m.name+' 鏡映虛空，再抽走 '+p.name+' 的魔力！');
+    }
+    if(role==='delay' && Math.random() < 0.12){
+      const p = choice(Math.random, party);
+      p.skipTurn = true;
+      b.turnLog.unshift(m.name+' 讓 '+p.name+' 的行動遲緩了一拍！');
+    }
+    if(role==='taunt'){
+      b._hasTauntMinion = true;
+    }
+    if(role==='shield_dps' && (boss.shieldCharges||0) > 0){
+      m.atk = Math.round(num(m.atk,1) * 1.15);
+    }
+    if(role==='bee' && (flowers + (boss._gardenStacks||0)) > 0){
+      m.atk = Math.round(num(m.atk,1) * (1 + 0.06 * Math.min(5, flowers + (boss._gardenStacks||0))));
+    }
+    if(role==='plague_flag'){
+      const poisoned = party.filter(p=>p.status==='poison').length;
+      if(poisoned >= 2){
+        boss._plagueBurst = true;
+      }
+    }
+    if(role==='bleed_shield'){
+      const bleeds = party.reduce((s,p)=>s+(p._bleed||0),0);
+      if(bleeds > 0){
+        boss.shieldCharges = Math.max(boss.shieldCharges||0, Math.min(3, bleeds));
+        boss.shieldReduce = Math.max(boss.shieldReduce||0, 0.25);
+      }
+    }
+    if(role==='sin_altar'){
+      b._sinAltar = true;
+    }
+    if(role==='threat_heal'){
+      b._focusHealer = true;
+    }
+  });
+  if(breathCharge > 0) boss._breathBonus = 0.3 * breathCharge;
+  if(funeral > 0) boss._funeral = funeral;
+  if(rootUp > 0) boss._rootUp = rootUp;
+  if(pearl + frostShield + shell > 0 && (boss.shieldCharges||0) < 1){
+    boss.shieldCharges = (boss.shieldCharges||0) + 1;
+    boss.shieldReduce = Math.max(boss.shieldReduce||0, 0.3);
+  }
+  if(flowers > 0 || (boss._gardenStacks||0) > 0){
+    const g = flowers + Math.min(5, boss._gardenStacks||0);
+    boss.hp = clamp(boss.hp + Math.round(boss.maxHp * 0.006 * g), 0, boss.maxHp);
+    boss.atk = Math.round(num(boss.baseAtk, boss.atk) * (1 + 0.015 * g));
+  }
+  if(entropy > 0){
+    const mpGone = party.reduce((s,p)=> s + Math.max(0, (p.maxMp||0) - (p.mp||0)), 0);
+    boss._entropyBonus = Math.min(0.4, mpGone * 0.0025 * entropy);
+  }
+  if(bodyguard && boss.hp < boss.maxHp * 0.3){
+    if(boss.baseDef == null) boss.baseDef = num(boss.def, 0);
+    boss.def = Math.round(num(boss.baseDef, boss.def) * 1.25);
+    boss._bodyguard = true;
+  } else if(boss._bodyguard && boss.hp >= boss.maxHp * 0.3){
+    boss._bodyguard = false;
+    if(boss.baseDef != null) boss.def = num(boss.baseDef, boss.def);
+  }
+  if(tumor){ boss._tumor = true; }
+  // 過載砲台：結界在則更疼（上面 shield_dps）；結界破則自傷換爆在攻擊時處理
+}
+
+/** 眷屬死亡時觸發 */
+function onBossMinionDeath(mon, b){
+  if(!mon || !mon.isBossMinion) return;
+  const boss = getBattleBoss(b);
+  const party = (S && Array.isArray(S.party)) ? S.party.filter(p=>p && p.hp>0) : [];
+  const role = mon.minionRole;
+  if(mon.minionId==='ember_whelp' && party.length){
+    party.forEach(p=>{ p.hp = clamp(p.hp - Math.max(1, Math.round(num(mon.atk,10)*0.85)), 0, p.maxHp); });
+    b.turnLog.unshift(mon.name+' 爆成餘燼，灼傷全隊！');
+  }
+  if(role==='death_spore' || role==='death_poison'){
+    party.forEach(p=>{ p.status='poison'; p.statusTurns=Math.max(num(p.statusTurns,0), 2); });
+    b.turnLog.unshift(mon.name+' 破裂，毒霧擴散！');
+  }
+  if(role==='sacrifice_heal' && boss && boss.hp>0){
+    const heal = Math.round(boss.maxHp * 0.12);
+    boss.hp = clamp(boss.hp + heal, 0, boss.maxHp);
+    if(boss._funeral) boss.atk = Math.round(num(boss.atk,1) * (1 + 0.03 * boss._funeral));
+    b.turnLog.unshift(mon.name+' 殉葬，'+boss.name+' 回復 '+heal+' HP！');
+  }
+  if(role==='death_magma' && party.length){
+    party.forEach(p=>{ p.hp = clamp(p.hp - Math.max(1, Math.round(num(mon.atk,10)*0.65)), 0, p.maxHp); });
+    b.turnLog.unshift(mon.name+' 化作熔池！');
+  }
+  if(role==='death_charge' && boss){
+    boss._starCharge = (boss._starCharge||0) + 2;
+    b.turnLog.unshift(mon.name+' 為 '+boss.name+' 注入星屑充能！');
+  }
+  if(role==='fake_death' && boss){
+    boss.evade = Math.min(0.55, (boss.evade||0) + 0.2);
+    b.turnLog.unshift(mon.name+' 消散，'+boss.name+' 隱入影中！');
+  }
+  if(role==='cleanse_boss' && boss){
+    boss.status = null; boss.statusTurns = 0;
+    b.turnLog.unshift(mon.name+' 淨化了 '+boss.name+' 的異常！');
+  }
+  if(role==='shield_break_nova' && party.length){
+    party.forEach(p=>{ p.hp = clamp(p.hp - Math.max(1, Math.round(num(mon.atk,10)*0.75)), 0, p.maxHp); });
+    b.turnLog.unshift(mon.name+' 引發碎屑風暴！');
+  }
+  if(role==='mini_rez' && boss && boss.hp>0 && !mon._rezzed){
+    if(!boss._minionRezUsed){
+      boss._minionRezUsed = true;
+      mon.hp = Math.max(1, Math.round(mon.maxHp * 0.35));
+      mon._rezzed = true;
+      b.turnLog.unshift('骸巫之力讓眷屬再起！');
+      return;
+    }
+  }
+  // 骸巫死亡時嘗試復活其他已死眷屬位：用 flag 讓下次 refill 多一隻
+  if(mon.minionId==='bone_witch' && boss && !boss._witchRez){
+    boss._witchRez = true;
+    if(typeof refillBossMinions === 'function'){
+      // 不強制滿編，只標記
+    }
+  }
+}
+
+/** 眷屬攻擊命中後的特殊效果 */
+function applyMinionOnHit(mon, target, dmg, b){
+  if(!mon || !mon.isBossMinion || !target || dmg<=0) return;
+  const boss = getBattleBoss(b);
+  const role = mon.minionRole;
+  if(role==='burn_hit' || role==='focus_burn'){
+    target.status = 'poison';
+    target.statusTurns = Math.max(num(target.statusTurns,0), 2);
+    target._burn = (target._burn||0) + 1;
+    if(role==='focus_burn' && (target._burn||0) >= 3){
+      target.hp = clamp(target.hp - Math.max(1, Math.round(dmg * 0.4)), 0, target.maxHp);
+      target._burn = 0;
+      b.turnLog.unshift(mon.name+' 點燃爆發！');
+    }
+  }
+  if(role==='mp_drain'){
+    const drain = Math.max(1, Math.round((target.maxMp||10) * 0.1));
+    target.mp = clamp((target.mp||0) - drain, 0, target.maxMp||0);
+    if((target.mp||0) <= 0){
+      target.hp = clamp(target.hp - Math.max(1, Math.round(dmg * 0.25)), 0, target.maxHp);
+    }
+  }
+  if(role==='bleed_hit' || role==='bleed_crit'){
+    target._bleed = (target._bleed||0) + 1;
+    if(role==='bleed_crit' && (target._bleed||0) >= 2){
+      target.hp = clamp(target.hp - Math.max(1, Math.round(dmg * 0.3)), 0, target.maxHp);
+    }
+  }
+  if(role==='poison_hit' || role==='flower_thorn'){
+    target.status = 'poison';
+    target.statusTurns = Math.max(num(target.statusTurns,0), 3);
+  }
+  if(role==='wet'){ target._wet = true; target.spdDebuff = (target.spdDebuff||0) + 1; }
+  if(role==='star_mark'){ target._starMark = (target._starMark||0) + 1; }
+  if(role==='sin_scribe' || role==='sin_hunter'){
+    target._sin = (target._sin||0) + 1;
+    if(role==='sin_hunter' && (target._sin||0) >= 2){
+      target.hp = clamp(target.hp - Math.max(1, Math.round(dmg * 0.2)), 0, target.maxHp);
+    }
+  }
+  if(role==='fear' && Math.random() < 0.22){
+    target.skipTurn = true;
+    b.turnLog.unshift(mon.name+' 使 '+target.name+' 陷入恐懼！');
+  }
+  if(role==='freeze_chance' && Math.random() < (0.12 + ((target.spdDebuff||0) > 0 ? 0.1 : 0))){
+    target.skipTurn = true;
+    b.turnLog.unshift(mon.name+' 冰封了 '+target.name+'！');
+  }
+  if((role==='extra_root' || role==='root_hit') && Math.random() < (0.16 + 0.05 * num(boss && boss._rootUp, 0))){
+    target.skipTurn = true;
+    b.turnLog.unshift(mon.name+' 纏住了 '+target.name+'！');
+  }
+  if(role==='skill_jam' && Math.random() < 0.18){
+    target._skillJam = 1;
+    b.turnLog.unshift(mon.name+' 干擾了 '+target.name+' 的施法！');
+  }
+  if(role==='execute' && target.hp < target.maxHp * 0.25){
+    target.hp = clamp(target.hp - Math.max(1, Math.round(dmg * 0.55)), 0, target.maxHp);
+  }
+  if(role==='hunt_low' && target.hp < target.maxHp * 0.4){
+    target.hp = clamp(target.hp - Math.max(1, Math.round(dmg * 0.22)), 0, target.maxHp);
+  }
+  if(role==='hunt_healer'){
+    const isHealer = target.classId==='cleric' || target.classId==='paladin' || num(target.matk,0) > num(target.atk,0) * 1.1;
+    if(isHealer || (b && b._focusHealer)){
+      target.hp = clamp(target.hp - Math.max(1, Math.round(dmg * 0.2)), 0, target.maxHp);
+    }
+  }
+  if(role==='slow_crit' && (target.spdDebuff||0) > 0){
+    target.hp = clamp(target.hp - Math.max(1, Math.round(dmg * 0.25)), 0, target.maxHp);
+  }
+  if(role==='cleave'){
+    // 額外掃到另一個存活隊員
+    const others = (S && S.party) ? S.party.filter(p=>p.hp>0 && p.uid !== target.uid) : [];
+    if(others.length){
+      const o = choice(Math.random, others);
+      o.hp = clamp(o.hp - Math.max(1, Math.round(dmg * 0.4)), 0, o.maxHp);
+    }
+  }
+  if(role==='echo_hit'){
+    target.hp = clamp(target.hp - Math.max(1, Math.round(dmg * 0.35)), 0, target.maxHp);
+  }
+  if(role==='atk_link' && boss){ boss.atk = Math.round(num(boss.atk,1) * 1.02); }
+  if(role==='def_link' && boss){ boss.def = Math.round(num(boss.def,1) + 1); }
+  if(role==='leech_cc' && target.skipTurn && boss){
+    boss.hp = clamp(boss.hp + Math.max(1, Math.round(dmg * 0.35)), 0, boss.maxHp);
+  }
+  if(boss && (target._bleed||0) > 0) boss._vsBleed = true;
+  if(boss && (target._starMark||0) > 0){
+    target.hp = clamp(target.hp - Math.max(1, Math.round(dmg * 0.1 * Math.min(3, target._starMark))), 0, target.maxHp);
+  }
+  // 過載：無結界時自傷換高傷已在傷害算出前難處理；命中後小幅自傷
+  if(role==='shield_dps' && boss && !(boss.shieldCharges > 0)){
+    mon.hp = clamp(mon.hp - Math.max(1, Math.round(mon.maxHp * 0.05)), 0, mon.maxHp);
+  }
+}
+
+/** 玩家打 Boss／眷屬時：護衛、反傷、甲殼等 */
+function applyBossMinionDefenseHooks(attacker, mon, dmg, isMagic, b){
+  if(!b || !mon || dmg <= 0) return dmg;
+  let out = dmg;
+  const boss = getBattleBoss(b);
+  const guards = b.monsters.filter(m=>m.isBossMinion && m.hp>0 && (m.minionRole==='boss_guard' || m.minionRole==='bodyguard_low'));
+  // 打 Boss 時可被影侍／親衛分擔
+  if(mon.boss && guards.length){
+    const g = guards[0];
+    const share = Math.round(out * 0.4);
+    if(share > 0){
+      g.hp = clamp(g.hp - share, 0, g.maxHp);
+      out = Math.max(1, out - share);
+      b.turnLog.unshift(g.name+' 替 '+mon.name+' 擋下 '+share+' 點傷害！');
+      if(g.hp <= 0 && !g.rewarded) checkKillReward(g, b);
+    }
+  }
+  // 互傷旗
+  if(b._mutualVuln){ out = Math.round(out * 1.1); }
+  // 抗暴：簡化為對玩家高傷砍一點（近似）
+  if(mon.boss && b.monsters.some(m=>m.isBossMinion && m.hp>0 && m.minionRole==='anti_crit') && out > mon.maxHp * 0.12){
+    out = Math.round(out * 0.85);
+  }
+  // 膿皰反毒
+  if(mon.isBossMinion && mon.minionRole==='poison_thorns' && attacker){
+    attacker.status = 'poison';
+    attacker.statusTurns = Math.max(num(attacker.statusTurns,0), 2);
+  }
+  // 荊莠：打花相關
+  if(mon.isBossMinion && (mon.minionRole==='flower' || mon.flower) && attacker){
+    attacker.status = 'poison';
+    attacker.statusTurns = Math.max(num(attacker.statusTurns,0), 2);
+  }
+  // 反魔
+  if(mon.boss && isMagic && b.monsters.some(m=>m.isBossMinion && m.hp>0 && m.minionRole==='reflect_magic')){
+    const ref = Math.max(1, Math.round(out * 0.15));
+    if(attacker) attacker.hp = clamp(attacker.hp - ref, 0, attacker.maxHp);
+    b.turnLog.unshift('軌道鏡反射了 '+ref+' 點魔法傷害！');
+  }
+  // 鮮血鏡：打 Boss 反流血
+  if(mon.boss && b.monsters.some(m=>m.isBossMinion && m.hp>0 && m.minionRole==='reflect_bleed') && attacker){
+    attacker._bleed = (attacker._bleed||0) + 1;
+  }
+  // 分攤：漩渦盾衛
+  if(mon.boss){
+    const sharers = b.monsters.filter(m=>m.isBossMinion && m.hp>0 && m.minionRole==='share_dmg');
+    if(sharers.length){
+      const each = Math.round(out * 0.2 / sharers.length);
+      sharers.forEach(s=>{
+        s.hp = clamp(s.hp - each, 0, s.maxHp);
+        if(s.hp <= 0) checkKillReward(s, b);
+      });
+      out = Math.max(1, out - each * sharers.length);
+    }
+  }
+  // 巨瘤：保護花，減傷
+  if(mon.isBossMinion && (mon.flower || mon.minionRole==='flower') && b.monsters.some(m=>m.isBossMinion && m.hp>0 && m.minionRole==='tumor')){
+    out = Math.round(out * 0.7);
+  }
+  // 技能壓制
+  if(isMagic && b._skillDampen){ out = Math.round(out * (1 - b._skillDampen)); }
+  return Math.max(1, out);
 }
 
 function getBattleBoss(b){
@@ -1390,8 +2104,18 @@ function refillBossMinions(b, force){
   if(toAdd <= 0) return;
   const rng = Math.random;
   const pl = avgPartyLevel();
-  for(let i=0;i<toAdd;i++){
-    b.monsters.push(makeBossMinion(boss, pl, rng, stillAlive + i));
+  const roster = getBossMinionRoster(boss);
+  const aliveIds = new Set(b.monsters.filter(m=>m.isBossMinion && m.hp>0).map(m=>m.minionId));
+  let addIdx = 0;
+  for(let i=0;i<roster.length && addIdx<toAdd;i++){
+    if(aliveIds.has(roster[i].id)) continue;
+    b.monsters.push(makeBossMinion(boss, pl, rng, i));
+    aliveIds.add(roster[i].id);
+    addIdx++;
+  }
+  while(addIdx < toAdd){
+    b.monsters.push(makeBossMinion(boss, pl, rng, addIdx));
+    addIdx++;
   }
   // 補完後重建回合順序，讓新眷屬盡快插入行動
   if(typeof buildTurnOrder==='function'){
@@ -1409,18 +2133,18 @@ function refillBossMinions(b, force){
 /* ============ 資料：裝備（稀有度 12 階 + 詞條系統） ============ */
 /* 由低到高：粗製→一般→順手→常用→罕見→稀有→稀罕→史詩→傳奇→神話→千古→唯一 */
 const RARITIES = [
-  {id:'crude',    name:'粗製', mult:0.55, variance:0.12, affixCount:0, w:22, hex:'#6b6358'},
-  {id:'normal',   name:'一般', mult:0.80, variance:0.12, affixCount:0, w:20, hex:'#9c8f7c'},
-  {id:'handy',    name:'順手', mult:1.05, variance:0.14, affixCount:0, w:16, hex:'#a8a090'},
+  {id:'crude',    name:'粗製', mult:0.55, variance:0.12, affixCount:0, w:18, hex:'#6b6358'},
+  {id:'normal',   name:'一般', mult:0.80, variance:0.12, affixCount:0, w:22, hex:'#9c8f7c'},
+  {id:'handy',    name:'順手', mult:1.05, variance:0.14, affixCount:0, w:18, hex:'#a8a090'},
   {id:'common',   name:'常用', mult:1.30, variance:0.14, affixCount:0, w:14, hex:'#b7c49a'},
-  {id:'uncommon', name:'罕見', mult:1.55, variance:0.15, affixCount:1, w:10, hex:'#5b93a8'},
-  {id:'rare',     name:'稀有', mult:1.90, variance:0.15, affixCount:1, w:7,  hex:'#4a9fd8'},
-  {id:'scarce',   name:'稀罕', mult:2.30, variance:0.16, affixCount:1, w:5,  hex:'#6b8cff'},
-  {id:'epic',     name:'史詩', mult:2.80, variance:0.16, affixCount:2, w:3,  hex:'#a565d6'},
-  {id:'legend',   name:'傳奇', mult:3.40, variance:0.18, affixCount:2, w:1.5,hex:'#ff6a35'},
-  {id:'mythic',   name:'神話', mult:4.20, variance:0.18, affixCount:2, w:0.8,hex:'#ff4fa3'},
-  {id:'ancient',  name:'千古', mult:5.20, variance:0.20, affixCount:3, w:0.3,hex:'#ffd24a'},
-  {id:'unique',   name:'唯一', mult:6.50, variance:0.10, affixCount:4, w:0.1,hex:'#ff3b3b'}
+  {id:'uncommon', name:'罕見', mult:1.55, variance:0.15, affixCount:1, w:11, hex:'#5b93a8'},
+  {id:'rare',     name:'稀有', mult:1.90, variance:0.15, affixCount:1, w:7.5,hex:'#4a9fd8'},
+  {id:'scarce',   name:'稀罕', mult:2.30, variance:0.16, affixCount:1, w:4.5,hex:'#6b8cff'},
+  {id:'epic',     name:'史詩', mult:2.80, variance:0.16, affixCount:2, w:2.8,hex:'#a565d6'},
+  {id:'legend',   name:'傳奇', mult:3.40, variance:0.18, affixCount:2, w:1.4,hex:'#ff6a35'},
+  {id:'mythic',   name:'神話', mult:4.20, variance:0.18, affixCount:2, w:0.7,hex:'#ff4fa3'},
+  {id:'ancient',  name:'千古', mult:5.20, variance:0.20, affixCount:3, w:0.28,hex:'#ffd24a'},
+  {id:'unique',   name:'唯一', mult:6.50, variance:0.10, affixCount:4, w:0.12,hex:'#ff3b3b'}
 ];
 /* 舊存檔稀有度對照 */
 const RARITY_LEGACY_MAP = {common:'normal', rare:'rare', epic:'epic', legend:'legend', mythic:'mythic'};
@@ -2057,23 +2781,23 @@ function itemPowerScore(item){
   return s;
 }
 /** 全隊（含背包）是否已有同名唯一 */
-function uniqueAlreadyHeld(item, ignoreUid){
+/** 全隊裝備欄是否已有同名唯一（倉庫／背包可收藏，但不能再穿第二件） */
+function uniqueAlreadyEquipped(item, ignoreUid){
   if(!item || !(item.isUnique || item.rarity==='unique')) return false;
-  if(typeof S==='undefined' || !S) return false;
+  const st = (typeof S!=='undefined' && S) ? S : (typeof globalThis!=='undefined' ? globalThis.S : null);
+  if(!st) return false;
   const key = item.baseName || item.name;
-  const match = (eq)=> eq && (eq.baseName===key || eq.name===item.name || ((eq.isUnique||eq.rarity==='unique') && eq.baseName===key));
-  for(const p of (S.party||[])){
-    for(const eq of Object.values(p.equip||{})){
+  const match = (eq)=> eq && (eq.isUnique || eq.rarity==='unique') && (eq.baseName===key || eq.name===item.name || eq.name===key);
+  for(const p of (st.party||[])){
+    if(!p || !p.equip) continue;
+    for(const eq of Object.values(p.equip)){
       if(match(eq) && eq.uid!==ignoreUid) return true;
     }
   }
-  for(const i of (S.inventory||[])){
-    if(i.uid!==ignoreUid && match(i)) return true;
-  }
-  for(const i of (S.warehouse||[])){
-    if(i.uid!==ignoreUid && match(i)) return true;
-  }
   return false;
+}
+function uniqueAlreadyHeld(item, ignoreUid){
+  return uniqueAlreadyEquipped(item, ignoreUid);
 }
 
 function rarityById(id){
@@ -2115,7 +2839,7 @@ function rollEquip(rng, minRarity, itemLevel){
   rng = rng || Math.random;
 
   // 極低機率掉唯一
-  if(rng() < 0.008 && (!minRarity || RARITIES.findIndex(r=>r.id===(RARITY_LEGACY_MAP[minRarity]||minRarity)) <= 11)){
+  if(rng() < 0.006 && (!minRarity || RARITIES.findIndex(r=>r.id===(RARITY_LEGACY_MAP[minRarity]||minRarity)) <= 11)){
     return rollUniqueEquip(rng, itemLevel);
   }
 
@@ -2298,7 +3022,7 @@ function addToInventory(item){
   }
   normalizeItem(item);
   if(item.isUnique || item.rarity==='unique'){
-    if(uniqueAlreadyHeld(item, item.uid)){
+    if(uniqueAlreadyEquipped(item, item.uid)){
       if(S.log) S.log.unshift('【唯一】'+(item.baseName||item.name)+' 已擁有，無法再取得。');
       return false;
     }
@@ -2770,29 +3494,12 @@ function startBattle(){
   if(avgLevel>=12) availableTiers.push(3);
   if(avgLevel>=22) availableTiers.push(4);
   // Boss 僅 50 等後、較低機率
-  const bossRoll = avgLevel>=50 && rng()<0.10;
+  const bossRoll = avgLevel>=50 && rng()<0.08;
   let pool = bossRoll
     ? MONSTER_TYPES.filter(m=>m.boss)
     : MONSTER_TYPES.filter(m=>!m.boss && availableTiers.includes(m.tier));
   if(pool.length===0) pool = MONSTER_TYPES.filter(m=>m.tier===1 && !m.boss);
 
-  // 遇敵數量：前期少、後期多，但權重偏少隻（避免每場都滿編）
-  let count;
-  if(bossRoll){
-    count = 1;
-  } else {
-    let maxC = 2;
-    if(avgLevel>=8) maxC = 3;
-    if(avgLevel>=16) maxC = 4;
-    if(avgLevel>=28) maxC = 5;
-    if(avgLevel>=40) maxC = MAX_MONSTER_PARTY;
-    // 權重：1 隻 > 2 隻 > 更多
-    const weights = [];
-    for(let c=1;c<=maxC;c++) weights.push({item:c, w: Math.max(1, (maxC-c+1)*3)});
-    count = weightedChoice(rng, weights);
-  }
-
-  // 階級權重：較高機率抽接近玩家等級的階級，少量低階雜兵
   function pickTier(){
     if(availableTiers.length===1) return availableTiers[0];
     const top = availableTiers[availableTiers.length-1];
@@ -2807,19 +3514,49 @@ function startBattle(){
   }
 
   const monsters=[];
-  for(let i=0;i<count;i++){
-    const tPick = bossRoll ? 5 : pickTier();
-    const sub = pool.filter(m=> bossRoll ? true : m.tier===tPick);
-    const tmpl = choice(rng, sub.length ? sub : pool);
-    // 精英：18 等起出現，中期約 10%，後期最高約 20%；多隻時較不易全精英
-    let eliteChance = 0;
-    if(!bossRoll && avgLevel>=15){
-      eliteChance = Math.min(0.08 + (avgLevel-15)*0.003, 0.24);
-      if(count>=3) eliteChance *= 0.75;
-      if(count>=5) eliteChance *= 0.75;
+  if(bossRoll){
+    const tmpl = choice(rng, pool);
+    monsters.push(makeMonster(tmpl, avgLevel, rng, {}));
+  } else {
+    const leadRank = rollMonsterRank(avgLevel, rng);
+    const tPick = pickTier();
+    const sub = pool.filter(m=> m.tier===tPick);
+    const leadTmpl = choice(rng, sub.length ? sub : pool);
+
+    if(leadRank === 'king'){
+      monsters.push(makeMonster(leadTmpl, avgLevel, rng, { rank:'king' }));
+      for(let i=0;i<5;i++){
+        const r = rng() < 0.45 ? 'refined' : 'veteran';
+        monsters.push(makeMonster(leadTmpl, avgLevel, rng, { rank:r }));
+      }
+    } else if(leadRank === 'emperor'){
+      monsters.push(makeMonster(leadTmpl, avgLevel, rng, { rank:'emperor' }));
+      for(let i=0;i<5;i++){
+        const t2 = pickTier();
+        const sub2 = pool.filter(m=> m.tier===t2);
+        const tm = choice(rng, sub2.length ? sub2 : pool);
+        monsters.push(makeMonster(tm, avgLevel, rng, { rank:'king' }));
+      }
+    } else {
+      let maxC = 3;
+      if(avgLevel>=6) maxC = 4;
+      if(avgLevel>=14) maxC = 5;
+      if(avgLevel>=26) maxC = 6;
+      if(avgLevel>=38) maxC = Math.max(6, (typeof MAX_MONSTER_PARTY!=='undefined'?MAX_MONSTER_PARTY:6));
+      const weights = [];
+      for(let c=2;c<=maxC;c++) weights.push({item:c, w: Math.max(1, (maxC-c+2)*2)});
+      weights.forEach(w=>{ if(w.item>=3 && w.item<=4) w.w *= 1.4; });
+      let count = weightedChoice(rng, weights);
+      monsters.push(makeMonster(leadTmpl, avgLevel, rng, { rank: leadRank }));
+      for(let i=1;i<count;i++){
+        const t2 = pickTier();
+        const sub2 = pool.filter(m=> m.tier===t2);
+        const tm = choice(rng, sub2.length ? sub2 : pool);
+        let r = rollMonsterRank(avgLevel, rng);
+        if(r==='king'||r==='emperor') r = (rng()<0.5?'veteran':'elite');
+        monsters.push(makeMonster(tm, avgLevel, rng, { rank: r }));
+      }
     }
-    const elite = !bossRoll && rng() < eliteChance;
-    monsters.push(makeMonster(tmpl, avgLevel, rng, { elite }));
   }
   S.party.forEach(m=>{
     m.usedGuardianAngel=false;
@@ -2829,17 +3566,17 @@ function startBattle(){
   S.battle = {
     monsters, turnLog:[], selectedActor:null, selectedAction:null, over:false, win:null,
     order: buildTurnOrder(monsters), turnIndex:0, roundNum:1,
-    bossMinionCount: 2, lastMinionRefillRound: 0
+    bossMinionCount: 5, lastMinionRefillRound: 0
   };
   if(bossRoll){
     const boss = monsters.find(m=>m.boss) || monsters[0];
-    S.battle.bossMinionCount = 2;
+    S.battle.bossMinionCount = 5;
     for(let i=0;i<S.battle.bossMinionCount;i++){
       S.battle.monsters.push(makeBossMinion(boss, avgLevel, rng, i));
     }
     S.battle.order = buildTurnOrder(S.battle.monsters);
-    S.battle.turnLog.unshift('⚠ 強大的 Boss「'+boss.name+'」帶著眷屬擋在前方！');
-    S.battle.turnLog.unshift('（眷屬攻擊會為 Boss 回復傷害 25% 的生命；每 2 回合補滿眷屬）');
+    S.battle.turnLog.unshift('⚠ 強大的 Boss「'+boss.name+'」率 5 名專屬眷屬擋在前方！');
+    S.battle.turnLog.unshift('（每隻眷屬有獨特光環／技能；攻擊可輸送生命給 Boss；每 2 回合嘗試補齊編成）');
   }
   S.screen='battle';
   advanceBattleTurn(true);
@@ -2869,6 +3606,11 @@ function advanceBattleTurn(first){
       if(boss && boss.hp>0){
         refillBossMinions(b, false);
       }
+    }
+    // 每回合：眷屬光環／盤根／焦土等
+    if(typeof tickBossMinionAuras === 'function'){
+      b._antiHeal = 0; b._missAura = 0; b._skillDampen = 0; b._mutualVuln = false;
+      tickBossMinionAuras(b);
     }
     S.party.forEach(m=>{
       if(m.buffTurns>0){
@@ -2966,6 +3708,10 @@ function applyDamageToMonster(actor, mon, rawDmg, isMagic, b){
     b.turnLog.unshift(mon.name+' 閃避了攻擊！');
     return 0;
   }
+  if(b._missAura && Math.random() < b._missAura){
+    b.turnLog.unshift('命中被干擾，攻擊落空！');
+    return 0;
+  }
   if(!isMagic && mon.physResist) dmg = Math.max(1, Math.round(dmg * (1 - num(mon.physResist, 0))));
   if(isMagic && mon.magResist) dmg = Math.max(1, Math.round(dmg * (1 - num(mon.magResist, 0))));
   if(mon.shieldCharges > 0){
@@ -2974,7 +3720,18 @@ function applyDamageToMonster(actor, mon, rawDmg, isMagic, b){
     mon.shieldCharges--;
     b.turnLog.unshift(mon.name+' 的護盾抵銷了部分傷害（剩餘 '+mon.shieldCharges+'）。');
   }
+  // Boss 眷屬防禦鉤子（替傷／分攤／反魔／抗暴等）
+  if(dmg > 0 && typeof applyBossMinionDefenseHooks === 'function'){
+    dmg = applyBossMinionDefenseHooks(actor, mon, dmg, isMagic, b);
+  }
+  // 星印：Boss 技能打有印記的人在 runBossMechanic；此處玩家打被印記的？跳過
   if(dmg > 0) mon.hp = clamp(mon.hp - dmg, 0, mon.maxHp);
+  // 荊棘／反傷（帝王詞等）
+  if(dmg > 0 && mon._thorns && actor && actor.hp>0){
+    const ref=Math.max(1, Math.round(dmg * num(mon._thorns,0.1)));
+    actor.hp=clamp(actor.hp-ref,0,actor.maxHp);
+    b.turnLog.unshift(mon.name+' 反刺造成 '+ref+' 傷害！');
+  }
   // 唯一裝備：吸血／回魔／擊暈
   if(dmg > 0 && actor && actor.hp > 0 && typeof equippedUniqueEffects === 'function'){
     const ls = sumEquipSpecial(actor, 'lifesteal');
@@ -3030,8 +3787,9 @@ function runBossMechanic(mon, b){
   switch(mon.mech){
     case 'inferno':
       if(t % 3 === 0){
-        party.forEach(p=>{ const d=Math.max(1,Math.round(mon.atk*0.7)); p.hp=clamp(p.hp-d,0,p.maxHp); });
-        b.turnLog.unshift(mon.name+' 釋放【煉獄吐息】，全隊受到火焰傷害！');
+        const bonus = 1 + num(mon._breathBonus, 0);
+        party.forEach(p=>{ const d=Math.max(1,Math.round(mon.atk*0.7*bonus)); p.hp=clamp(p.hp-d,0,p.maxHp); });
+        b.turnLog.unshift(mon.name+' 釋放【煉獄吐息】'+(bonus>1?'（焰心強化）':'')+'，全隊受到火焰傷害！');
       }
       break;
     case 'void':
@@ -3039,6 +3797,10 @@ function runBossMechanic(mon, b){
         const p = choice(Math.random, party);
         p.mp = clamp(p.mp - Math.round(p.maxMp*0.25), 0, p.maxMp);
         b.turnLog.unshift(mon.name+' 的【虛空汲取】抽走了 '+p.name+' 的魔力！');
+      }
+      if(mon._entropyBonus){
+        if(mon.baseAtk == null) mon.baseAtk = num(mon.atk, 1);
+        mon.atk = Math.round(num(mon.baseAtk, mon.atk) * (1 + mon._entropyBonus));
       }
       break;
     case 'reaper':
@@ -3049,8 +3811,14 @@ function runBossMechanic(mon, b){
       break;
     case 'tide':
       if(t % 3 === 0){
-        mon.hp = clamp(mon.hp + Math.round(mon.maxHp*0.06), 0, mon.maxHp);
-        b.turnLog.unshift(mon.name+' 藉【潮汐】恢復了生命！');
+        const amp = 1 + num(mon._tideAmp, 0);
+        const heal = Math.round(mon.maxHp*0.06*amp);
+        mon.hp = clamp(mon.hp + heal, 0, mon.maxHp);
+        // 侍女連攜：其他眷屬也回一點
+        b.monsters.filter(m=>m.isBossMinion && m.hp>0).forEach(m=>{
+          m.hp = clamp(m.hp + Math.max(1, Math.round(m.maxHp*0.04)), 0, m.maxHp);
+        });
+        b.turnLog.unshift(mon.name+' 藉【潮汐】恢復了 '+heal+' 生命！眷屬也沐浴潮水。');
       }
       break;
     case 'roots':
@@ -3065,11 +3833,13 @@ function runBossMechanic(mon, b){
       break;
     case 'bloodmoon':
       if(t % 2 === 0){
-        const d = Math.max(1, Math.round(mon.atk*0.9));
         const p = choice(Math.random, party);
+        let d = Math.max(1, Math.round(mon.atk*0.9));
+        if((p._bleed||0)>0) d = Math.round(d * 1.25);
         p.hp = clamp(p.hp-d,0,p.maxHp);
-        mon.hp = clamp(mon.hp+Math.round(d*0.5),0,mon.maxHp);
-        b.turnLog.unshift(mon.name+' 【血月噬咬】造成 '+d+' 傷害並吸血！');
+        const suck = Math.round(d * ((p._bleed||0)>0 ? 0.7 : 0.5));
+        mon.hp = clamp(mon.hp+suck,0,mon.maxHp);
+        b.turnLog.unshift(mon.name+' 【血月噬咬】造成 '+d+' 傷害並吸血 '+suck+'！');
       }
       break;
     case 'frost':
@@ -3083,6 +3853,13 @@ function runBossMechanic(mon, b){
         const p = choice(Math.random, party);
         p.status = 'poison'; p.statusTurns = 3;
         b.turnLog.unshift(mon.name+' 散播【瘟疫】，'+p.name+' 中毒了！');
+      }
+      if(mon._plagueBurst || (b && b.monsters.some(m=>m.isBossMinion && m.hp>0 && m.minionRole==='plague_flag') && party.filter(p=>p.status==='poison').length>=2)){
+        if(t % 3 === 0){
+          party.forEach(p=>{ p.hp = clamp(p.hp - Math.max(1, Math.round(mon.atk*0.4)), 0, p.maxHp); });
+          b.turnLog.unshift(mon.name+' 引爆【疫爆】！');
+          mon._plagueBurst = false;
+        }
       }
       break;
     case 'shadowcourt':
@@ -3116,6 +3893,13 @@ function runBossMechanic(mon, b){
       if(t % 5 === 0){
         party.forEach(p=>{ p.mp = clamp(p.mp - 15, 0, p.maxMp); });
         b.turnLog.unshift(mon.name+' 【星隕封印】壓制全隊魔力！');
+      }
+      if((mon._starCharge||0) >= 4){
+        mon._starCharge = 0;
+        const p = choice(Math.random, party);
+        const d = Math.max(1, Math.round(mon.atk * 1.4 * (1 + 0.15 * num(p._starMark,0))));
+        p.hp = clamp(p.hp - d, 0, p.maxHp);
+        b.turnLog.unshift(mon.name+' 釋出星屑轟擊 '+p.name+'（'+d+'）！');
       }
       break;
     case 'nightmare':
@@ -3230,6 +4014,7 @@ function calcHealAmt(actor, healCoef){
   const intel = actor.int || 0;
   let amt = matk * (healCoef||1) + intel * 0.6 + actor.level * 2;
   if(typeof sumEquipSpecial === 'function') amt *= (1 + sumEquipSpecial(actor, 'healBonus'));
+  if(S && S.battle && S.battle._antiHeal) amt *= (1 - Math.min(0.5, S.battle._antiHeal));
   return Math.max(1, Math.round(amt));
 }
 function dmgTag(r){
@@ -3266,6 +4051,13 @@ function monsterAct(mon){
     }
     target.hp = clamp(target.hp-dmg,0,target.maxHp);
     b.turnLog.unshift(mon.name+' 攻擊了 '+target.name+'，造成 '+dmg+' 點傷害。'+(blocked?'（格擋減傷！）':''));
+    if(target.hp<=0){
+      const boss = getBattleBoss(b);
+      if(boss && boss.hp>0 && b.monsters.some(m=>m.isBossMinion && m.hp>0 && m.minionRole==='on_ko_buff')){
+        boss.atk = Math.round(num(boss.atk,1) * 1.12);
+        b.turnLog.unshift('終末鴉振翅：'+boss.name+' 因敵人倒下而攻擊暴衝！');
+      }
+    }
     // 唯一：反傷
     if(typeof sumUniqueEffect === 'function' && dmg > 0 && mon.hp > 0){
       const th = sumEquipSpecial(target, 'thorns');
@@ -3275,19 +4067,39 @@ function monsterAct(mon){
         b.turnLog.unshift(target.name+' 的唯一裝備反彈了 '+ref+' 點傷害！');
       }
     }
-    // Boss 眷屬：攻擊傷害的 25% 轉為 Boss 回血
+    // Boss 眷屬：攻擊傷害的 25% 轉為 Boss 回血 + 專屬命中效果
     if(mon.isBossMinion && dmg > 0){
       const boss = getBattleBoss(b);
       if(boss && boss.hp > 0){
-        const heal = Math.max(1, Math.round(dmg * 0.25));
+        let ratio = 0.25;
+        if(mon.minionRole==='tide_echo') ratio = 0.15;
+        if(mon.minionRole==='leech_cc' && target.skipTurn) ratio = 0.4;
+        const heal = Math.max(1, Math.round(dmg * ratio));
         boss.hp = clamp(boss.hp + heal, 0, boss.maxHp);
-        b.turnLog.unshift('🩸 眷屬為 '+boss.name+' 吸收生命 +'+heal+'！');
+        b.turnLog.unshift('🩸 '+mon.name+' 為 '+boss.name+' 輸送生命 +'+heal+'！');
       }
+      if(typeof applyMinionOnHit === 'function') applyMinionOnHit(mon, target, dmg, b);
     }
-    if(mon.vampiric){
-      const heal = Math.max(1, Math.round(dmg * mon.vampiric));
+    if(mon.vampiric || mon._vampRate){
+      const rate = num(mon._vampRate, (typeof mon.vampiric==='number' ? mon.vampiric : 0.25));
+      const heal = Math.max(1, Math.round(dmg * rate));
       mon.hp = clamp(mon.hp+heal, 0, mon.maxHp);
       b.turnLog.unshift(mon.name+' 吸血恢復了 '+heal+' HP。');
+    }
+    // 帝王／詞條命中效果
+    if(dmg>0 && mon._poisonOnHit){
+      target.status='poison'; target.statusTurns=Math.max(num(target.statusTurns,0), 2);
+    }
+    if(dmg>0 && mon._rootOnHit && Math.random()<0.2){
+      target.skipTurn=true;
+      b.turnLog.unshift(mon.name+' 纏住了 '+target.name+'！');
+    }
+    if(dmg>0 && mon._lifeTap){
+      mon.hp=clamp(mon.hp+Math.max(1,Math.round(dmg*0.2)),0,mon.maxHp);
+    }
+    if(dmg>0 && mon._goldSteal && S.hero){
+      const g=Math.min(S.hero.gold||0, rint(Math.random,1,5));
+      if(g>0){ S.hero.gold-=g; b.turnLog.unshift(mon.name+' 偷走了 '+g+' 金幣！'); }
     }
     if(mon.poisonTouch){
       target.status = 'poison';
@@ -3376,6 +4188,13 @@ function playerAction(actorUid, action, targetIdx, skillIdx, potionUid){
   } else if(action==='skill'){
     const sk = getSkills(actor)[skillIdx];
     if(!sk){ render(); return; }
+    if(actor._skillJam){
+      actor._skillJam = 0;
+      b.turnLog.unshift(actor.name+' 遭到干擾，技能施放失敗！');
+      checkBattleEnd();
+      if(!b.over) advanceBattleTurn(false);
+      render(); return;
+    }
     const needMp = num(sk.mp, 0);
     if(actor.mp < needMp){ b.turnLog.unshift(actor.name+' 的MP不足以使用 '+sk.name+'！'); render(); return; }
     actor.mp -= needMp;
@@ -3522,6 +4341,13 @@ function applySkill(actor, sk, targetIdx, b){
 }
 function checkKillReward(mon, b){
   if(mon.hp>0 || mon.rewarded) return;
+  // 眷屬死亡特效（可能再起則暫不標 rewarded）
+  if(mon.isBossMinion && typeof onBossMinionDeath === 'function'){
+    const hpBefore = mon.hp;
+    onBossMinionDeath(mon, b);
+    if(mon.hp > 0){ return; } // 再起
+  }
+  if(mon.rewarded) return;
   mon.rewarded = true;
   const affixCount = mon.affixes ? mon.affixes.length : 0;
   const mult = 1 + affixCount*0.2;
@@ -3569,15 +4395,16 @@ function explore(){
   S.daysSurvived++;
   const rng=Math.random;
   const roll = rng();
-  if(roll < 0.35){
+  // 遇敵 52%／事件 33%／平靜 15%
+  if(roll < 0.52){
     startBattle();
-  } else if(roll < 0.8){
+  } else if(roll < 0.85){
     const pool = S.party.length>=4 ? EVENTS.filter(e=>e.id!=='wanderer') : EVENTS;
     const ev = choice(rng, pool);
     S.event = ev;
     S.screen='event';
   } else {
-    const gold = rint(Math.random,10,30);
+    const gold = rint(Math.random,12,36);
     S.hero.gold += gold;
     S.log.unshift('平靜的旅途中，你撿到了 '+gold+' 金幣。');
     routeHome();
@@ -3671,7 +4498,7 @@ function equipItem(item, memberUid){
 
   if(item.isUnique || item.rarity==='unique'){
     if(uniqueAlreadyHeld(item, item.uid)){
-      if(S.log) S.log.unshift('【唯一】「'+(item.baseName||item.name)+'」全隊僅能持有一件，無法裝備。');
+      if(S.log) S.log.unshift('【唯一】「'+(item.baseName||item.name)+'」全隊僅能裝備一件（其他可收進倉庫）。');
       render();
       return;
     }
@@ -3695,6 +4522,7 @@ function equipItem(item, memberUid){
   applyComputedStats(m);
   if(S.log) S.log.unshift(m.name+' 裝備了 '+item.name+'（'+equipAffixText(item)+'）');
   S.invSelectedItemUid = null;
+  S.itemModalUid = null;
   render();
 }
 function unequipItem(slot, memberUid){
@@ -4174,6 +5002,31 @@ function bindEvent(){
   });
 }
 
+
+function formatMonsterAffixDisplay(m){
+  const names = (m.affixNames && m.affixNames.length)
+    ? m.affixNames.slice()
+    : ((m.affixes||[]).map(id=>{ const a=(typeof MONSTER_AFFIXES!=='undefined')&&MONSTER_AFFIXES.find(x=>x.id===id); return a?a.name:id; }));
+  const emp = m.emperorTrait || null;
+  const rest = names.filter(n=>n && n!==emp);
+  const visible = [];
+  if(emp) visible.push(emp);
+  const take = emp ? 1 : 2;
+  const others = rest.slice(0, take);
+  others.forEach(n=> visible.push(n));
+  const hidden = Math.max(0, rest.length - others.length);
+  const line = visible.join(' · ') + (hidden>0 ? ' · +'+hidden : '');
+  const full = (emp ? [emp] : []).concat(rest).join(' · ');
+  return { line, full, count: (emp?1:0)+rest.length };
+}
+function formatMonsterRankTag(m){
+  if(m.boss) return 'Boss';
+  if(m.isBossMinion) return '眷屬';
+  const r = m.rank || (m.elite ? 'elite' : 'normal');
+  const map = {elite:'精英',veteran:'百戰',refined:'千煉',king:'王者',emperor:'帝王'};
+  return map[r] || '';
+}
+
 function renderBattle(){
   const b=S.battle;
   const monsterHtml = b.monsters.map((m,i)=>{
@@ -4182,11 +5035,13 @@ function renderBattle(){
     m.hp = clamp(num(m.hp, 0), 0, m.maxHp);
     const dead = m.hp<=0;
     const hpPct = Math.round((m.hp/m.maxHp)*100);
-    const affixTags = (m.affixNames&&m.affixNames.length)
-      ? `<div class="small" style="color:${m.elite?'var(--legend)':'var(--epic)'};">${m.affixNames.map(esc).join(' · ')}</div>`
-      : ((m.affixes&&m.affixes.length) ? `<div class="small" style="color:var(--epic);">${m.affixes.map(id=>{ const a=MONSTER_AFFIXES.find(x=>x.id===id); return esc(a?a.name:id); }).join(' · ')}</div>` : '');
+    const rankTag = formatMonsterRankTag(m);
+    const affixInfo = formatMonsterAffixDisplay(m);
+    const affixTags = affixInfo.line
+      ? `<div class="small mon-affix-line" style="color:var(--legend);" title="${esc(affixInfo.full)}">${esc(affixInfo.line)}</div>`
+      : '';
     const markTag = (m.marked && m.markTurns>0) ? `<div class="small" style="color:var(--gold);">◎ 追蹤標記 ${m.markTurns}回合</div>` : '';
-    const eliteTag = m.elite ? `<div class="small" style="color:var(--legend);">◆ 精英</div>` : (m.isBossMinion ? `<div class="small" style="color:var(--hp);">⛓ Boss眷屬</div>` : '');
+    const eliteTag = rankTag ? `<div class="small" style="color:var(--legend);">◆ ${esc(rankTag)}</div>` : '';
     return `
     <div class="monster-box ${dead?'dead':'target-selectable'}" data-tidx="${i}">
       <canvas class="sprite" id="mon-${i}" width="72" height="72"></canvas>
@@ -4418,7 +5273,8 @@ function renderInventory(){
     const item = selMember.equip[def.id];
     const can = !item && S.inventory.some(i=>i.slot===def.id);
     if(!item){
-      return `<div class="bp-slot empty ${can?'empty-can':''}" data-area="${def.area}" data-dollslot="${def.id}">
+    
+  return `<div class="bp-slot empty ${can?'empty-can':''}" data-area="${def.area}" data-dollslot="${def.id}">
         <div class="sl">${def.label}</div>
         <div class="sn">${can?'可裝備':'空'}</div>
       </div>`;
@@ -4554,6 +5410,48 @@ function renderInventory(){
     return `<span>${statLabel(st)} <b class="delta-up">+${b}</b></span>`;
   }).filter(Boolean).join(' · ') || '<span class="delta-same">無裝備加成</span>';
 
+  let modalHtml = '';
+  if(S.itemModalUid){
+    const mItem = (filter==='warehouse' ? (S.warehouse||[]) : S.inventory).find(i=>i.uid===S.itemModalUid)
+      || Object.values(selMember.equip||{}).find(i=>i && i.uid===S.itemModalUid)
+      || (S.warehouse||[]).find(i=>i.uid===S.itemModalUid)
+      || S.inventory.find(i=>i.uid===S.itemModalUid);
+    if(mItem && mItem.slot!=='potion'){
+      const meta = invCompareMeta(selMember, mItem);
+      const uEff = (mItem.isUnique||mItem.rarity==='unique') ? uniqueEffectDesc(mItem) : '';
+      const uSk = (mItem.isUnique||mItem.rarity==='unique') ? getUniqueSkill(mItem) : null;
+      const resNote = typeof resonanceDesc==='function' ? resonanceDesc(mItem) : '';
+      const onDoll = Object.values(selMember.equip||{}).some(e=>e && e.uid===mItem.uid);
+      const uniqueBlocked = (mItem.isUnique||mItem.rarity==='unique') && uniqueAlreadyEquipped(mItem, mItem.uid);
+      modalHtml = `
+      <div class="item-modal-mask" id="item-modal-mask">
+        <div class="item-modal" style="position:relative;">
+          <button class="btn" id="item-modal-close" style="position:absolute;right:8px;top:8px;padding:4px 10px;">關閉</button>
+          <div class="im-title"><span class="rarity-${mItem.rarity}">${esc(mItem.name)}</span></div>
+          <div class="im-meta">
+            欄位：${slotLabelOf(mItem.slot)} · Lv.${mItem.itemLevel||1}
+            ${(mItem.isUnique||mItem.rarity==='unique')?' · <b>唯一</b>':''}${mItem.rarity==='ancient'?' · 千古':''}<br>
+            ${equipAffixText(mItem)}
+            ${uEff?`<br><span style="color:var(--r-unique)">✦ 被動：${esc(uEff)}</span>`:''}
+            ${uSk?`<br><span style="color:var(--r-unique)">⚔ 技能「${esc(uSk.name)}」MP${uSk.mp} — ${esc(uSk.desc||'')}</span>`:''}
+            ${resNote?`<br><span style="color:var(--r-ancient)">✦ 共鳴·${esc(resNote)}</span>`:''}
+            <div class="inv-compare">${meta.html||''}</div>
+            ${uniqueBlocked?'<div style="color:#e07a7a;margin-top:4px;">全隊已有隊員裝備同名唯一，無法再裝備（可放倉庫收藏）。</div>':''}
+          </div>
+          <div class="im-actions">
+            ${onDoll
+              ? `<button class="btn" data-unequip="${mItem.slot}">卸下</button>`
+              : (filter==='warehouse'
+                  ? `<button class="btn gold" data-withdraw="${mItem.uid}">取出到背包</button>`
+                  : `<button class="btn gold" data-equip="${mItem.uid}" ${uniqueBlocked?'disabled':''}>裝備 → ${esc(selMember.name)}</button>
+                     <button class="btn" data-deposit="${mItem.uid}">存入倉庫</button>`)}
+            <button class="btn" id="item-modal-close-2">關閉</button>
+          </div>
+        </div>
+      </div>`;
+    }
+  }
+
   return `
   <div class="panel bp-wrap">
     <p class="section-title">BACKPACK · 隊伍整備</p>
@@ -4608,7 +5506,8 @@ function renderInventory(){
     </div>
     <div class="bp-detail">${detailHtml}</div>
     <div style="text-align:center;margin-top:4px;"><button class="btn" id="back-hub2">返回營地</button></div>
-  </div>`;
+  </div>
+  ${modalHtml}`;
 }
 function statLabel(s){
   return {
@@ -4706,11 +5605,15 @@ function bindInventory(){
   }));
   document.querySelectorAll('[data-invuid]').forEach(btn=> btn.addEventListener('click', ()=>{
     S.invSelectedItemUid = btn.dataset.invuid;
+    S.itemModalUid = btn.dataset.invuid;
     render();
   }));
   document.querySelectorAll('[data-equid]').forEach(btn=> btn.addEventListener('click', ()=>{
-    S.invSelectedItemUid = btn.dataset.equid;
-    render();
+    if(btn.dataset.equid){
+      S.invSelectedItemUid = btn.dataset.equid;
+      S.itemModalUid = btn.dataset.equid;
+      render();
+    }
   }));
   document.querySelectorAll('[data-unequip]').forEach(btn=> btn.addEventListener('click', ()=> {
     unequipItem(btn.dataset.unequip, selMember.uid);
@@ -4747,6 +5650,14 @@ function bindInventory(){
     S.invSelectedItemUid = null;
     render();
   });
+  const closeModal = ()=>{ S.itemModalUid = null; render(); };
+  const c1 = document.getElementById('item-modal-close');
+  const c2 = document.getElementById('item-modal-close-2');
+  if(c1) c1.addEventListener('click', closeModal);
+  if(c2) c2.addEventListener('click', closeModal);
+  const mask = document.getElementById('item-modal-mask');
+  if(mask) mask.addEventListener('click', (e)=>{ if(e.target===mask) closeModal(); });
+
   // 倉庫頁 icon（僅當前頁）
   if(S.invFilter==='warehouse'){
     const page = S.warePage||0;
