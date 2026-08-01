@@ -1767,9 +1767,11 @@ function formatMonsterName(rank, baseName){
 function rollMonsterRank(avgLevel, rng){
   rng = rng || Math.random;
   const lv = num(avgLevel, 1);
+  // 5 等前只出普通怪；精英及以上自 5 等起解鎖
+  if(lv < 5) return 'normal';
   const w = [
     {id:'normal', w: 52},
-    {id:'elite',  w: lv>=8  ? 20 : 10},
+    {id:'elite',  w: lv>=5  ? (lv>=8 ? 20 : 14) : 0},
     {id:'veteran',w: lv>=14 ? 12 : 0},
     {id:'refined',w: lv>=22 ? 9  : 0},
     {id:'king',   w: lv>=32 ? 4.5: 0},
@@ -1787,6 +1789,8 @@ function makeMonster(tmpl, playerLevel, rng, opts){
   const boss = !!(tmpl && tmpl.boss);
   let rank = opts.rank || (opts.elite ? 'elite' : 'normal');
   if(boss) rank = 'normal';
+  // 隊伍平均／參考等級 5 等前強制普通（精英以上不出現）
+  if(pl < 5 && rank !== 'normal') rank = 'normal';
   if(typeof MONSTER_RANKS === 'undefined' || !MONSTER_RANKS[rank]) rank = 'normal';
   const rankDef = (typeof MONSTER_RANKS !== 'undefined' && MONSTER_RANKS[rank]) ? MONSTER_RANKS[rank] : {multHp:1,multAtk:1,multDef:1,multRew:1,extraAffix:0,prefix:'',name:'普通'};
   const elite = rank === 'elite' || (!!opts.elite && rank==='normal');
