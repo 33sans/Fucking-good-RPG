@@ -3,13 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>灰燼紀元 - 像素文字RPG</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0c0a09">
-<title>灰燼紀元 - 像素文字RPG</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Noto+Serif+TC:wght@400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg-deep:#0c0a09;
@@ -91,6 +93,7 @@ body{
   50%{ text-shadow:0 0 16px rgba(255,106,53,.75), 0 0 3px rgba(255,106,53,1); }
 }
 .title-bar p{font-size:11px;color:var(--text-dim);margin:0;letter-spacing:1px;}
+#game-version-label,.version-tag{color:var(--gold);letter-spacing:0.5px;font-size:10px;}
 .panel{
   background:var(--bg-panel);
   border:1px solid var(--line);
@@ -165,9 +168,13 @@ canvas.sprite{image-rendering:pixelated;background:#0a0807;border:1px solid var(
 }
 .member-card-compact canvas.sprite{width:32px;height:32px;}
 .battle-party-grid{
-  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  grid-template-columns:repeat(4, minmax(0, 1fr));
   gap:6px;margin:6px 0 2px;
 }
+.member-card-compact{padding:4px 6px;gap:6px;}
+.member-card-compact canvas.sprite{width:28px;height:28px;}
+.member-card-compact .member-name{font-size:11px;}
+.member-card-compact .compact-stats{font-size:9px;}
 .battle-log-box{height:96px;}
 .rarity-crude{color:var(--r-crude);}
 .rarity-normal{color:var(--r-normal);}
@@ -188,16 +195,27 @@ canvas.sprite{image-rendering:pixelated;background:#0a0807;border:1px solid var(
   border-radius:4px;-webkit-overflow-scrolling:touch;
 }
 .log-box div{border-bottom:1px dashed #2a2119;padding-bottom:3px;margin-bottom:3px;}
-.monster-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0;}
+.monster-row{
+  display:grid;
+  grid-template-columns:repeat(6, minmax(0, 1fr));
+  gap:6px;justify-content:center;margin:8px 0;
+}
 .monster-box{
-  text-align:center;cursor:pointer;padding:8px 10px;border:2px solid transparent;
-  border-radius:6px;touch-action:manipulation;min-width:88px;
+  text-align:center;cursor:pointer;padding:4px 2px;border:2px solid transparent;
+  border-radius:6px;touch-action:manipulation;min-width:0;
   transition:border-color .12s, background .12s;
 }
+.monster-box canvas.sprite{
+  width:40px !important;height:40px !important;
+  display:block;margin:0 auto;
+}
+.monster-box .small{font-size:9px;line-height:1.2;}
+.monster-box .bar-wrap{width:48px !important;margin:2px auto !important;}
 .monster-box.target-selectable:hover,
 .monster-box.target-selectable:active{border-color:var(--hp);background:rgba(212,69,63,.08);}
 .monster-box.dead{opacity:.25;pointer-events:none;}
-.monster-name{font-size:12px;margin-top:4px;font-weight:600;}
+.monster-name{font-size:10px;margin-top:2px;font-weight:600;line-height:1.2;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;}
 .action-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 /* --- 按鍵層級系統 --- */
 .btn-primary{width:100%;padding:16px;font-size:16px;letter-spacing:1px;margin-bottom:2px;min-height:52px;}
@@ -428,16 +446,16 @@ canvas.sprite{image-rendering:pixelated;background:#0a0807;border:1px solid var(
   .grid[style*="minmax(200px"]{
     grid-template-columns:1fr !important;
   }
-  /* 戰鬥角色卡：2 欄緊湊 */
+  /* 戰鬥角色卡：手機也盡量 4 欄 */
   .battle-party-grid{
-    grid-template-columns:1fr 1fr !important;
-    gap:4px;margin:4px 0 2px;
+    grid-template-columns:repeat(4, minmax(0, 1fr)) !important;
+    gap:3px;margin:4px 0 2px;
   }
-  .member-card-compact{padding:4px 6px;gap:5px;}
-  .member-card-compact canvas.sprite{width:26px;height:26px;}
-  .member-card-compact .member-name{font-size:10px;}
-  .member-card-compact .compact-stats{font-size:9px;}
-  .member-card-compact .bar-wrap{height:5px;margin:1px 0;}
+  .member-card-compact{padding:3px 3px;gap:3px;flex-direction:column;align-items:center;text-align:center;}
+  .member-card-compact canvas.sprite{width:22px;height:22px;}
+  .member-card-compact .member-name{font-size:9px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .member-card-compact .compact-stats{font-size:8px;}
+  .member-card-compact .bar-wrap{height:4px;margin:1px 0;width:100%;}
   .member-card-compact .bar-wrap-mp{height:3px;}
   .battle-log-box{height:80px;}
   .battle-log-panel{padding:8px 10px;}
@@ -455,18 +473,22 @@ canvas.sprite{image-rendering:pixelated;background:#0a0807;border:1px solid var(
   .class-card .divider{display:none;}
   .class-card > div.small{font-size:12px;}
 
-  /* 戰鬥：怪物橫向可滑 */
+  /* 戰鬥：手機怪物 3 個一排，更小 */
   .monster-row{
-    gap:8px;justify-content:flex-start;
-    overflow-x:auto;-webkit-overflow-scrolling:touch;
-    padding-bottom:6px;flex-wrap:nowrap;
-    margin:8px -4px;padding-left:4px;padding-right:4px;
+    display:grid !important;
+    grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+    gap:4px;
+    overflow-x:visible;
+    flex-wrap:unset;
+    margin:6px 0;padding:0;
   }
   .monster-box{
-    min-width:100px;flex:0 0 auto;padding:10px 8px;
+    min-width:0;padding:3px 2px;
   }
-  .monster-box canvas.sprite{width:64px !important;height:64px !important;}
-  .monster-name{font-size:12px;}
+  .monster-box canvas.sprite{width:32px !important;height:32px !important;}
+  .monster-box .bar-wrap{width:40px !important;}
+  .monster-name{font-size:9px;}
+  .monster-box .small{font-size:8px;}
 
   /* 技能全寬單欄，好按 */
   .skill-grid{grid-template-columns:1fr;gap:8px;}
@@ -526,7 +548,10 @@ canvas.sprite{image-rendering:pixelated;background:#0a0807;border:1px solid var(
 @media (max-width:380px){
   .btn-nav{font-size:12px;padding:12px 4px;min-height:68px;}
   .btn-nav .nav-icon{font-size:22px;}
-  .monster-box{min-width:88px;}
+  .monster-box{min-width:0;padding:2px 1px;}
+  .monster-box canvas.sprite{width:28px !important;height:28px !important;}
+  .battle-party-grid{gap:2px;}
+  .member-card-compact canvas.sprite{width:20px;height:20px;}
   .class-card{padding:12px 10px;gap:10px;}
   .class-card canvas.sprite{width:48px;height:48px;}
   .title-bar h1{font-size:13px;}
@@ -544,6 +569,54 @@ canvas.sprite{image-rendering:pixelated;background:#0a0807;border:1px solid var(
   .btn-nav .nav-icon{font-size:18px;}
   .monster-row{flex-wrap:wrap;justify-content:center;}
 }
+
+
+/* ===== 戰鬥打擊回饋 ===== */
+@keyframes hit-shake {
+  0%,100% { transform: translate(0,0); }
+  20% { transform: translate(-3px,1px); }
+  40% { transform: translate(3px,-1px); }
+  60% { transform: translate(-2px,0); }
+  80% { transform: translate(2px,1px); }
+}
+@keyframes hit-flash {
+  0% { filter: brightness(2.2) saturate(0.3); }
+  100% { filter: none; }
+}
+@keyframes float-dmg {
+  0% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  70% { opacity: 1; transform: translate(-50%, -18px) scale(1.08); }
+  100% { opacity: 0; transform: translate(-50%, -32px) scale(0.95); }
+}
+@keyframes kill-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255,106,53,0.6); }
+  100% { box-shadow: 0 0 0 12px rgba(255,106,53,0); }
+}
+.hit-shake { animation: hit-shake 0.22s ease-out; }
+.hit-flash { animation: hit-flash 0.18s ease-out; }
+.kill-pulse { animation: kill-pulse 0.35s ease-out; }
+.monster-box, .member-card { position: relative; }
+.combat-float-dmg{
+  position:absolute; left:50%; top:8%;
+  transform:translate(-50%,0);
+  font-weight:800; font-size:14px; line-height:1;
+  pointer-events:none; z-index:20;
+  text-shadow:0 1px 2px #000, 0 0 6px rgba(0,0,0,0.6);
+  animation: float-dmg 0.7s ease-out forwards;
+  font-family:'Space Mono','Noto Serif TC',sans-serif;
+  white-space:nowrap;
+}
+.combat-float-dmg.crit{ color:#ffd24a; font-size:17px; }
+.combat-float-dmg.normal{ color:#ffe8e0; }
+.combat-float-dmg.magic{ color:#9ec9ff; }
+.combat-float-dmg.heal{ color:#7dffb0; }
+.combat-float-dmg.miss{ color:#bbb; font-size:12px; }
+.bar.bar-anim{ transition: width 0.22s ease-out; }
+.battle-hitstop{ pointer-events:none; }
+.log-hit{ color:#ffb4a8; }
+.log-crit{ color:#ffd24a; font-weight:700; }
+.log-kill{ color:#ff6a35; font-weight:700; }
+
 </style>
 </head>
 <body>
@@ -566,13 +639,17 @@ canvas.sprite{image-rendering:pixelated;background:#0a0807;border:1px solid var(
 <div id="app">
   <div class="title-bar">
     <h1 class="pixel-font">灰 燼 紀 元</h1>
-    <p>ASHFALL ERA · 像素文字RPG</p>
+    <p>ASHFALL ERA · 像素文字RPG · <span id="game-version-label">v1.4.0</span></p>
   </div>
   <div id="screens"></div>
 </div>
 
+<!-- 載入順序請勿隨意更動：後面的模組會依賴前面的資料與工具 -->
 
 <script>
+
+/* ===== 00-utils.js ===== */
+
 /* ============ 工具 / PRNG ============ */
 function mulberry32(seed){
   return function(){
@@ -610,6 +687,9 @@ function clamp(v,a,b){
 }
 function esc(s){ return (s+'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 
+
+
+/* ===== 01-sprites.js ===== */
 /* ============ 像素精靈產生器 ============ */
 /**
  * 頭像／像素系統規劃（星露谷風格框）：
@@ -618,23 +698,25 @@ function esc(s){ return (s+'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':
  * - 裝備：仍用簡化圖示
  */
 const SKIN_TONES = [
-  ['#f6e0c8','#e8c4a0','#c9956c'], // 淺
-  ['#e8c4a0','#d4a574','#b07a4a'],
-  ['#d4a574','#b07a4a','#8a5a32'],
-  ['#b07a4a','#8a5a32','#5c3a20'],
-  ['#8a5a32','#5c3a20','#3a2414'],
-  ['#f0d5b8','#d4a090','#a07060']  // 偏紅
+  ['#f7e4cc','#ebc8a4','#d4a574','#b07a4a'],
+  ['#f0d5b8','#e0b898','#c9956c','#9a6b45'],
+  ['#e8c4a0','#d4a574','#b07a4a','#8a5a32'],
+  ['#d4a574','#b07a4a','#8a5a32','#5c3a20'],
+  ['#b07a4a','#8a5a32','#5c3a20','#3a2414'],
+  ['#f0d0c0','#d4a090','#b07060','#8a5040'],
+  ['#e8d8c0','#d0b898','#b09070','#8a6a48']
 ];
 const HAIR_COLORS = [
-  '#1a120c','#2c1810','#4a2c14','#6b3a1f','#8b4513',
-  '#c9a227','#e8d080','#c0c0c8','#5a1a1a','#2a1a3a',
-  '#1a2a4a','#3a5a2a','#4a4a4a','#e8e0d0'
+  '#1a120c','#2c1810','#4a2c14','#6b3a1f','#8b4513','#a06030',
+  '#c9a227','#e8d080','#d8d0c0','#c0c0c8','#5a1a1a','#2a1a3a',
+  '#1a2a4a','#3a5a2a','#4a4a4a','#e8e0d0','#6b2030','#203050'
 ];
-const EYE_COLORS = ['#2a1a10','#3a5a8a','#3a6b3a','#5a3a1a','#4a2a6a','#1a1a1a','#6b4a2a'];
+const EYE_COLORS = ['#2a1a10','#3a5a8a','#3a6b3a','#5a3a1a','#4a2a6a','#1a1a1a','#6b4a2a','#5a7080','#8a4a20'];
 const SHIRT_COLORS = [
-  ['#3a5a8a','#2a3a5a'],['#8a3a3a','#5a2020'],['#3a6b3a','#2a4a2a'],
-  ['#6b4a8a','#3a2a5a'],['#8a6b3a','#5a4a20'],['#4a4a4a','#2a2a2a'],
-  ['#c9a05f','#8a7030'],['#2f6a8f','#1a3a5a']
+  ['#3a5a8a','#2a3a5a','#1a2a40'],['#8a3a3a','#5a2020','#3a1010'],['#3a6b3a','#2a4a2a','#1a3018'],
+  ['#6b4a8a','#3a2a5a','#2a1a40'],['#8a6b3a','#5a4a20','#3a3010'],['#4a4a4a','#2a2a2a','#1a1a1a'],
+  ['#c9a05f','#8a7030','#5a4820'],['#2f6a8f','#1a3a5a','#0a2030'],['#6a3030','#4a1818','#2a0c0c'],
+  ['#2a5a5a','#1a3a3a','#0a2020']
 ];
 
 function pxFill(ctx, cell, pts, color){
@@ -645,130 +727,283 @@ function pxRect(ctx, cell, x,y,w,h, color){
   ctx.fillStyle = color;
   ctx.fillRect(x*cell, y*cell, w*cell, h*cell);
 }
+function pxDot(ctx, cell, x,y, color){ pxRect(ctx, cell, x,y, 1,1, color); }
 
-/** 人物：星露谷風格半身像（16×16 放大） */
-function drawHumanPortrait(canvas, seed, size){
+/** 依名字判斷性別（female / male） */
+const FEMALE_NAME_SET = new Set([
+  '艾莉絲','露娜','薇拉','希兒','陳美蘭','謝金燕','葉玫瑰','春艷','吳卓源','蔡英文',
+  '厚片女孩','女拳主義者','玫','林萌','栗子','芋比','gummy B','KITCAT','小卡比'
+]);
+const MALE_NAME_HINTS = /先生|大叔|大哥|小子|肥哥|哥$|弟$|叔|伯|漢|君|雄|強|偉|傑|俊|鋒|龍|虎|john|jimmy|rex|barry|george/i;
+
+function extractNameFromSeed(seed){
+  const s = String(seed||'');
+  const idx = s.lastIndexOf('_');
+  if(idx>0 && /^[a-zA-Z0-9]+$/.test(s.slice(idx+1))) return s.slice(0, idx);
+  return s;
+}
+
+const MALE_NAME_SET = new Set([
+  '凱因','托爾加','布蘭登','葛瑞姆','喬治','史丹利','喬','羅傑','惡魔貓','比利','西薩','熊信寬','Toyz',
+  'jay chou','BR','山豬','蝦味先','蛋頭','禁藥王','陳老師','潮州土狗','godone','majin','玉麟','天峰',
+  '王希銘','迪拉胖','YOUND LEE','潤少','趙翊帆','李權哲','YB','有錢人','前人','不公們','沒人能殺死的鬼','費玉清',
+  '阿兄喬治','QUANZO','O.DKIZZYA','REX','macdella','eyeballray','SheATH','yappy','drew','呂士軒','ANBA',
+  '林聖夫','約翰','rgry','Barry chen','熱狗','大隻','小人','陳星翰','朱軒羊','公園','凡尼師男孩','馬英九',
+  '消防隊的楊先生','水哥DJDIDILONG','DIE4REALLL','NGKE配菜','KAPPERKIRA','LOKI LU','JIMMY','33','死肥胖哥',
+  '修斗','駱楓','林俊傑','6YI7','謝欣達'
+]);
+function guessGenderFromName(name){
+  const n = String(name||'').trim();
+  if(!n) return 'male';
+  const low = n.toLowerCase();
+  if(FEMALE_NAME_SET.has(n) || FEMALE_NAME_SET.has(low)) return 'female';
+  if(MALE_NAME_SET.has(n) || MALE_NAME_SET.has(low)) return 'male';
+  // 明確女關鍵字（整詞／強特徵）
+  if(/女|姐|妹|娘|媽|小姐|女孩|夫人|玫瑰|春艷|女拳/.test(n)) return 'female';
+  if(/^(艾莉|露娜|薇拉|希兒|美蘭|金燕|林萌)/.test(n)) return 'female';
+  if(/\b(alice|luna|vera|anna|amy|lisa|mary|jenny|lily|rose|gummy)\b/i.test(n)) return 'female';
+  // 男關鍵字
+  if(MALE_NAME_HINTS.test(n)) return 'male';
+  if(/[哥弟叔伯漢君雄強偉傑俊鋒龍虎]/.test(n)) return 'male';
+  if(/\b(jay|chou|jimmy|john|rex|barry|george|tony|kevin|mike)\b/i.test(n)) return 'male';
+  // 未知：偏男性，少量女（避免誤判男名）
+  const h = (typeof hashStr==='function' ? hashStr('gender_'+n) : n.length*17);
+  return (Math.abs(h) % 100) < 22 ? 'female' : 'male';
+}
+
+/** 人物：依性別區分的星露谷風半身像 */
+function drawHumanPortrait(canvas, seed, size, genderOpt){
   size = size || 16;
-  const rng = mulberry32(hashStr('human_'+seed));
+  const name = extractNameFromSeed(seed);
+  const gender = genderOpt || guessGenderFromName(name);
+  const isF = gender === 'female';
+  const rng = mulberry32(hashStr('human_v4_'+gender+'_'+seed));
   const cell = Math.floor(160/size);
   canvas.width = size*cell; canvas.height = size*cell;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  // 背景（星露谷常見柔和底）
-  const bgChoices = ['#1a3040','#2a1a28','#1a2a1a','#2a2418','#1a1a2a','#302018'];
-  const bg = bgChoices[Math.floor(rng()*bgChoices.length)];
-  pxRect(ctx, cell, 0,0, size,size, bg);
+  const bgChoices = isF
+    ? ['#2a1a28','#1a1a2a','#241820','#302028','#1a2430','#281a24']
+    : ['#1a3040','#1a2a1a','#2a2418','#182830','#1a1a2a','#202018'];
+  pxRect(ctx, cell, 0,0, size,size, bgChoices[Math.floor(rng()*bgChoices.length)]);
+  for(let i=0;i<6;i++){
+    if(rng()>0.5) pxDot(ctx, cell, 1+Math.floor(rng()*14), 1+Math.floor(rng()*3), 'rgba(255,255,255,0.04)');
+  }
 
   const skin = SKIN_TONES[Math.floor(rng()*SKIN_TONES.length)];
-  const hair = HAIR_COLORS[Math.floor(rng()*HAIR_COLORS.length)];
+  // 女性偏亮／暖髮色權重略高
+  let hair;
+  if(isF){
+    const fHair = ['#1a120c','#2c1810','#4a2c14','#6b3a1f','#8b4513','#c9a227','#e8d080','#c0c0c8','#5a1a1a','#2a1a3a','#e8e0d0','#6b2030'];
+    hair = fHair[Math.floor(rng()*fHair.length)];
+  } else {
+    hair = HAIR_COLORS[Math.floor(rng()*HAIR_COLORS.length)];
+  }
   const eye = EYE_COLORS[Math.floor(rng()*EYE_COLORS.length)];
   const shirt = SHIRT_COLORS[Math.floor(rng()*SHIRT_COLORS.length)];
-  const genderBias = rng(); // 0~1 影響髮型輪廓
-  const hairStyle = Math.floor(rng()*5); // 0短 1中 2長 3側分 4捲
+  // 髮型：女偏長／馬尾／蓬；男偏短／側分／刺
+  let hairStyle;
+  if(isF){
+    const pool = [1,2,2,3,4,4,5,5]; // 中長長側分蓬馬尾
+    hairStyle = pool[Math.floor(rng()*pool.length)];
+  } else {
+    const pool = [0,0,1,3,6,6,4];
+    hairStyle = pool[Math.floor(rng()*pool.length)];
+  }
+  const faceW = isF ? (rng()>0.6 ? 7 : 8) : (rng()>0.4 ? 8 : 7);
+  const faceX = 4;
+  const hasBeard = !isF && rng()>0.55;
+  const hasScar = !isF && rng()>0.82;
+  const blush = isF ? rng()>0.25 : rng()>0.85;
+  // 配件：女耳環／項鍊多；男眼鏡／頭帶多
+  let accessory;
+  if(isF){
+    const pool = [0,1,1,1,2,4,4,3];
+    accessory = pool[Math.floor(rng()*pool.length)];
+  } else {
+    const pool = [0,0,2,3,3,4];
+    accessory = pool[Math.floor(rng()*pool.length)];
+  }
 
-  // 肩膀／衣服（下半）
-  pxRect(ctx, cell, 2,12, 12,4, shirt[0]);
-  pxRect(ctx, cell, 3,12, 10,1, shirt[1]);
+  // 衣服／肩（男肩寬、女肩窄＋圓領）
+  if(isF){
+    pxRect(ctx, cell, 3,12, 10,4, shirt[0]);
+    pxRect(ctx, cell, 4,12, 8,1, shirt[1]);
+    pxRect(ctx, cell, 3,13, 2,2, shirt[2]||shirt[1]);
+    pxRect(ctx, cell, 11,13, 2,2, shirt[2]||shirt[1]);
+    pxRect(ctx, cell, 6,12, 4,1, shirt[1]);
+    pxRect(ctx, cell, 7,11, 2,1, skin[1]);
+  } else {
+    pxRect(ctx, cell, 2,12, 12,4, shirt[0]);
+    pxRect(ctx, cell, 3,12, 10,1, shirt[1]);
+    pxRect(ctx, cell, 2,13, 2,2, shirt[2]||shirt[1]);
+    pxRect(ctx, cell, 12,13, 2,2, shirt[2]||shirt[1]);
+    pxRect(ctx, cell, 6,12, 4,1, shirt[1]);
+    pxRect(ctx, cell, 7,11, 2,1, skin[1]);
+  }
+
   // 脖子
-  pxRect(ctx, cell, 7,11, 2,2, skin[1]);
-  // 臉（橢圓近似）
-  pxRect(ctx, cell, 4,4, 8,7, skin[0]);
-  pxRect(ctx, cell, 5,3, 6,1, skin[0]);
-  pxRect(ctx, cell, 5,10, 6,1, skin[1]);
-  pxRect(ctx, cell, 3,5, 1,5, skin[1]);
-  pxRect(ctx, cell, 12,5, 1,5, skin[1]);
-  // 臉部陰影
-  pxRect(ctx, cell, 10,7, 1,3, skin[2]);
-  pxRect(ctx, cell, 5,9, 2,1, skin[2]);
+  pxRect(ctx, cell, 7,10, 2,2, skin[1]);
+  pxRect(ctx, cell, 7,11, 1,1, skin[2]);
 
-  // 眼睛
-  pxRect(ctx, cell, 5,6, 2,1, '#fffffff0');
-  pxRect(ctx, cell, 9,6, 2,1, '#fffffff0');
-  pxRect(ctx, cell, 5,6, 1,1, eye);
-  pxRect(ctx, cell, 9,6, 1,1, eye);
+  // 臉型
+  pxRect(ctx, cell, faceX,4, faceW,7, skin[0]);
+  pxRect(ctx, cell, faceX+1,3, faceW-2,1, skin[0]);
+  pxRect(ctx, cell, faceX+1,10, faceW-2,1, skin[1]);
+  pxRect(ctx, cell, faceX-1,5, 1,5, skin[1]);
+  pxRect(ctx, cell, faceX+faceW,5, 1,5, skin[1]);
+  // 陰影
+  pxRect(ctx, cell, faceX+faceW-2,7, 1,3, skin[2]);
+  pxRect(ctx, cell, faceX+1,9, 2,1, skin[2]);
+  if(blush){
+    pxDot(ctx, cell, faceX+1,8, 'rgba(220,120,120,0.45)');
+    pxDot(ctx, cell, faceX+faceW-2,8, 'rgba(220,120,120,0.45)');
+  }
+
+  // 眼睛（更大更清楚）
+  pxRect(ctx, cell, 5,6, 2,2, '#f8f4e8');
+  pxRect(ctx, cell, 9,6, 2,2, '#f8f4e8');
+  pxDot(ctx, cell, 5,6, eye);
+  pxDot(ctx, cell, 6,7, eye);
+  pxDot(ctx, cell, 9,6, eye);
+  pxDot(ctx, cell, 10,7, eye);
+  // 眼神高光
+  pxDot(ctx, cell, 6,6, '#ffffff');
+  pxDot(ctx, cell, 10,6, '#ffffff');
   // 眉毛
-  pxRect(ctx, cell, 5,5, 2,1, hair);
-  pxRect(ctx, cell, 9,5, 2,1, hair);
+  const browY = 5;
+  if(rng()>0.3){
+    pxRect(ctx, cell, 5,browY, 2,1, hair);
+    pxRect(ctx, cell, 9,browY, 2,1, hair);
+  } else {
+    pxRect(ctx, cell, 5,browY, 3,1, hair);
+    pxRect(ctx, cell, 8,browY, 3,1, hair);
+  }
   // 鼻子
-  pxRect(ctx, cell, 7,7, 1,1, skin[2]);
+  pxDot(ctx, cell, 7,8, skin[2]);
+  pxDot(ctx, cell, 8,8, skin[3]||skin[2]);
   // 嘴
-  const smile = rng() > 0.35;
-  if(smile) pxRect(ctx, cell, 6,9, 4,1, '#a05050');
-  else pxRect(ctx, cell, 7,9, 2,1, '#8a4040');
+  const mouth = Math.floor(rng()*3);
+  if(mouth===0) pxRect(ctx, cell, 6,9, 4,1, '#a05050');
+  else if(mouth===1){ pxRect(ctx, cell, 7,9, 2,1, '#8a4040'); pxDot(ctx, cell, 6,9, '#8a4040'); }
+  else pxRect(ctx, cell, 6,9, 4,1, '#6a3030');
 
-  // 頭髮
+  if(hasScar) pxRect(ctx, cell, 10,5, 1,3, 'rgba(140,60,60,0.7)');
+  if(hasBeard){
+    pxRect(ctx, cell, 5,10, 6,1, hair);
+    pxRect(ctx, cell, 6,11, 4,1, hair);
+  }
+
+  // 頭髮樣式（更立體）
+  const hd = hair;
   if(hairStyle===0){ // 短
-    pxRect(ctx, cell, 4,2, 8,2, hair);
-    pxRect(ctx, cell, 3,3, 2,2, hair);
-    pxRect(ctx, cell, 11,3, 2,2, hair);
+    pxRect(ctx, cell, 4,2, 8,2, hd);
+    pxRect(ctx, cell, 3,3, 2,2, hd);
+    pxRect(ctx, cell, 11,3, 2,2, hd);
+    pxRect(ctx, cell, 5,2, 6,1, skin[0]); // 額際
   } else if(hairStyle===1){ // 中
-    pxRect(ctx, cell, 3,2, 10,3, hair);
-    pxRect(ctx, cell, 2,4, 2,3, hair);
-    pxRect(ctx, cell, 12,4, 2,3, hair);
+    pxRect(ctx, cell, 3,2, 10,3, hd);
+    pxRect(ctx, cell, 2,4, 2,3, hd);
+    pxRect(ctx, cell, 12,4, 2,3, hd);
   } else if(hairStyle===2){ // 長
-    pxRect(ctx, cell, 3,2, 10,3, hair);
-    pxRect(ctx, cell, 2,4, 2,6, hair);
-    pxRect(ctx, cell, 12,4, 2,6, hair);
-    pxRect(ctx, cell, 3,9, 1,2, hair);
-    pxRect(ctx, cell, 12,9, 1,2, hair);
+    pxRect(ctx, cell, 3,2, 10,3, hd);
+    pxRect(ctx, cell, 2,4, 2,7, hd);
+    pxRect(ctx, cell, 12,4, 2,7, hd);
+    pxRect(ctx, cell, 3,10, 1,2, hd);
+    pxRect(ctx, cell, 12,10, 1,2, hd);
   } else if(hairStyle===3){ // 側分
-    pxRect(ctx, cell, 4,2, 8,2, hair);
-    pxRect(ctx, cell, 3,3, 3,3, hair);
-    pxRect(ctx, cell, 11,3, 2,2, hair);
-    pxRect(ctx, cell, 2,5, 2,4, hair);
-  } else { // 捲／蓬
-    pxRect(ctx, cell, 3,1, 10,3, hair);
-    pxRect(ctx, cell, 2,3, 3,3, hair);
-    pxRect(ctx, cell, 11,3, 3,3, hair);
-    pxRect(ctx, cell, 4,4, 1,1, hair);
-    pxRect(ctx, cell, 11,4, 1,1, hair);
+    pxRect(ctx, cell, 4,2, 8,2, hd);
+    pxRect(ctx, cell, 3,3, 4,3, hd);
+    pxRect(ctx, cell, 11,3, 2,2, hd);
+    pxRect(ctx, cell, 2,5, 2,5, hd);
+  } else if(hairStyle===4){ // 蓬鬆
+    pxRect(ctx, cell, 3,1, 10,3, hd);
+    pxRect(ctx, cell, 2,3, 3,3, hd);
+    pxRect(ctx, cell, 11,3, 3,3, hd);
+    pxDot(ctx, cell, 4,4, hd); pxDot(ctx, cell, 11,4, hd);
+  } else if(hairStyle===5){ // 馬尾
+    pxRect(ctx, cell, 4,2, 8,2, hd);
+    pxRect(ctx, cell, 3,3, 2,2, hd);
+    pxRect(ctx, cell, 11,3, 2,3, hd);
+    pxRect(ctx, cell, 12,6, 2,5, hd);
+    pxRect(ctx, cell, 13,10, 1,2, hd);
+  } else { // 短刺／光頭邊緣
+    pxRect(ctx, cell, 5,3, 6,1, hd);
+    pxRect(ctx, cell, 4,4, 1,2, hd);
+    pxRect(ctx, cell, 11,4, 1,2, hd);
   }
   // 瀏海
-  if(rng()>0.4){
-    pxRect(ctx, cell, 5,3, 3,2, hair);
-    pxRect(ctx, cell, 9,3, 2,1, hair);
+  if(hairStyle!==6 && rng()>0.35){
+    pxRect(ctx, cell, 5,3, 3,2, hd);
+    pxRect(ctx, cell, 9,3, 2,1, hd);
   }
-  // 簡易高光
-  pxRect(ctx, cell, 6,4, 1,1, skin[0]);
+  // 髮絲高光
+  pxDot(ctx, cell, 6,2, 'rgba(255,255,255,0.15)');
 
-  // 細框（星露谷感）
-  ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+  // 配件
+  if(accessory===1){ // 耳環
+    pxDot(ctx, cell, 3,8, '#c9a227');
+    pxDot(ctx, cell, 12,8, '#c9a227');
+  } else if(accessory===2){ // 頭帶
+    pxRect(ctx, cell, 4,4, 8,1, shirt[0]);
+  } else if(accessory===3){ // 眼鏡
+    pxRect(ctx, cell, 5,6, 2,2, 'rgba(40,40,50,0.55)');
+    pxRect(ctx, cell, 9,6, 2,2, 'rgba(40,40,50,0.55)');
+    pxRect(ctx, cell, 7,6, 2,1, 'rgba(40,40,50,0.4)');
+  } else if(accessory===4){ // 項鍊
+    pxDot(ctx, cell, 7,12, '#c9a227');
+    pxDot(ctx, cell, 8,12, '#c9a227');
+  }
+
+  // 臉部高光
+  pxDot(ctx, cell, 6,5, skin[0]);
+
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)';
   ctx.lineWidth = Math.max(1, cell/4);
   ctx.strokeRect(0.5, 0.5, canvas.width-1, canvas.height-1);
 }
 
-/** 怪物：依類型模板的自訂像素風 */
+/** 怪物：更豐富的自訂像素輪廓 */
 const MONSTER_TEMPLATES = {
   slime: (ctx,cell,p,rng)=>{
     pxRect(ctx,cell, 4,6, 8,7, p[0]);
     pxRect(ctx,cell, 5,5, 6,1, p[1]);
+    pxRect(ctx,cell, 3,8, 1,3, p[1]);
+    pxRect(ctx,cell, 12,8, 1,3, p[1]);
     pxRect(ctx,cell, 5,13, 6,1, p[2]);
     pxRect(ctx,cell, 6,8, 1,2, '#1a1a1a');
     pxRect(ctx,cell, 9,8, 1,2, '#1a1a1a');
     pxRect(ctx,cell, 7,10, 2,1, p[2]);
-    if(rng()>0.5) pxRect(ctx,cell, 5,7, 1,1, '#ffffff');
+    pxDot(ctx,cell, 5,7, '#ffffff');
+    if(rng()>0.5) pxDot(ctx,cell, 10,9, p[2]);
   },
   skeleton: (ctx,cell,p,rng)=>{
-    pxRect(ctx,cell, 5,2, 6,2, p[2]); // 頭
-    pxRect(ctx,cell, 4,4, 8,5, p[1]);
+    pxRect(ctx,cell, 5,2, 6,3, p[2]);
+    pxRect(ctx,cell, 4,5, 8,4, p[1]);
     pxRect(ctx,cell, 5,5, 2,2, '#1a1a1a');
     pxRect(ctx,cell, 9,5, 2,2, '#1a1a1a');
+    pxDot(ctx,cell, 7,7, '#1a1a1a');
     pxRect(ctx,cell, 6,8, 4,1, p[0]);
     pxRect(ctx,cell, 6,9, 1,4, p[2]);
     pxRect(ctx,cell, 9,9, 1,4, p[2]);
     pxRect(ctx,cell, 4,10, 2,1, p[1]);
     pxRect(ctx,cell, 10,10, 2,1, p[1]);
+    pxRect(ctx,cell, 5,12, 2,1, p[0]);
+    pxRect(ctx,cell, 9,12, 2,1, p[0]);
   },
   wolf: (ctx,cell,p,rng)=>{
     pxRect(ctx,cell, 3,5, 10,6, p[0]);
-    pxRect(ctx,cell, 2,4, 3,3, p[1]); // 吻
+    pxRect(ctx,cell, 2,4, 3,3, p[1]);
     pxRect(ctx,cell, 1,5, 2,2, p[2]);
-    pxRect(ctx,cell, 4,3, 2,2, p[0]); // 耳
+    pxRect(ctx,cell, 4,3, 2,2, p[0]);
     pxRect(ctx,cell, 9,3, 2,2, p[0]);
-    pxRect(ctx,cell, 3,6, 1,1, '#1a1a1a');
+    pxDot(ctx,cell, 4,3, p[2]); pxDot(ctx,cell, 10,3, p[2]);
+    pxDot(ctx,cell, 3,6, '#1a1a1a');
     pxRect(ctx,cell, 5,7, 2,1, '#1a1a1a');
-    pxRect(ctx,cell, 12,7, 2,3, p[1]); // 尾
+    pxRect(ctx,cell, 12,7, 2,3, p[1]);
+    pxRect(ctx,cell, 4,11, 2,2, p[2]);
+    pxRect(ctx,cell, 9,11, 2,2, p[2]);
   },
   dragon: (ctx,cell,p,rng)=>{
     pxRect(ctx,cell, 4,4, 8,7, p[0]);
@@ -780,35 +1015,44 @@ const MONSTER_TEMPLATES = {
     pxRect(ctx,cell, 7,8, 2,1, '#c94a3b');
     pxRect(ctx,cell, 2,7, 2,3, p[1]);
     pxRect(ctx,cell, 12,7, 2,3, p[1]);
+    pxRect(ctx,cell, 1,5, 2,2, p[2]);
+    pxRect(ctx,cell, 13,5, 2,2, p[2]);
+    pxDot(ctx,cell, 6,5, p[2]);
   },
   goblin: (ctx,cell,p,rng)=>{
     pxRect(ctx,cell, 5,3, 6,6, p[0]);
-    pxRect(ctx,cell, 4,4, 1,3, p[1]);
-    pxRect(ctx,cell, 11,4, 1,3, p[1]);
-    pxRect(ctx,cell, 5,5, 1,1, '#1a1a1a');
-    pxRect(ctx,cell, 10,5, 1,1, '#1a1a1a');
+    pxRect(ctx,cell, 3,4, 2,3, p[1]);
+    pxRect(ctx,cell, 11,4, 2,3, p[1]);
+    pxDot(ctx,cell, 3,3, p[0]); pxDot(ctx,cell, 12,3, p[0]);
+    pxRect(ctx,cell, 6,5, 1,1, '#1a1a1a');
+    pxRect(ctx,cell, 9,5, 1,1, '#1a1a1a');
     pxRect(ctx,cell, 6,7, 4,1, p[2]);
     pxRect(ctx,cell, 4,9, 8,4, p[1]);
+    pxRect(ctx,cell, 5,10, 2,1, p[2]);
   },
   ghost: (ctx,cell,p,rng)=>{
     pxRect(ctx,cell, 5,3, 6,8, p[1]);
     pxRect(ctx,cell, 4,4, 8,6, p[0]);
     pxRect(ctx,cell, 5,6, 2,2, '#1a1a1a');
     pxRect(ctx,cell, 9,6, 2,2, '#1a1a1a');
+    pxDot(ctx,cell, 7,8, p[2]);
     pxRect(ctx,cell, 4,11, 2,2, p[2]);
     pxRect(ctx,cell, 7,11, 2,2, p[2]);
     pxRect(ctx,cell, 10,11, 2,2, p[2]);
+    if(rng()>0.4) pxDot(ctx,cell, 3,7, p[1]);
   },
   insect: (ctx,cell,p,rng)=>{
     pxRect(ctx,cell, 5,5, 6,5, p[0]);
     pxRect(ctx,cell, 4,6, 1,2, p[1]);
     pxRect(ctx,cell, 11,6, 1,2, p[1]);
-    pxRect(ctx,cell, 6,4, 1,1, p[2]);
-    pxRect(ctx,cell, 9,4, 1,1, p[2]);
+    pxRect(ctx,cell, 6,3, 1,2, p[2]);
+    pxRect(ctx,cell, 9,3, 1,2, p[2]);
     pxRect(ctx,cell, 6,6, 1,1, '#1a1a1a');
     pxRect(ctx,cell, 9,6, 1,1, '#1a1a1a');
     pxRect(ctx,cell, 3,8, 2,1, p[2]);
     pxRect(ctx,cell, 11,8, 2,1, p[2]);
+    pxRect(ctx,cell, 4,10, 2,1, p[1]);
+    pxRect(ctx,cell, 10,10, 2,1, p[1]);
   },
   golem: (ctx,cell,p,rng)=>{
     pxRect(ctx,cell, 4,2, 8,4, p[0]);
@@ -817,13 +1061,138 @@ const MONSTER_TEMPLATES = {
     pxRect(ctx,cell, 9,4, 2,2, '#1a1a1a');
     pxRect(ctx,cell, 2,7, 2,3, p[2]);
     pxRect(ctx,cell, 12,7, 2,3, p[2]);
+    pxRect(ctx,cell, 6,8, 4,1, p[2]);
+    pxDot(ctx,cell, 7,3, p[2]);
+  },
+  bat: (ctx,cell,p,rng)=>{
+    pxRect(ctx,cell, 1,5, 5,3, p[1]);
+    pxRect(ctx,cell, 10,5, 5,3, p[1]);
+    pxRect(ctx,cell, 5,6, 6,4, p[0]);
+    pxRect(ctx,cell, 6,5, 4,1, p[0]);
+    pxDot(ctx,cell, 6,7, '#1a1a1a');
+    pxDot(ctx,cell, 9,7, '#1a1a1a');
+    pxRect(ctx,cell, 7,9, 2,1, p[2]);
+    pxDot(ctx,cell, 2,4, p[2]); pxDot(ctx,cell, 13,4, p[2]);
+  },
+  frog: (ctx,cell,p,rng)=>{
+    pxRect(ctx,cell, 4,6, 8,6, p[0]);
+    pxRect(ctx,cell, 3,7, 2,3, p[1]);
+    pxRect(ctx,cell, 11,7, 2,3, p[1]);
+    pxRect(ctx,cell, 5,4, 2,3, p[2]);
+    pxRect(ctx,cell, 9,4, 2,3, p[2]);
+    pxDot(ctx,cell, 5,5, '#1a1a1a');
+    pxDot(ctx,cell, 10,5, '#1a1a1a');
+    pxRect(ctx,cell, 7,9, 2,1, '#3a2a1a');
+    pxRect(ctx,cell, 5,12, 2,1, p[1]);
+    pxRect(ctx,cell, 9,12, 2,1, p[1]);
+  },
+  spider: (ctx,cell,p,rng)=>{
+    pxRect(ctx,cell, 5,6, 6,5, p[0]);
+    pxRect(ctx,cell, 6,5, 4,1, p[1]);
+    [[2,6],[2,9],[12,6],[12,9],[3,11],[11,11],[3,4],[11,4],[1,7],[13,7]].forEach(([x,y])=>pxRect(ctx,cell,x,y,2,1,p[2]));
+    pxDot(ctx,cell, 6,7, '#1a1a1a');
+    pxDot(ctx,cell, 9,7, '#1a1a1a');
+    pxDot(ctx,cell, 7,8, '#1a1a1a');
+  },
+  tree: (ctx,cell,p,rng)=>{
+    pxRect(ctx,cell, 7,9, 2,5, '#5a3a20');
+    pxRect(ctx,cell, 6,10, 4,1, '#4a2a18');
+    pxRect(ctx,cell, 4,3, 8,7, p[0]);
+    pxRect(ctx,cell, 5,2, 6,2, p[1]);
+    pxRect(ctx,cell, 3,5, 1,3, p[1]);
+    pxRect(ctx,cell, 12,5, 1,3, p[1]);
+    pxDot(ctx,cell, 6,5, '#1a1a1a');
+    pxDot(ctx,cell, 9,5, '#1a1a1a');
+    if(rng()>0.4) pxDot(ctx,cell, 8,7, p[2]);
+  },
+  fish: (ctx,cell,p,rng)=>{
+    pxRect(ctx,cell, 3,6, 9,4, p[0]);
+    pxRect(ctx,cell, 11,5, 3,2, p[1]);
+    pxRect(ctx,cell, 11,9, 3,2, p[1]);
+    pxRect(ctx,cell, 2,7, 2,2, p[2]);
+    pxDot(ctx,cell, 5,7, '#1a1a1a');
+    pxRect(ctx,cell, 12,7, 1,2, p[2]);
+    pxDot(ctx,cell, 7,8, p[2]);
+    pxRect(ctx,cell, 6,5, 2,1, p[1]);
+  },
+  bird: (ctx,cell,p,rng)=>{
+    pxRect(ctx,cell, 5,5, 6,5, p[0]);
+    pxRect(ctx,cell, 2,6, 3,2, p[1]);
+    pxRect(ctx,cell, 11,6, 3,2, p[1]);
+    pxRect(ctx,cell, 10,4, 3,2, p[2]);
+    pxDot(ctx,cell, 6,6, '#1a1a1a');
+    pxDot(ctx,cell, 11,5, '#c94a3b');
+    pxRect(ctx,cell, 6,10, 1,2, p[2]);
+    pxRect(ctx,cell, 9,10, 1,2, p[2]);
+  },
+  knight: (ctx,cell,p,rng)=>{
+    pxRect(ctx,cell, 5,2, 6,3, p[2]);
+    pxRect(ctx,cell, 6,1, 4,1, p[2]);
+    pxRect(ctx,cell, 4,5, 8,5, p[0]);
+    pxRect(ctx,cell, 5,6, 2,1, '#1a1a1a');
+    pxRect(ctx,cell, 9,6, 2,1, '#1a1a1a');
+    pxRect(ctx,cell, 3,6, 1,3, p[1]);
+    pxRect(ctx,cell, 12,6, 1,3, p[1]);
+    pxRect(ctx,cell, 5,10, 2,3, p[2]);
+    pxRect(ctx,cell, 9,10, 2,3, p[2]);
+    pxRect(ctx,cell, 7,7, 2,1, p[1]);
+  },
+  flower: (ctx,cell,p,rng)=>{
+    pxRect(ctx,cell, 7,9, 2,5, '#3a6b3a');
+    pxRect(ctx,cell, 5,4, 6,5, p[0]);
+    pxRect(ctx,cell, 6,3, 4,1, p[1]);
+    pxRect(ctx,cell, 4,5, 1,2, p[2]);
+    pxRect(ctx,cell, 11,5, 1,2, p[2]);
+    pxRect(ctx,cell, 7,5, 2,2, '#c9a227');
+    pxDot(ctx,cell, 5,3, p[0]); pxDot(ctx,cell, 10,3, p[0]);
+  },
+  tentacle: (ctx,cell,p,rng)=>{
+    pxRect(ctx,cell, 5,3, 6,4, p[0]);
+    pxRect(ctx,cell, 4,7, 2,6, p[1]);
+    pxRect(ctx,cell, 7,7, 2,7, p[0]);
+    pxRect(ctx,cell, 10,7, 2,5, p[2]);
+    pxDot(ctx,cell, 5,4, '#1a1a1a');
+    pxDot(ctx,cell, 10,4, '#1a1a1a');
+    pxDot(ctx,cell, 5,10, p[2]);
+    pxDot(ctx,cell, 11,9, p[0]);
+  },
+  rat: (ctx,cell,p,rng)=>{
+    pxRect(ctx,cell, 4,6, 8,5, p[0]);
+    pxRect(ctx,cell, 2,5, 3,3, p[1]);
+    pxDot(ctx,cell, 3,4, p[0]); pxDot(ctx,cell, 5,4, p[0]);
+    pxDot(ctx,cell, 3,6, '#1a1a1a');
+    pxRect(ctx,cell, 12,8, 3,1, p[2]);
+    pxRect(ctx,cell, 13,9, 1,2, p[2]);
+    pxRect(ctx,cell, 5,11, 2,1, p[2]);
+    pxRect(ctx,cell, 9,11, 2,1, p[2]);
+  },
+  crab: (ctx,cell,p,rng)=>{
+    pxRect(ctx,cell, 4,6, 8,5, p[0]);
+    pxRect(ctx,cell, 2,5, 2,3, p[1]);
+    pxRect(ctx,cell, 12,5, 2,3, p[1]);
+    pxDot(ctx,cell, 2,4, p[2]); pxDot(ctx,cell, 13,4, p[2]);
+    pxDot(ctx,cell, 5,7, '#1a1a1a');
+    pxDot(ctx,cell, 10,7, '#1a1a1a');
+    pxRect(ctx,cell, 3,11, 2,1, p[2]);
+    pxRect(ctx,cell, 11,11, 2,1, p[2]);
+    pxRect(ctx,cell, 6,8, 4,1, p[1]);
+  },
+  demon: (ctx,cell,p,rng)=>{
+    pxRect(ctx,cell, 5,4, 6,7, p[0]);
+    pxRect(ctx,cell, 3,2, 2,3, p[2]);
+    pxRect(ctx,cell, 11,2, 2,3, p[2]);
+    pxRect(ctx,cell, 5,6, 2,2, '#c94a3b');
+    pxRect(ctx,cell, 9,6, 2,2, '#c94a3b');
+    pxRect(ctx,cell, 6,9, 4,1, p[1]);
+    pxRect(ctx,cell, 2,8, 2,3, p[1]);
+    pxRect(ctx,cell, 12,8, 2,3, p[1]);
+    pxDot(ctx,cell, 7,5, p[2]);
   },
   default: (ctx,cell,p,rng)=>{
-    // 對稱雜訊體 + 眼睛
     const half = 8;
     for(let y=2;y<14;y++){
       for(let x=3;x<=half;x++){
-        if(rng()<0.55){
+        if(rng()<0.58){
           const c = p[Math.floor(rng()*p.length)];
           pxRect(ctx,cell, x,y, 1,1, c);
           pxRect(ctx,cell, 15-x,y, 1,1, c);
@@ -832,45 +1201,87 @@ const MONSTER_TEMPLATES = {
     }
     pxRect(ctx,cell, 5,6, 2,2, '#1a1a1a');
     pxRect(ctx,cell, 9,6, 2,2, '#1a1a1a');
+    pxRect(ctx,cell, 7,9, 2,1, p[2]||p[0]);
   }
 };
 
 function inferMonsterTemplate(seed, type){
-  const s = String(seed||'') + String(type||'');
+  const s = String(seed||'') + '|' + String(type||'');
   const low = s.toLowerCase();
-  if(/slime|泥|史萊姆|果凍/.test(low)) return 'slime';
-  if(/skel|骨|骷|亡靈|undead/.test(low)) return 'skeleton';
-  if(/wolf|狼|犬|beast|獸/.test(low)) return 'wolf';
-  if(/dragon|龍|drake|wyrm/.test(low)) return 'dragon';
-  if(/goblin|哥布|獸人|orc/.test(low)) return 'goblin';
-  if(/ghost|幽靈|魂|影|wraith/.test(low)) return 'ghost';
-  if(/bug|蟲|spider|蛛|insect/.test(low)) return 'insect';
-  if(/golem|石像|元素|construct/.test(low)) return 'golem';
-  // type palette hint
+  if(/slime|泥|史萊姆|果凍|膿|囊|瘟氣/.test(low)) return 'slime';
+  if(/skel|骨|骷|亡靈|undead|骸|葬儀|殉葬/.test(low)) return 'skeleton';
+  if(/wolf|狼|犬|獸|獅|熊|戰奴|月蝕|狂旗/.test(low)) return 'wolf';
+  if(/dragon|龍|drake|wyrm|幼龍|泰坦|熔核|灰燼龍/.test(low)) return 'dragon';
+  if(/goblin|哥布|獸人|orc|半獸|盜賊|刺客|暗契/.test(low)) return 'goblin';
+  if(/ghost|幽靈|魂|影|wraith|霧|虛空|夢魘|魘|沉默|偽相/.test(low)) return 'ghost';
+  if(/bug|蟲|spider|蛛|insect|蠍|蜂|蜜毒/.test(low)) return 'insect';
+  if(/golem|石像|元素|construct|魔像|石衛|鉚釘|岩|銅皮|鋼鐵|星隕/.test(low)) return 'golem';
+  if(/bat|蝠|鴉|鳥|鷲|羽|點火鴉|終末鴉/.test(low)) return 'bat';
+  if(/frog|蛙|蟾/.test(low)) return 'frog';
+  if(/spider|蛛|網|織夢/.test(low)) return 'spider';
+  if(/tree|樹|木|根|林|園|花|荊|蔓|古樹|花粉|腐花|荊莠|園丁/.test(low)) return 'tree';
+  if(/fish|魚|海|潮|水|觸手|墨|珍珠|女皇|深壓|寄居/.test(low)) return 'fish';
+  if(/bird|鳥|鴉|鷲|羽|鐘|懺悔/.test(low)) return 'bird';
+  if(/knight|騎士|衛|盾|兵|親衛|祭司|侍|執法|殿守|磁鎖|骨盾/.test(low)) return 'knight';
+  if(/flower|花|花粉|腐花|荊莠|孢子/.test(low)) return 'flower';
+  if(/tentacle|觸手|深淵|海怪|攫奪|碎擊/.test(low)) return 'tentacle';
+  if(/rat|鼠|疫鼠/.test(low)) return 'rat';
+  if(/crab|蟹|甲蟲|鐵甲/.test(low)) return 'crab';
+  if(/demon|魔|血|狂|獄|罪|審判|血僕|血契|斷頭/.test(low)) return 'demon';
   if(type==='undead') return 'skeleton';
   if(type==='beast') return 'wolf';
   if(type==='shadow') return 'ghost';
-  if(type==='nature') return 'insect';
+  if(type==='nature') return 'tree';
   if(type==='metal') return 'golem';
   if(type==='fire' || type==='ice') return 'dragon';
+  if(type==='water') return 'fish';
+  if(type==='blood') return 'demon';
   return 'default';
 }
 
 function drawMonsterPortrait(canvas, seed, palette, size, type){
   size = size || 16;
-  const rng = mulberry32(hashStr('mon_'+seed));
+  const rng = mulberry32(hashStr('mon_v3_'+seed));
   const cell = Math.floor(160/size);
   canvas.width = size*cell; canvas.height = size*cell;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  pxRect(ctx, cell, 0,0, size,size, '#0a0807');
-  const p = palette && palette.length ? palette : ['#6b4a2f','#9a6b3f','#c9a05f'];
+  const bgChoices = ['#14101a','#101818','#18120e','#0e1418','#161018','#12140c'];
+  pxRect(ctx, cell, 0,0, size,size, bgChoices[Math.floor(rng()*bgChoices.length)]);
+  // 邊角暗角
+  pxRect(ctx, cell, 0,0, 1,size, 'rgba(0,0,0,0.25)');
+  pxRect(ctx, cell, 15,0, 1,size, 'rgba(0,0,0,0.25)');
+
+  let p = palette && palette.length ? palette.slice() : ['#6b4a2f','#9a6b3f','#c9a05f'];
+  while(p.length < 3) p.push(p[p.length-1]||'#888');
+  // 輕微色相偏移讓同類型也有差別
+  if(rng()>0.5){
+    const mix = (a,b,t)=>{
+      // 簡化：偶而把主色換成次色順序
+      return rng()>0.5 ? [p[1],p[0],p[2]] : p;
+    };
+    p = mix();
+  }
+
   const tmpl = inferMonsterTemplate(seed, type);
   const fn = MONSTER_TEMPLATES[tmpl] || MONSTER_TEMPLATES.default;
   fn(ctx, cell, p, rng);
-  // 精英／boss 可由外部再疊，這裡加輕微高光
-  if(rng()>0.7) pxRect(ctx, cell, 4,3, 1,1, p[2]||p[0]);
-  ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+
+  // 輪廓加深一點（底部陰影）
+  pxRect(ctx, cell, 4,14, 8,1, 'rgba(0,0,0,0.35)');
+
+  const seedStr = String(seed||'');
+  if(/帝王|emp_minion|emperor|眷屬|boss/.test(seedStr)){
+    pxRect(ctx, cell, 1,1, 2,1, '#c9a227');
+    pxRect(ctx, cell, 13,1, 2,1, '#c9a227');
+    pxDot(ctx, cell, 2,2, '#e8d080');
+    pxDot(ctx, cell, 13,2, '#e8d080');
+  } else if(rng()>0.75){
+    pxDot(ctx, cell, 1,1, p[2]);
+  }
+  if(rng()>0.5) pxDot(ctx, cell, 4,3, 'rgba(255,255,255,0.2)');
+
+  ctx.strokeStyle = 'rgba(0,0,0,0.55)';
   ctx.lineWidth = Math.max(1, cell/4);
   ctx.strokeRect(0.5, 0.5, canvas.width-1, canvas.height-1);
 }
@@ -879,7 +1290,8 @@ function drawMonsterPortrait(canvas, seed, palette, size, type){
 function drawSprite(canvas, seed, palette, size, opts){
   opts = opts || {};
   if(opts.kind==='human' || opts.human){
-    drawHumanPortrait(canvas, seed, size);
+    const g = opts.gender || guessGenderFromName(extractNameFromSeed(seed));
+    drawHumanPortrait(canvas, seed, size, g);
     return;
   }
   if(opts.kind==='monster' || opts.monster || opts.type){
@@ -940,6 +1352,9 @@ function drawEquipIcon(canvas, seed, kind, rarityColor){
   });
 }
 
+
+
+/* ===== 02-data-classes.js ===== */
 /* ============ 資料：職業 ============ */
 const PALETTES = {
   fire:['#c94a3b','#e07a3f','#f2c14e'],
@@ -1108,9 +1523,12 @@ const CLASSES = [
     ]},
 ];
 
+
+
+/* ===== 03-data-monsters.js ===== */
 /* ============ 資料：怪物（C 系統） ============ */
 const MAX_PLAYER_LEVEL = 120;
-const MAX_MONSTER_PARTY = 6;
+const MAX_MONSTER_PARTY = 12;
 
 const MONSTER_TYPES = [
   /* Tier 1 雜兵 */
@@ -1459,11 +1877,22 @@ function makeMonster(tmpl, playerLevel, rng, opts){
   if(mon.atk > atkCap) mon.atk = atkCap;
   if(mon.def > defCap) mon.def = defCap;
 
-  // 血量軟上限（放寬，Boss／精英要能肉）
-  const hpCap = Math.round((70 + lvl * 18 + lvl * lvl * 0.12) * tierHp * (elite ? 1.85 : 1) * (boss ? 3.2 : 1));
-  if(mon.maxHp > hpCap){
-    mon.maxHp = hpCap;
-    mon.hp = Math.min(mon.hp, mon.maxHp);
+  // 血量軟上限（一般怪／精英）；Boss 不套此上限
+  if(!boss){
+    const hpCap = Math.round((70 + lvl * 18 + lvl * lvl * 0.12) * tierHp * (elite ? 1.85 : 1));
+    if(mon.maxHp > hpCap){
+      mon.maxHp = hpCap;
+      mon.hp = Math.min(mon.hp, mon.maxHp);
+    }
+  } else {
+    // 魔王血量：至少 30000，並隨等級再拉高
+    const bossFloor = 30000 + Math.max(0, lvl - 50) * 400;
+    const boosted = Math.max(bossFloor, Math.round(num(mon.maxHp, 1) * 6.5));
+    mon.maxHp = boosted;
+    mon.hp = mon.maxHp;
+    mon.baseAtk = num(mon.atk, 1);
+    mon.baseDef = num(mon.def, 0);
+    mon.baseSpd = num(mon.spd, 1);
   }
 
   if(boss && mon.mech){
@@ -1621,35 +2050,46 @@ function getBossMinionRoster(boss){
 function makeBossMinion(boss, playerLevel, rng, idx){
   rng = rng || Math.random;
   const pl = clamp(num(playerLevel, boss && boss.level || 1), 1, MAX_PLAYER_LEVEL);
-  const roster = getBossMinionRoster(boss);
-  const def = roster[num(idx, 0) % roster.length];
-  // 取同屬性低階模板當外觀底
-  const typePool = MONSTER_TYPES.filter(m=>!m.boss && m.type===(boss && boss.type) && m.tier<=2);
-  const anyPool = MONSTER_TYPES.filter(m=>!m.boss && m.tier<=2);
-  const tmpl = choice(rng, typePool.length ? typePool : (anyPool.length ? anyPool : MONSTER_TYPES));
-  const mon = makeMonster(tmpl, Math.max(1, pl - 2), rng, { elite:false });
-  const bossName = boss ? String(boss.name).replace(/^精英·/,'') : 'Boss';
-  mon.name = def.n;
+  const roster = getBossMinionRoster(boss) || [];
+  const def = roster[num(idx, 0) % Math.max(1, roster.length)] || {id:'g'+(idx||0), n:'眷屬'+(num(idx,0)+1), hp:0.12, atk:0.28, def:0.3, spd:1, role:'taunt', note:'護衛'};
+  // 外觀底：同屬性怪；數值階固定「帝王」
+  const typePool = MONSTER_TYPES.filter(m=>!m.boss && m.type===(boss && boss.type) && m.tier<=3);
+  const anyPool = MONSTER_TYPES.filter(m=>!m.boss && m.tier<=3);
+  const tmpl = choice(rng, typePool.length ? typePool : (anyPool.length ? anyPool : MONSTER_TYPES.filter(m=>!m.boss)));
+  const baseTmpl = Object.assign({}, tmpl || {n:'小怪',type:'beast',tier:2}, { n: def.n || '眷屬' });
+  // 以帝王階生成：詞條數＋數值倍率走帝王
+  const mon = makeMonster(baseTmpl, Math.max(1, pl), rng, { rank:'emperor' });
+  mon.name = '帝王·' + (def.n || ('眷屬'+(num(idx,0)+1)));
+  mon.baseName = def.n || mon.baseName;
   mon.isBossMinion = true;
-  mon.minionId = def.id;
-  mon.minionRole = def.role;
-  mon.minionNote = def.note;
+  mon.minionId = def.id || ('minion_'+idx);
+  mon.minionRole = def.role || 'taunt';
+  mon.minionNote = def.note || '';
   mon.bossUid = boss ? boss.seed : null;
   mon.bossLink = true;
   mon.bossMech = boss ? boss.mech : null;
-  mon.maxHp = Math.max(12, Math.round(num(boss.maxHp, 100) * num(def.hp, 0.12)));
-  mon.hp = mon.maxHp;
-  mon.atk = Math.max(1, Math.round(num(boss.atk, 20) * num(def.atk, 0.28)));
-  mon.def = Math.max(0, Math.round(num(boss.def, 8) * num(def.def, 0.35)));
-  mon.spd = Math.max(1, Math.round(num(boss.spd, 8) * num(def.spd, 1) + 1));
-  mon.exp = Math.max(1, Math.round(num(boss.exp, 50) * 0.07));
-  mon.gold = Math.max(0, Math.round(num(boss.gold, 30) * 0.05));
   mon.boss = false;
   mon.elite = false;
   mon.mech = null;
-  mon.affixes = [];
-  mon.affixNames = ['眷屬·'+(def.note||def.role)];
-  mon.seed = 'minion_' + (boss && boss.seed || 'b') + '_' + def.id + '_' + Math.floor(rng()*999);
+  mon.rank = 'emperor';
+  mon.rankName = '帝王';
+  // 數值：帝王底 × 眷屬角色倍率，並與魔王血量掛鉤（約 12%~22%）
+  const rankDef = (typeof MONSTER_RANKS!=='undefined' && MONSTER_RANKS.emperor) ? MONSTER_RANKS.emperor : {multHp:3.6,multAtk:2,multDef:1.7};
+  const bHp = Math.max(30000, num(boss && boss.maxHp, 30000));
+  const roleHp = num(def.hp, 0.12);
+  mon.maxHp = Math.max(2500, Math.round(Math.max(mon.maxHp, bHp * roleHp * 1.35)));
+  mon.hp = mon.maxHp;
+  mon.atk = Math.max(1, Math.round(Math.max(mon.atk, num(boss&&boss.atk,20) * num(def.atk,0.28) * 1.15)));
+  mon.def = Math.max(0, Math.round(Math.max(mon.def, num(boss&&boss.def,8) * num(def.def,0.35) * 1.1)));
+  mon.spd = Math.max(1, Math.round(num(mon.spd,8) * num(def.spd,1)));
+  mon.exp = Math.max(1, Math.round(num(mon.exp,30) * 1.4));
+  mon.gold = Math.max(0, Math.round(num(mon.gold,20) * 1.2));
+  // 詞條：保留帝王詞＋隨機詞，並標註眷屬職能
+  mon.affixNames = mon.affixNames || [];
+  const jobTag = '眷屬·'+(def.note||def.role||'');
+  if(!mon.affixNames.includes(jobTag)) mon.affixNames.unshift(jobTag);
+  if(mon.emperorTrait && !mon.affixNames.includes(mon.emperorTrait)) mon.affixNames.unshift(mon.emperorTrait);
+  mon.seed = 'emp_minion_' + (boss && boss.seed || 'b') + '_' + def.id + '_' + (def.n||idx);
   // 鎖定 Boss 基底屬性，避免光環每回合複利暴衝
   if(boss){
     if(boss.baseAtk == null) boss.baseAtk = num(boss.atk, 1);
@@ -2130,6 +2570,9 @@ function refillBossMinions(b, force){
 }
 
 
+
+
+/* ===== 04-data-equipment.js ===== */
 /* ============ 資料：裝備（稀有度 12 階 + 詞條系統） ============ */
 /* 由低到高：粗製→一般→順手→常用→罕見→稀有→稀罕→史詩→傳奇→神話→千古→唯一 */
 const RARITIES = [
@@ -3036,6 +3479,9 @@ function addToInventory(item){
   return fate === 'warehouse' || fate === 'sold';
 }
 
+
+
+/* ===== 05-data-events-npc.js ===== */
 /* ============ 資料：隨機事件 ============ */
 const EVENTS = [
   {id:'well', title:'神秘的許願井', text:'你在林間發現一口佈滿符文的古井，井水泛著微光。',
@@ -3140,6 +3586,7 @@ function makeRandomAlly(){
   const name = choice(Math.random, NPC_NAMES);
   const m = buildMember(name, 1);
   m.isNpc = true;
+  if(typeof guessGenderFromName==='function') m.gender = guessGenderFromName(name);
   return m;
 }
 
@@ -3334,6 +3781,8 @@ function getSkills(m){
   return skills;
 }
 function buildMember(name, level){
+  // gender 由名字推斷（頭像用）
+
   const m = {
     uid:'m_'+Math.floor(Math.random()*1e9),
     name,
@@ -3449,6 +3898,9 @@ function gainExp(m, amt, log){
 }
 
 
+
+
+/* ===== 06-state.js ===== */
 /* ============ 遊戲狀態 ============ */
 let S = null; // 全域 state
 function newGame(){
@@ -3484,6 +3936,9 @@ function routeHome(){
   else S.screen='hub';
 }
 
+
+
+/* ===== 07-combat.js ===== */
 /* ============ 戰鬥系統 ============ */
 function startBattle(){
   const rng = Math.random;
@@ -3570,12 +4025,43 @@ function startBattle(){
   };
   if(bossRoll){
     const boss = monsters.find(m=>m.boss) || monsters[0];
-    S.battle.bossMinionCount = 5;
-    for(let i=0;i<S.battle.bossMinionCount;i++){
-      S.battle.monsters.push(makeBossMinion(boss, avgLevel, rng, i));
+    if(boss){
+      boss.boss = true;
+      if(!boss.mech && boss.baseName){
+        const tmpl = MONSTER_TYPES.find(m=>m.boss && m.n===boss.baseName);
+        if(tmpl) boss.mech = tmpl.mech;
+      }
+      // 再保險：魔王血量地板
+      if(num(boss.maxHp,0) < 30000){
+        boss.maxHp = Math.max(30000, num(boss.maxHp,30000));
+        boss.hp = boss.maxHp;
+      }
     }
+    S.battle.bossMinionCount = 5;
+    const before = S.battle.monsters.length;
+    for(let i=0;i<5;i++){
+      try{
+        const minion = makeBossMinion(boss, avgLevel, rng, i);
+        if(minion){
+          minion.isBossMinion = true;
+          minion.boss = false;
+          S.battle.monsters.push(minion);
+        }
+      }catch(err){
+        // 建立失敗時用保底眷屬，避免整場沒人
+        const fallback = makeMonster({n:'魔王親衛',type:(boss&&boss.type)||'beast',tier:2}, avgLevel, rng, {rank:'elite'});
+        fallback.name = '魔王親衛'+(i+1);
+        fallback.isBossMinion = true;
+        fallback.boss = false;
+        fallback.maxHp = Math.max(800, Math.round(num(boss.maxHp,30000)*0.1));
+        fallback.hp = fallback.maxHp;
+        fallback.minionRole = 'taunt';
+        S.battle.monsters.push(fallback);
+      }
+    }
+    const added = S.battle.monsters.length - before;
     S.battle.order = buildTurnOrder(S.battle.monsters);
-    S.battle.turnLog.unshift('⚠ 強大的 Boss「'+boss.name+'」率 5 名專屬眷屬擋在前方！');
+    S.battle.turnLog.unshift('⚠ 強大的 Boss「'+boss.name+'」率 '+added+' 名專屬眷屬擋在前方！（HP '+boss.maxHp+'）');
     S.battle.turnLog.unshift('（每隻眷屬有獨特光環／技能；攻擊可輸送生命給 Boss；每 2 回合嘗試補齊編成）');
   }
   S.screen='battle';
@@ -3697,6 +4183,54 @@ function tickMonsterStatus(mon){
   }
 }
 /** 對怪物結算傷害（閃避／抗性／護盾／荊棘／不死／死亡爆炸） */
+
+/** 戰鬥畫面回饋佇列 */
+function ensureBattleFx(b){
+  if(!b) return [];
+  if(!b.fx) b.fx = [];
+  return b.fx;
+}
+function pushBattleFx(kind, opts, battle){
+  const b = battle || ((typeof S!=='undefined' && S) ? S.battle : null);
+  if(!b) return;
+  const fx = ensureBattleFx(b);
+  fx.push(Object.assign({ kind: kind, t: Date.now() }, opts||{}));
+  if(fx.length > 24) fx.splice(0, fx.length-24);
+}
+function impactLabel(dmg, crit){
+  if(crit) return '會心一擊！';
+  if(dmg >= 80) return '重擊！';
+  if(dmg >= 40) return '削砍！';
+  return null;
+}
+function playHitBeep(crit, kill){
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return;
+    if(!window._combatAC) window._combatAC = new AC();
+    const ctx = window._combatAC;
+    if(ctx.state==='suspended') ctx.resume();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = kill ? 'sawtooth' : (crit ? 'square' : 'triangle');
+    o.frequency.value = kill ? 180 : (crit ? 520 : 320);
+    g.gain.value = 0.03;
+    o.connect(g); g.connect(ctx.destination);
+    const now = ctx.currentTime;
+    g.gain.setValueAtTime(0.04, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + (kill?0.18:0.09));
+    o.frequency.exponentialRampToValueAtTime(kill?90:(crit?280:200), now+(kill?0.16:0.08));
+    o.start(now); o.stop(now+(kill?0.2:0.1));
+  }catch(e){}
+}
+
+
+function applyPlayerHitToMonster(actor, mon, hit, b, isMagic){
+  hit = hit || { dmg:0, crit:false };
+  if(b) b._lastHitCrit = !!hit.crit;
+  const dmg = applyDamageToMonster(actor, mon, num(hit.dmg,0), !!isMagic, b);
+  return dmg;
+}
 function applyDamageToMonster(actor, mon, rawDmg, isMagic, b){
   if(!mon || mon.hp<=0) return 0;
   // 防禦：任何上游 NaN 傷害在此截斷
@@ -3705,7 +4239,7 @@ function applyDamageToMonster(actor, mon, rawDmg, isMagic, b){
   let dmg = Math.max(0, num(rawDmg, 0));
   if(!Number.isFinite(dmg) || dmg < 0) dmg = 0;
   if(!isMagic && mon.evade && Math.random() < mon.evade){
-    b.turnLog.unshift(mon.name+' 閃避了攻擊！');
+    if(b&&b.turnLog) b.turnLog.unshift(mon.name+' 閃避了攻擊！');
     return 0;
   }
   if(b._missAura && Math.random() < b._missAura){
@@ -3769,6 +4303,19 @@ function applyDamageToMonster(actor, mon, rawDmg, isMagic, b){
     });
     b.turnLog.unshift(mon.name+' 死亡時發生爆炸，波及全隊！');
   }
+  // 打擊回饋
+  if(dmg > 0){
+    const midx = (b.monsters||[]).indexOf(mon);
+    const crit = !!(b._lastHitCrit);
+    const killed = mon.hp <= 0;
+    pushBattleFx('hit', { target:'monster', idx:midx, dmg:dmg, crit:crit, magic:!!isMagic, kill:killed }, b);
+    const lab = impactLabel(dmg, crit);
+    if(lab) b.turnLog.unshift(lab);
+    if(killed) b.turnLog.unshift('💥 '+mon.name+' 被擊倒！');
+    playHitBeep(crit, killed);
+    b._hitstopMs = Math.max(num(b._hitstopMs,0), killed ? 90 : (crit ? 70 : 45));
+  }
+  b._lastHitCrit = false;
   return dmg;
 }
 function effectiveMonAtk(mon){
@@ -4051,6 +4598,10 @@ function monsterAct(mon){
     }
     target.hp = clamp(target.hp-dmg,0,target.maxHp);
     b.turnLog.unshift(mon.name+' 攻擊了 '+target.name+'，造成 '+dmg+' 點傷害。'+(blocked?'（格擋減傷！）':''));
+    const pidx = S.party.indexOf(target);
+    pushBattleFx('hit', { target:'party', idx:pidx, dmg:dmg, crit:false, magic:false, kill: target.hp<=0 }, b);
+    playHitBeep(false, target.hp<=0);
+    b._hitstopMs = Math.max(num(b._hitstopMs,0), target.hp<=0 ? 80 : 40);
     if(target.hp<=0){
       const boss = getBattleBoss(b);
       if(boss && boss.hp>0 && b.monsters.some(m=>m.isBossMinion && m.hp>0 && m.minionRole==='on_ko_buff')){
@@ -4169,11 +4720,11 @@ function playerAction(actorUid, action, targetIdx, skillIdx, potionUid){
     const target = b.monsters[targetIdx];
     if(!target||target.hp<=0) return;
     const r = calcPhysDmg(actor, target, { mult:1, variance:true, canCrit:true, sk:null });
-    const dealt = applyDamageToMonster(actor, target, r.dmg, false, b);
+    const dealt = (b._lastHitCrit=!!(r).crit, applyDamageToMonster(actor, target, r.dmg, false, b));
     if(dealt>0) b.turnLog.unshift(actor.name+' 攻擊了 '+target.name+'，造成 '+dealt+' 點傷害'+dmgTag(r)+'。');
     if(hasPassive(actor,'doubleStrike') && target.hp>0 && Math.random()<0.22){
       const r2 = calcPhysDmg(actor, target, { mult:0.55, canCrit:false });
-      const d2 = applyDamageToMonster(actor, target, r2.dmg, false, b);
+      const d2 = (b._lastHitCrit=!!(r2).crit, applyDamageToMonster(actor, target, r2.dmg, false, b));
       if(d2>0) b.turnLog.unshift(actor.name+' 觸發追加攻擊，額外造成 '+d2+' 點傷害！');
     }
     if(hasPassive(actor,'virulence') && target.hp>0 && !target.status && Math.random()<0.25){
@@ -4245,7 +4796,7 @@ function applySkill(actor, sk, targetIdx, b){
     if(!target||target.hp<=0) return;
     const skCrit = Object.assign({}, sk, { crit: sk.crit != null ? sk.crit : (type==='phys_crit' ? 0.45 : undefined) });
     const r = calcPhysDmg(actor, target, { mult: sk.mult||1, canCrit:true, sk: skCrit });
-    const dealt = applyDamageToMonster(actor, target, r.dmg, false, b);
+    const dealt = (b._lastHitCrit=!!(r).crit, applyDamageToMonster(actor, target, r.dmg, false, b));
     if(dealt>0) b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」對 '+target.name+' 造成 '+dealt+' 點傷害'+dmgTag(r)+'。');
     if(sk.poison && target.hp>0){ target.status='poison'; target.statusTurns=sk.poisonTurns||3; b.turnLog.unshift(target.name+' 中毒了！'); }
     checkKillReward(target, b);
@@ -4254,7 +4805,7 @@ function applySkill(actor, sk, targetIdx, b){
     const target = b.monsters[targetIdx];
     if(!target||target.hp<=0) return;
     const r = calcMagicDmg(actor, target, { mult: sk.mult||1, holy: !!sk.holy });
-    const dealt = applyDamageToMonster(actor, target, r.dmg, true, b);
+    const dealt = (b._lastHitCrit=!!(r).crit, applyDamageToMonster(actor, target, r.dmg, true, b));
     if(dealt>0) b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」對 '+target.name+' 造成 '+dealt+' 點傷害'+dmgTag(r)+'。');
     checkKillReward(target, b);
     if(target.hp===0) b.turnLog.unshift(target.name+' 被擊敗了！');
@@ -4266,7 +4817,7 @@ function applySkill(actor, sk, targetIdx, b){
     for(let i=0;i<hits;i++){
       if(target.hp<=0) break;
       const r = calcPhysDmg(actor, target, { mult: sk.mult||1, canCrit: !!sk.canCrit, sk });
-      total += applyDamageToMonster(actor, target, r.dmg, false, b);
+      total += (b._lastHitCrit=!!(r).crit, applyDamageToMonster(actor, target, r.dmg, false, b));
       if(r.marked) anyMark=true;
     }
     b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」共 '+hits+' 擊，造成 '+total+' 點傷害'+(anyMark?'（標記加成）':'')+'。');
@@ -4278,7 +4829,7 @@ function applySkill(actor, sk, targetIdx, b){
     b.monsters.forEach(mo=>{
       if(mo.hp<=0) return;
       const r = calcMagicDmg(actor, mo, { mult: sk.mult||1, holy: !!sk.holy });
-      total += applyDamageToMonster(actor, mo, r.dmg, true, b);
+      total += (b._lastHitCrit=!!(r).crit, applyDamageToMonster(actor, mo, r.dmg, true, b));
       if(type==='magic_dot' || sk.poison){ mo.status='poison'; mo.statusTurns=sk.poisonTurns||3; }
       checkKillReward(mo, b);
     });
@@ -4322,7 +4873,7 @@ function applySkill(actor, sk, targetIdx, b){
     const target = b.monsters[targetIdx];
     if(!target||target.hp<=0) return;
     const r = calcPhysDmg(actor, target, { mult: sk.mult||1.1, canCrit:false });
-    const dealt = applyDamageToMonster(actor, target, r.dmg, false, b);
+    const dealt = (b._lastHitCrit=!!(r).crit, applyDamageToMonster(actor, target, r.dmg, false, b));
     const stolen = rint(Math.random, sk.stealMin||5, sk.stealMax||15);
     S.hero.gold += stolen;
     b.turnLog.unshift(actor.name+' 使用了「'+sk.name+'」，造成 '+dealt+' 傷害並偷得 '+stolen+' 金幣。');
@@ -4390,6 +4941,9 @@ function checkBattleEnd(){
   }
 }
 
+
+
+/* ===== 08-explore-inventory.js ===== */
 /* ============ 探索 / 事件 ============ */
 function explore(){
   S.daysSurvived++;
@@ -4593,10 +5147,15 @@ function stackExistingPotions(){
   S.inventory = others.concat(Object.values(map));
 }
 
+
+
+/* ===== 09-render.js ===== */
 /* ============ 渲染 ============ */
 let uiTab = 'inv';
 /* ============ 存檔系統（localStorage） ============ */
 const SAVE_KEY = 'ashfall_era_save_v1';
+/** 遊戲顯示版本號（給玩家看） */
+const GAME_VERSION = '1.4.0';
 const SAVE_VERSION = 2;
 function saveGame(manual){
   if(!S) return false;
@@ -4777,6 +5336,8 @@ function bindWarehouse(){
 }
 
 function render(){
+  const verEl = document.getElementById('game-version-label');
+  if(verEl && typeof GAME_VERSION!=='undefined') verEl.textContent = 'v'+GAME_VERSION;
   const root = document.getElementById('screens');
   if(!root) return;
   if(!S){ root.innerHTML = renderCharCreate(); bindCharCreate(); return; }
@@ -4859,7 +5420,7 @@ function memberCardHtml(m, idx, opts){
   const spriteId = (opts.prefix||'pc')+'-'+idx;
   if(opts.compact){
     return `
-    <div class="member-card member-card-compact ${m.hp<=0?'dead':''} ${opts.activeClass||''}" data-uid="${m.uid}">
+    <div class="member-card member-card-compact ${m.hp<=0?'dead':''} ${opts.activeClass||''}" data-uid="${m.uid}" data-pidx="${opts.pidx!=null?opts.pidx:idx}">
       <canvas class="sprite" id="${spriteId}" width="32" height="32"></canvas>
       <div class="member-info">
         <div class="member-name"><span>${esc(m.name)}${m.isHero?'★':''} <span class="small">Lv.${m.level}</span></span><span class="small">${esc(displayClassName(m))}</span></div>
@@ -4870,7 +5431,7 @@ function memberCardHtml(m, idx, opts){
     </div>`;
   }
   return `
-  <div class="member-card ${m.hp<=0?'dead':''} ${opts.activeClass||''}" data-uid="${m.uid}">
+  <div class="member-card ${m.hp<=0?'dead':''} ${opts.activeClass||''}" data-uid="${m.uid}" data-pidx="${opts.pidx!=null?opts.pidx:idx}">
     <canvas class="sprite" id="${spriteId}" width="48" height="48"></canvas>
     <div class="member-info">
       <div class="member-name"><span>${esc(m.name)}${m.isHero?' (你)':''} Lv.${m.level}</span><span class="small">${esc(displayClassName(m))}</span></div>
@@ -4921,6 +5482,7 @@ function renderHub(){
     <div class="topbar">
       <span class="pixel-font" style="font-size:11px;color:var(--gold);">💰 ${hero.gold} 金幣</span>
       <span class="small">已探索 ${S.daysSurvived} 次</span>
+      <span class="small version-tag">v${typeof GAME_VERSION!=='undefined'?GAME_VERSION:'?'}</span>
     </div>
     <div class="grid party-grid">${partyHtml}</div>
     <hr class="divider">
@@ -5044,10 +5606,10 @@ function renderBattle(){
     const eliteTag = rankTag ? `<div class="small" style="color:var(--legend);">◆ ${esc(rankTag)}</div>` : '';
     return `
     <div class="monster-box ${dead?'dead':'target-selectable'}" data-tidx="${i}">
-      <canvas class="sprite" id="mon-${i}" width="72" height="72"></canvas>
+      <canvas class="sprite" id="mon-${i}" width="48" height="48"></canvas>
       <div class="monster-name">${m.boss?'👑 ':''}${esc(m.name)} Lv.${m.level}</div>
       ${eliteTag}${affixTags}${markTag}
-      <div class="bar-wrap" style="width:70px;margin:2px auto;"><div class="bar" style="width:${hpPct}%;background:var(--hp)"></div></div>
+      <div class="bar-wrap" style="width:70px;margin:2px auto;"><div class="bar bar-anim" style="width:${hpPct}%;background:var(--hp)"></div></div>
       <div class="small">${m.hp}/${m.maxHp}</div>
     </div>`;
   }).join('');
@@ -5058,7 +5620,7 @@ function renderBattle(){
 
   const partyHtml = S.party.map((m,i)=>{
     const active = actor && actor.uid===m.uid;
-    return memberCardHtml(m,i,{prefix:'bp',activeClass:active?'active-turn':'', compact:true});
+    return memberCardHtml(m,i,{prefix:'bp',activeClass:active?'active-turn':'', compact:true, pidx:i});
   }).join('');
 
   let actionPanel='';
@@ -5098,7 +5660,13 @@ function renderBattle(){
     actionPanel = `<p class="small" style="text-align:center;">敵方行動中...</p>`;
   }
 
-  const logHtml = b.turnLog.slice(0,8).map(l=>`<div>${esc(l)}</div>`).join('');
+  const logHtml = b.turnLog.slice(0,8).map(l=>{
+    let cls='';
+    if(/會心|重擊|削砍/.test(l)) cls='log-crit';
+    else if(/擊倒|倒下了/.test(l)) cls='log-kill';
+    else if(/造成 \d+/.test(l) || /點傷害/.test(l)) cls='log-hit';
+    return `<div class="${cls}">${esc(l)}</div>`;
+  }).join('');
 
   return `
   <div class="panel">
@@ -5115,8 +5683,53 @@ function renderBattle(){
 }
 let pendingAction=null;
 let actionToken=0;
+
+function processBattleFx(){
+  const b = S.battle;
+  if(!b || !b.fx || !b.fx.length) return;
+  const list = b.fx.splice(0, b.fx.length);
+  list.forEach(fx=>{
+    if(fx.kind!=='hit') return;
+    let el = null;
+    if(fx.target==='monster') el = document.querySelector('.monster-box[data-tidx="'+fx.idx+'"]');
+    else if(fx.target==='party'){
+      el = document.querySelector('.battle-party-grid [data-pidx="'+fx.idx+'"]')
+        || document.querySelector('.member-card[data-pidx="'+fx.idx+'"]');
+      if(!el){
+        const cv = document.getElementById('bp-'+fx.idx);
+        if(cv) el = cv.closest('.member-card') || cv.parentElement;
+      }
+      if(!el){
+        const cards = document.querySelectorAll('.battle-party-grid .member-card');
+        el = cards[fx.idx] || null;
+      }
+    }
+    if(!el) return;
+    el.classList.remove('hit-shake','hit-flash','kill-pulse');
+    void el.offsetWidth;
+    el.classList.add('hit-shake','hit-flash');
+    if(fx.kill) el.classList.add('kill-pulse');
+    // 跳字
+    const tag = document.createElement('div');
+    tag.className = 'combat-float-dmg ' + (fx.miss?'miss':(fx.crit?'crit':(fx.magic?'magic':'normal')));
+    if(fx.miss) tag.textContent = 'MISS';
+    else tag.textContent = (fx.crit?'✦ ':'') + (-Math.abs(num(fx.dmg,0)));
+    el.appendChild(tag);
+    setTimeout(()=>{ try{ tag.remove(); }catch(e){} }, 750);
+    setTimeout(()=>{ try{ el.classList.remove('hit-shake','hit-flash','kill-pulse'); }catch(e){} }, 280);
+  });
+  // hit-stop：短暫凍結互動
+  const ms = num(b._hitstopMs, 0);
+  b._hitstopMs = 0;
+  if(ms > 0){
+    const root = document.getElementById('screens') || document.body;
+    root.classList.add('battle-hitstop');
+    setTimeout(()=> root.classList.remove('battle-hitstop'), ms);
+  }
+}
 function bindBattle(){
   const b=S.battle;
+  processBattleFx();
   b.monsters.forEach((m,i)=> queueSprite('mon-'+i, m.seed||m.name, PALETTES[m.type]||PALETTES.beast, 16, {kind:'monster', type:m.type}));
   S.party.forEach((m,i)=> queueSprite('bp-'+i, (m.name||'hero')+'_'+m.uid, memberPalette(m), 14, {kind:'human'}));
   const backBtn = document.getElementById('back-hub');
@@ -5570,7 +6183,7 @@ function bindInventory(){
   ensureMemberEquip(selMember);
   // 角色立繪
   const heroCv = document.getElementById('inv-hero-sprite');
-  if(heroCv) drawSprite(heroCv, (selMember.name||'hero')+'_'+selMember.uid, memberPalette(selMember), 16, {kind:'human'});
+  if(heroCv) drawSprite(heroCv, (selMember.name||'hero')+'_'+selMember.uid, memberPalette(selMember), 16, {kind:'human', gender: selMember.gender || (typeof guessGenderFromName==='function'?guessGenderFromName(selMember.name):null)});
   EQUIP_SLOT_IDS.forEach(slot=>{
     const item = selMember.equip[slot];
     const cv = document.getElementById('eq-'+slot);
@@ -5676,6 +6289,9 @@ function bindInventory(){
   if(back) back.addEventListener('click', ()=>{ routeHome(); render(); });
 }
 
+
+
+/* ===== 10-shop-tavern.js ===== */
 /* ============ 商店系統 ============ */
 const SHOP_SIZE = 6;
 const SHOP_REROLL_COST = 25;
@@ -6098,6 +6714,7 @@ function bindEvolveBranch(){
 
 loadGame();
 render();
+
 </script>
 </body>
 </html>
