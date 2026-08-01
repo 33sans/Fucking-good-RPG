@@ -1815,9 +1815,9 @@ function makeMonster(tmpl, playerLevel, rng, opts){
 
   // 基礎曲線：刻意高於「裸裝玩家同級期望」，裝備／職業優勢才能壓制
   // 目標：普通 4~7 回合、精英 8~14 回合、Boss 需策略與消耗
-  let maxHp = (48 + lvl * 10.5 + lvl * lvl * 0.055) * tierHp;
-  let atk   = (14 + lvl * 1.55 + tier * 2.4) * tierAtk;
-  let def   = (4.5 + lvl * 0.72 + tier * 1.5) * tierDef;
+  let maxHp = (58 + lvl * 13.5 + lvl * lvl * 0.085) * tierHp;
+  let atk   = (16 + lvl * 1.85 + tier * 2.9) * tierAtk;
+  let def   = (6.0 + lvl * 0.95 + tier * 1.9) * tierDef;
   let spd   = rint(rng, 6 + tier, 11 + tier * 2);
   let exp   = (30 + lvl * 5.5 + tier * 8) * tierRew;
   let gold  = (18 + lvl * 3.2 + tier * 5) * tierRew * (0.75 + rng() * 0.5);
@@ -1831,13 +1831,13 @@ function makeMonster(tmpl, playerLevel, rng, opts){
     spd    = Math.round(spd * (1 + (rankDef.extraAffix||0) * 0.03));
   }
   if(boss){
-    // Boss：血厚、攻高但不秒殺；靠機制+持續壓力取勝
-    maxHp *= 3.20;
-    atk   *= 1.38;
-    def   *= 1.35;
-    exp   *= 4.20;
-    gold  *= 3.60;
-    spd    = Math.round(spd * 1.08);
+    // Boss：血厚、攻高；靠機制+持續壓力取勝
+    maxHp *= 4.20;
+    atk   *= 1.55;
+    def   *= 1.55;
+    exp   *= 4.50;
+    gold  *= 3.80;
+    spd    = Math.round(spd * 1.10);
   }
 
   mon.maxHp = Math.max(12, Math.round(maxHp));
@@ -1872,8 +1872,8 @@ function makeMonster(tmpl, playerLevel, rng, opts){
   mon.gold = Math.max(0, num(mon.gold, 0));
 
   // 軟上限放寬：允許詞綴強化，但仍避免無限疊防
-  const atkCap = Math.round((18 + lvl * 2.20 + tier * 5) * (elite ? 1.40 : 1) * (boss ? 1.55 : 1));
-  const defCap = Math.round((8 + lvl * 1.10 + tier * 3) * (elite ? 1.30 : 1) * (boss ? 1.55 : 1));
+  const atkCap = Math.round((22 + lvl * 2.80 + tier * 6) * (elite ? 1.45 : 1) * (boss ? 2.10 : 1));
+  const defCap = Math.round((10 + lvl * 1.45 + tier * 3.8) * (elite ? 1.40 : 1) * (boss ? 2.20 : 1));
   if(mon.atk > atkCap) mon.atk = atkCap;
   if(mon.def > defCap) mon.def = defCap;
 
@@ -1885,11 +1885,15 @@ function makeMonster(tmpl, playerLevel, rng, opts){
       mon.hp = Math.min(mon.hp, mon.maxHp);
     }
   } else {
-    // 魔王血量：至少 30000，並隨等級再拉高
-    const bossFloor = 30000 + Math.max(0, lvl - 50) * 400;
-    const boosted = Math.max(bossFloor, Math.round(num(mon.maxHp, 1) * 6.5));
-    mon.maxHp = boosted;
+    // 魔王血量：50 等必須明顯超過 30000，並隨等級再拉高
+    // 曲線：lv50 ≈ 36000+、lv60 ≈ 48000+、lv80 ≈ 78000+
+    const bossFloor = Math.round(12000 + lvl * lvl * 9.6); // 50→36000, 60→46600
+    const scaled = Math.round(num(mon.maxHp, 1) * 8.5);
+    mon.maxHp = Math.max(bossFloor, scaled);
     mon.hp = mon.maxHp;
+    // Boss 攻防再拉一檔，避免只是血海沙包
+    mon.atk = Math.max(1, Math.round(num(mon.atk, 1) * 1.35));
+    mon.def = Math.max(0, Math.round(num(mon.def, 0) * 1.40));
     mon.baseAtk = num(mon.atk, 1);
     mon.baseDef = num(mon.def, 0);
     mon.baseSpd = num(mon.spd, 1);
@@ -4486,17 +4490,17 @@ function runBossMechanic(mon, b){
  * 普通攻擊：物攻 × (0.9~1.2 隨機)
  * ============================================================ */
 const CF = {
-  PHYS_DEF: 0.32,
-  MAG_DEF: 0.18,
-  PHYS_FLOOR: 0.28,
-  MAG_FLOOR: 0.30,
-  CRIT_MULT: 1.6,
-  BASE_CRIT: 0.08,
-  AGI_CRIT: 0.004,
-  HOLY_BONUS: 1.25,
-  PIERCE_RATIO: 0.30,
-  ATK_VAR_MIN: 0.90,
-  ATK_VAR_MAX: 1.20
+  PHYS_DEF: 0.42,
+  MAG_DEF: 0.26,
+  PHYS_FLOOR: 0.20,
+  MAG_FLOOR: 0.22,
+  CRIT_MULT: 1.45,
+  BASE_CRIT: 0.06,
+  AGI_CRIT: 0.003,
+  HOLY_BONUS: 1.18,
+  PIERCE_RATIO: 0.22,
+  ATK_VAR_MIN: 0.88,
+  ATK_VAR_MAX: 1.12
 };
 const EVIL_TYPES = ['undead','shadow'];
 function isEvilMon(mon){ return !!(mon && EVIL_TYPES.indexOf(mon.type)>=0); }
