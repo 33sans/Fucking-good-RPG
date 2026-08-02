@@ -737,12 +737,41 @@ function pxRect(ctx, cell, x,y,w,h, color){
 }
 function pxDot(ctx, cell, x,y, color){ pxRect(ctx, cell, x,y, 1,1, color); }
 
-/** 依名字判斷性別（female / male） */
-const FEMALE_NAME_SET = new Set([
-  '艾莉絲','露娜','薇拉','希兒','陳美蘭','謝金燕','葉玫瑰','吳卓源','蔡英文',
-  '厚片女孩','女拳主義者','玫','芋比','KITCAT','駱楓','小翠兒','中壢樹屋','003','早餐吃到飽','王媽媽','LEGGY','LUCY','垮嗑波波','法拉利姊','婉晴','夏沐','BABY CINDY','C.HOLLY'
-]);
-const MALE_NAME_HINTS = /先生|大叔|大哥|小子|肥哥|哥$|弟$|春艷|林萌|叔|伯|漢|君|雄|強|偉|傑|俊|鋒|龍|虎|john|jimmy|rex|barry|george/i;
+/** 依名字判斷性別（female / male）— 雙池為準 */
+const NPC_FEMALE_NAMES = [
+  '艾莉絲','露娜','薇拉','希兒','陳美蘭','謝金燕',
+  '葉玫瑰','吳卓源','蔡英文','厚片女孩','女拳主義者','玫',
+  '芋比','KITCAT','駱楓','小翠兒','王媽媽','LEGGY',
+  'LUCY','垮嗑波波','法拉利姊','婉晴','夏沐','BABY CINDY',
+  'C.HOLLY',
+];
+const NPC_MALE_NAMES = [
+  'gummy B',
+  '林萌',
+  '春艷',
+  '凱因','托爾加','布蘭登','葛瑞姆','喬治','史丹利',
+  '喬','羅傑','惡魔貓','比利','西薩','熊信寬',
+  'Toyz','謝欣達','jay chou','BR','山豬','蝦味先',
+  '蛋頭','禁藥王','陳老師','潮州土狗','godone','majin',
+  '栗子','玉麟','天峰','王希銘','迪拉胖','YOUNG LEE',
+  '潤少','趙翊帆','李權哲','YB','有錢人','前人',
+  '不公們','沒人能殺死的鬼','費玉清','阿兄喬治','小卡比','QUANZO',
+  'O.DKIZZYA','REX','macdella','eyeballray','SheATH','yappy',
+  'drew','呂士軒','ANBA','林聖夫','約翰','rgry',
+  'Barry chen','熱狗','大隻','小人','陳星翰','朱軒羊',
+  '公園','凡尼師男孩','馬英九','消防隊的楊先生','水哥DJDIDILONG','DIE4REALLL',
+  'NGKE配菜','KAPPERKIRA','LOKI LU','JIMMY','33','死肥胖哥',
+  '修斗','林俊傑','6YI7','張家航','國棟','力量人',
+  '蘇志翔','小六','六嘆','八毛','朱利安','瑞奇',
+  '泡泡','拉黑','藍迪','賽勒斯','柯瑞','催佛',
+  '砸瓶死小孩','鶴','OZI','周湯豪','雷擎','是GAY',
+  'LOSTY','曾國城','古蹟','沈玉琳','潘若迪','保母',
+  '超負荷','抽菸',
+];
+const FEMALE_NAME_SET = new Set(NPC_FEMALE_NAMES.map(n=>n).concat(NPC_FEMALE_NAMES.map(n=>n.toLowerCase())));
+const MALE_NAME_SET = new Set(NPC_MALE_NAMES.map(n=>n).concat(NPC_MALE_NAMES.map(n=>n.toLowerCase())));
+const MALE_NAME_HINTS = /先生|大叔|大哥|小子|肥哥|哥$|弟$|叔|伯|漢|君|雄|強|偉|傑|俊|鋒|龍|虎|john|jimmy|rex|barry|george/i;
+const FEMALE_NAME_HINTS = /女|姐|妹|娘|媽|小姐|女孩|夫人|玫瑰|女拳|姊/;
 
 function extractNameFromSeed(seed){
   const s = String(seed||'');
@@ -751,33 +780,40 @@ function extractNameFromSeed(seed){
   return s;
 }
 
-const MALE_NAME_SET = new Set([
-  '凱因','托爾加','布蘭登','葛瑞姆','喬治','史丹利','喬','羅傑','惡魔貓','比利','西薩','熊信寬','Toyz',
-  'jay chou','BR','山豬','蝦味先','蛋頭','禁藥王','陳老師','潮州土狗','godone','majin','玉麟','天峰',
-  '王希銘','迪拉胖','YOUNG LEE','潤少','趙翊帆','李權哲','YB','有錢人','前人','不公們','沒人能殺死的鬼','費玉清',
-  '阿兄喬治','QUANZO','O.DKIZZYA','REX','macdella','eyeballray','SheATH','yappy','drew','呂士軒','ANBA',
-  '林聖夫','約翰','rgry','Barry chen','熱狗','大隻','小人','陳星翰','朱軒羊','公園','凡尼師男孩','馬英九',
-  '消防隊的楊先生','水哥DJDIDILONG','DIE4REALLL','NGKE配菜','KAPPERKIRA','LOKI LU','JIMMY','33','死肥胖哥',
-  '修斗','林俊傑','6YI7','謝欣達','gummy B','栗子','林萌','小卡比','春艷','張家航','國棟','力量人','蘇志翔','小六','六嘆','八毛','朱利安','瑞奇','泡泡','拉黑','藍迪','賽勒斯','柯瑞','催佛','砸瓶死小孩','鶴','OZI','周湯豪','雷擎','是GAY','LOSTY','曾國城','古蹟','沈玉琳','潘若迪','保母','超負荷','抽菸'
-]);
 function guessGenderFromName(name){
   const n = String(name||'').trim();
   if(!n) return 'male';
   const low = n.toLowerCase();
   if(FEMALE_NAME_SET.has(n) || FEMALE_NAME_SET.has(low)) return 'female';
   if(MALE_NAME_SET.has(n) || MALE_NAME_SET.has(low)) return 'male';
-  // 明確女關鍵字（整詞／強特徵）
-  if(/女|姐|妹|娘|媽|小姐|女孩|夫人|玫瑰|女拳)/.test(n)) return 'female';
+  if(FEMALE_NAME_HINTS.test(n)) return 'female';
   if(/^(艾莉|露娜|薇拉|希兒|美蘭|金燕)/.test(n)) return 'female';
-  if(/\b(alice|luna|vera|anna|amy|lisa|mary|jenny|lily|rose|gummy)\b/i.test(n)) return 'female';
-  // 男關鍵字
+  if(/\b(alice|luna|vera|anna|amy|lisa|mary|jenny|lily|rose|lucy|leggy)\b/i.test(n)) return 'female';
   if(MALE_NAME_HINTS.test(n)) return 'male';
   if(/[哥弟叔伯漢君雄強偉傑俊鋒龍虎]/.test(n)) return 'male';
   if(/\b(jay|chou|jimmy|john|rex|barry|george|tony|kevin|mike)\b/i.test(n)) return 'male';
-  // 未知：偏男性，少量女（避免誤判男名）
-  const h = (typeof hashStr==='function' ? hashStr('gender_'+n) : n.length*17);
-  return (Math.abs(h) % 100) < 22 ? 'female' : 'male';
+  // 未知偏男
+  let h = 0;
+  for(let i=0;i<n.length;i++) h = (h*31 + n.charCodeAt(i))>>>0;
+  return (h % 10 === 0) ? 'female' : 'male';
 }
+
+/** 男女雙池抽取：先定性別再抽名（約 42% 女） */
+function pickNpcNameAndGender(rng){
+  rng = rng || Math.random;
+  const femalePool = NPC_FEMALE_NAMES;
+  const malePool = NPC_MALE_NAMES;
+  const wantF = rng() < 0.42;
+  if(wantF && femalePool.length){
+    return { name: choice(rng, femalePool), gender: 'female' };
+  }
+  if(malePool.length){
+    return { name: choice(rng, malePool), gender: 'male' };
+  }
+  return { name: choice(rng, femalePool.length?femalePool:['旅人']), gender: femalePool.length?'female':'male' };
+}
+
+
 
 /** 人物：依性別區分的星露谷風半身像 */
 function drawHumanPortrait(canvas, seed, size, genderOpt){
@@ -3591,25 +3627,19 @@ function healParty(s, amt, opts){
 function restorePartyFull(s){ s.party.forEach(m=>{ m.hp=m.maxHp; m.mp=m.maxMp; }); }
 
 /* ============ NPC 隊友池 ============ */
-const NPC_NAMES = [
-  '艾莉絲','凱因','露娜','托爾加','薇拉','布蘭登','希兒','葛瑞姆',
-  '喬治','史丹利','喬','羅傑','惡魔貓','比利','西薩','熊信寬','Toyz','謝欣達',
-  'jay chou','陳美蘭','BR','謝金燕','山豬','蝦味先','蛋頭','禁藥王','陳老師','潮州土狗',
-  'godone','majin','栗子','玉麟','天峰','葉玫瑰','王希銘','迪拉胖','YOUND LEE','潤少',
-  'gummy B','趙翊帆','春艷','李權哲','YB','有錢人','前人','不公們','沒人能殺死的鬼','費玉清',
-  '阿兄喬治','小卡比','QUANZO','O.DKIZZYA','REX','macdella','eyeballray','SheATH','yappy','drew',
-  '呂士軒','ANBA','林聖夫','約翰','rgry','吳卓源','Barry chen','熱狗','大隻','小人','陳星翰',
-  'KITCAT','朱軒羊','公園','凡尼師男孩','馬英九','蔡英文','消防隊的楊先生','水哥DJDIDILONG',
-  'DIE4REALLL','NGKE配菜','KAPPERKIRA','LOKI LU','芋比','JIMMY','玫','33','厚片女孩','女拳主義者',
-  '死肥胖哥','修斗','林萌','駱楓','林俊傑','6YI7'
-];
+// 相容舊程式：合併名單（實際抽選請用 pickNpcNameAndGender）
+const NPC_NAMES = NPC_FEMALE_NAMES.concat(NPC_MALE_NAMES);
 function makeRandomAlly(){
-  const name = choice(Math.random, NPC_NAMES);
-  const m = buildMember(name, 1);
+  const rng = Math.random;
+  const picked = (typeof pickNpcNameAndGender === 'function')
+    ? pickNpcNameAndGender(rng)
+    : { name: choice(rng, NPC_NAMES), gender: 'male' };
+  const m = buildMember(picked.name, 1);
   m.isNpc = true;
-  if(typeof guessGenderFromName==='function') m.gender = guessGenderFromName(name);
+  m.gender = picked.gender || guessGenderFromName(picked.name);
   return m;
 }
+
 
 /* ============ 角色成員建構 / 升級 / 職業成長 ============ */
 /** 從裝備加總某一屬性（affixes 為準；無則回退舊欄位） */
@@ -3990,12 +4020,17 @@ function rivalTeamSize(avgLevel, rng){
   return rng() < 0.30 ? 3 : 4;
 }
 function makeRivalName(rng){
-  return choice(rng, RIVAL_FIRST) + choice(rng, RIVAL_SECOND);
+  // 與酒館相同：男女雙池，回傳名字（gender 由呼叫端寫入）
+  const picked = pickNpcNameAndGender(rng || Math.random);
+  return picked.name;
+}
+function makeRivalNameWithGender(rng){
+  return pickNpcNameAndGender(rng || Math.random);
 }
 function makeRivalTeamName(rng){
   return choice(rng, RIVAL_TEAM_PREFIX) + choice(rng, RIVAL_TEAM_SUFFIX);
 }
-function makeRivalAdventurer(avgLevel, rng, tier, teamName){
+function makeRivalAdventurer(avgLevel, rng, tier, teamName, forcedRole){
   rng = rng || Math.random;
   tier = tier || RIVAL_TIERS[0];
   const lv = clamp(num(avgLevel, 1) + rint(rng, -1, 1), 1, MAX_PLAYER_LEVEL);
@@ -4006,16 +4041,21 @@ function makeRivalAdventurer(avgLevel, rng, tier, teamName){
   let spd   = Math.round((8 + lv * 0.25) * (0.95 + rng() * 0.12));
   let exp   = (40 + lv * 7) * mult * 1.35;
   let gold  = (28 + lv * 4.5) * mult * 1.50;
-  const name = makeRivalName(rng);
+  const picked = (typeof makeRivalNameWithGender === 'function')
+    ? makeRivalNameWithGender(rng)
+    : { name: makeRivalName(rng), gender: 'male' };
+  const name = picked.name;
+  const gender = picked.gender || guessGenderFromName(name);
   const roles = ['戰士','盜賊','法師','祭司','弓手','騎士'];
-  const role = choice(rng, roles);
+  const role = forcedRole && roles.includes(forcedRole) ? forcedRole : choice(rng, roles);
   if(role==='戰士' || role==='騎士'){ maxHp*=1.15; def*=1.12; atk*=1.05; }
   if(role==='盜賊' || role==='弓手'){ spd=Math.round(spd*1.15); atk*=1.10; maxHp*=0.90; }
   if(role==='法師'){ atk*=1.12; def*=0.88; maxHp*=0.92; }
   if(role==='祭司'){ maxHp*=1.08; def*=1.05; atk*=0.90; }
   const mon = {
     name: name, baseName: name, type:'beast', tier:1, boss:false, elite:false, rank:'normal',
-    isRival:true, rivalTier:tier.id, rivalTierName:tier.name, rivalRole:role, rivalTeam:teamName||'',
+    uid: 'rival_'+Math.floor(rng()*1e9),
+    isRival:true, gender:gender, rivalTier:tier.id, rivalTierName:tier.name, rivalRole:role, rivalTeam:teamName||'',
     level:lv, hp:0, maxHp:0, atk:0, def:0, spd:0, exp:0, gold:0,
     seed:'rival_'+name+'_'+Math.floor(rng()*9999),
     status:null, statusTurns:0, rewarded:false,
@@ -4031,6 +4071,33 @@ function makeRivalAdventurer(avgLevel, rng, tier, teamName){
   mon.gold = Math.max(0, Math.round(gold));
   return mon;
 }
+
+/** 職角編成：至少 1 輸出、至多 1 祭司；隊長偏坦/輸出 */
+function rollRivalRoles(n, rng){
+  rng = rng || Math.random;
+  n = clamp(num(n, 2), 1, 4);
+  const dps = ['戰士','盜賊','法師','弓手','騎士'];
+  const roles = [];
+  // 第 1 人（隊長）：70% 坦克系，30% 輸出
+  roles.push(rng() < 0.70 ? (rng() < 0.5 ? '騎士' : '戰士') : choice(rng, dps));
+  let priestUsed = false;
+  for(let i=1;i<n;i++){
+    if(!priestUsed && rng() < 0.28){
+      roles.push('祭司');
+      priestUsed = true;
+    } else {
+      roles.push(choice(rng, dps));
+    }
+  }
+  // 保證至少一個純輸出（法師/盜賊/弓手）若全是坦則改一人
+  const hasGlass = roles.some(r=> r==='法師'||r==='盜賊'||r==='弓手'||r==='戰士');
+  if(!hasGlass && roles.length){
+    roles[roles.length-1] = choice(rng, ['法師','盜賊','弓手']);
+  }
+  // 至多一名祭司（已保證）
+  return roles;
+}
+
 function startRivalBattle(){
   const rng = Math.random;
   const avgLevel = avgPartyLevel();
@@ -4038,8 +4105,9 @@ function startRivalBattle(){
   const tier = rollRivalTier(avgLevel, rng);
   const n = rivalTeamSize(avgLevel, rng);
   const teamName = makeRivalTeamName(rng);
+  const roleList = rollRivalRoles(n, rng);
   const monsters = [];
-  for(let i=0;i<n;i++) monsters.push(makeRivalAdventurer(avgLevel, rng, tier, teamName));
+  for(let i=0;i<n;i++) monsters.push(makeRivalAdventurer(avgLevel, rng, tier, teamName, roleList[i]));
   if(monsters[0]) monsters[0].name = monsters[0].name + '·長';
   S.battle = {
     monsters,
@@ -4047,8 +4115,10 @@ function startRivalBattle(){
     selectedActor:null, selectedAction:null, over:false, win:null,
     order: buildTurnOrder(monsters), turnIndex:0, roundNum:1,
     bossMinionCount:0, lastMinionRefillRound:0,
-    isRivalBattle:true, rivalTeamName:teamName, rivalTierName:tier.name
+    isRivalBattle:true, rivalTeamName:teamName, rivalTierName:tier.name,
+    bb: { channels: {}, version: 1 }
   };
+  if(typeof bbInit === 'function') bbInit(S.battle);
   S.screen = 'battle';
   S.log.unshift('⚔️ 與敵對冒險家「'+teamName+'」爆發衝突！');
   const first = S.battle.order[0];
@@ -4208,6 +4278,7 @@ function advanceBattleTurn(first){
   if(!first) b.turnIndex++;
   if(b.turnIndex >= b.order.length){
     b.turnIndex=0; b.roundNum++;
+    if(typeof bbTick === 'function') bbTick(b);
     // Boss 戰：每 2 回合補滿眷屬
     if(b.roundNum > 1 && b.roundNum % 2 === 1){
       const boss = getBattleBoss(b);
@@ -4694,11 +4765,428 @@ function dmgTag(r){
   return t;
 }
 
+
+
+/* ============ 黑板通訊協定（Blackboard Protocol） ============
+ * 用途：敵對冒險家（及可擴充單位）之間的戰術通訊。
+ * 掛在 S.battle.bb 上，勿直接改 _rival* 私貨欄位。
+ *
+ * 頻道（channel）約定：
+ *   focus   { uid, name, by, untilRound }  集火目標
+ *   shout   { power, by, untilRound }      戰吼／全局攻擊加成
+ *   guard   { uid, by, untilRound }        誰在嘲諷守護
+ *   help    { uid, hpRatio, by, untilRound } 求救（殘血）
+ *   avoid   { uid, by, untilRound }        暫時不要打誰（預留）
+ *   order   { type, payload, by, untilRound } 通用指令
+ *
+ * API：
+ *   bbInit(b) / bbGet(b,ch) / bbSet(b,ch,data,ttlRounds) / bbClear(b,ch)
+ *   bbTick(b) 每回合開始清除過期訊息
+ *   bbHas(b,ch) / bbFocusTarget(b, aliveParty)
+ */
+function bbInit(b){
+  if(!b) return null;
+  if(!b.bb || typeof b.bb !== 'object') b.bb = { channels: {}, version: 1 };
+  if(!b.bb.channels) b.bb.channels = {};
+  return b.bb;
+}
+function bbGet(b, channel){
+  if(!b) return null;
+  bbInit(b);
+  const msg = b.bb.channels[channel];
+  if(!msg) return null;
+  if(msg.untilRound != null && num(b.roundNum,1) > num(msg.untilRound,0)){
+    delete b.bb.channels[channel];
+    return null;
+  }
+  return msg;
+}
+function bbHas(b, channel){ return !!bbGet(b, channel); }
+function bbSet(b, channel, data, ttlRounds){
+  if(!b) return;
+  bbInit(b);
+  const ttl = ttlRounds == null ? 2 : ttlRounds;
+  const until = num(b.roundNum,1) + Math.max(0, ttl);
+  b.bb.channels[channel] = Object.assign({}, data||{}, {
+    channel: channel,
+    untilRound: until,
+    setRound: num(b.roundNum,1)
+  });
+  return b.bb.channels[channel];
+}
+function bbClear(b, channel){
+  if(!b || !b.bb || !b.bb.channels) return;
+  if(channel) delete b.bb.channels[channel];
+  else b.bb.channels = {};
+}
+function bbTick(b){
+  if(!b) return;
+  bbInit(b);
+  const rnd = num(b.roundNum,1);
+  Object.keys(b.bb.channels).forEach(ch=>{
+    const msg = b.bb.channels[ch];
+    if(msg && msg.untilRound != null && rnd > num(msg.untilRound,0)){
+      delete b.bb.channels[ch];
+    }
+  });
+  // 相容舊欄位：同步清理過期時一併清 legacy
+  if(!bbGet(b,'focus')) b._rivalFocusUid = null;
+  if(!bbGet(b,'shout')) b._rivalShout = false;
+}
+function bbFocusTarget(b, aliveParty){
+  const msg = bbGet(b, 'focus');
+  if(!msg || !aliveParty || !aliveParty.length) return null;
+  return aliveParty.find(p=>p.uid===msg.uid) || null;
+}
+function bbRequestHelp(b, mon){
+  if(!b || !mon) return;
+  const ratio = mon.hp / Math.max(1, mon.maxHp);
+  bbSet(b, 'help', { uid: mon.uid, name: mon.name, hpRatio: ratio, by: mon.name }, 2);
+}
+function bbCallFocus(b, target, byMon){
+  if(!b || !target) return;
+  bbSet(b, 'focus', {
+    uid: target.uid,
+    name: target.name,
+    by: byMon ? byMon.name : '?'
+  }, 3);
+  b._rivalFocusUid = target.uid; // legacy sync
+}
+function bbWarShout(b, byMon, power){
+  if(!b) return;
+  const p = power == null ? 1.10 : power;
+  bbSet(b, 'shout', { power: p, by: byMon ? byMon.name : '?' }, 2);
+  b._rivalShout = true;
+}
+function bbDeclareGuard(b, mon){
+  if(!b || !mon) return;
+  bbSet(b, 'guard', { uid: mon.uid || mon.seed || mon.name, name: mon.name, by: mon.name }, 2);
+}
+
+/* ============ 敵對冒險家 AI 行為樹（擴充版） ============
+ * 優先序由上到下；命中葉節點即結束本回合。
+ * 共用黑板：b._rivalFocusUid（集火標記）、mon._usedPotion、mon._guardTurns、mon._enraged
+ */
+function rivalPotionThreshold(mon){
+  if(mon.rivalTier==='legend' || mon.rivalTier==='infamous') return 0.30;
+  return 0.25;
+}
+function rivalExecuteThreshold(mon){
+  if(mon.rivalTier==='legend' || mon.rivalTier==='infamous') return 0.35;
+  return 0.30;
+}
+function rivalPickFocusTarget(alive, b){
+  const marked = typeof bbFocusTarget === 'function' ? bbFocusTarget(b, alive) : null;
+  if(marked) return marked;
+  if(b && b._rivalFocusUid){
+    const legacy = alive.find(p=>p.uid===b._rivalFocusUid);
+    if(legacy) return legacy;
+  }
+  return alive.slice().sort((a,c)=>{
+    const pa=a.hp/Math.max(1,a.maxHp), pc=c.hp/Math.max(1,c.maxHp);
+    if(pa!==pc) return pa-pc;
+    return a.hp-c.hp;
+  })[0];
+}
+function rivalPickHealerTarget(alive){
+  // 優先打玩家方「像治療／高智」者
+  return alive.slice().sort((a,c)=>{
+    const sa = num(statTotal(a,'int'),0)*2 + num(statTotal(a,'matk'),0) + (a.classId?1:0)*5;
+    const sc = num(statTotal(c,'int'),0)*2 + num(statTotal(c,'matk'),0) + (c.classId?1:0)*5;
+    return sc-sa;
+  })[0];
+}
+function rivalPickThreatTarget(alive){
+  return alive.slice().sort((a,c)=>{
+    const ta=num(statTotal(a,'atk'),0)+num(statTotal(a,'matk'),0);
+    const tc=num(statTotal(c,'atk'),0)+num(statTotal(c,'matk'),0);
+    return tc-ta;
+  })[0];
+}
+function rivalPickSoftTarget(alive){
+  return alive.slice().sort((a,c)=> num(statTotal(a,'def'),0)-num(statTotal(c,'def'),0))[0];
+}
+
+function rivalAIDecide(mon, aliveParty){
+  const b = S.battle;
+  const hpRatio = mon.hp / Math.max(1, mon.maxHp);
+  const role = mon.rivalRole || '';
+  const tier = mon.rivalTier || 'nobody';
+  const allies = (b.monsters||[]).filter(m=>m.isRival && m.hp>0);
+  const execLine = rivalExecuteThreshold(mon);
+  const lowAllies = allies.filter(a=> (a.hp/a.maxHp)<=0.35);
+
+  // ── 0. 逃脫（僅剩一人且殘血）
+  if(allies.length===1 && hpRatio<=0.20){
+    const fleeChance = tier==='legend'?0.12 : tier==='infamous'?0.22 : 0.40;
+    if(Math.random() < fleeChance) return {action:'flee'};
+  }
+
+  // ── 1. 傳奇／惡名：殘血狂暴（一次）
+  if((tier==='legend'||tier==='infamous') && hpRatio<=0.30 && !mon._enraged){
+    return {action:'enrage'};
+  }
+
+  // ── 1.5 求救訊號（寫入黑板，供祭司讀取）
+  if(hpRatio <= 0.35 && typeof bbRequestHelp === 'function'){
+    bbRequestHelp(b, mon);
+  }
+
+  // ── 2. 自我喝藥
+  if(hpRatio <= rivalPotionThreshold(mon) && !mon._usedPotion){
+    return {action:'potion'};
+  }
+
+  // ── 3. 把藥讓給更殘的隊友（自己>50%、隊友≤25%、自己還有藥）
+  if(!mon._usedPotion && hpRatio>0.50 && lowAllies.length){
+    const ally = lowAllies.slice().sort((a,c)=> (a.hp/a.maxHp)-(c.hp/c.maxHp))[0];
+    if(ally && ally!==mon && Math.random()<0.35){
+      return {action:'potion_ally', target:ally};
+    }
+  }
+
+  // ── 4. 祭司：先讀黑板求救，再治療 / 淨化 / 鼓舞
+  if(role==='祭司'){
+    const help = typeof bbGet === 'function' ? bbGet(b, 'help') : null;
+    if(help){
+      const helpTarget = allies.find(a=> (help.uid && a.uid===help.uid) || a.name===help.name);
+      if(helpTarget && helpTarget.hp>0 && (helpTarget.hp/helpTarget.maxHp)<=0.50){
+        return {action:'heal_ally', target:helpTarget};
+      }
+    }
+    const needy = allies.slice().sort((a,c)=> (a.hp/a.maxHp)-(c.hp/c.maxHp))[0];
+    if(needy && (needy.hp/needy.maxHp)<=0.40){
+      return {action:'heal_ally', target:needy};
+    }
+    // 淨化：隊友被毒／暈
+    const debuffed = allies.find(a=> a.status==='poison' || num(a.stunnedTurns,0)>0 || a.skipTurn);
+    if(debuffed && Math.random()<0.40){
+      return {action:'cleanse', target:debuffed};
+    }
+    if(Math.random()<0.25){
+      const buffTarget = allies.slice().sort((a,c)=> num(c.atk,0)-num(a.atk,0))[0] || mon;
+      return {action:'buff_atk', target:buffTarget};
+    }
+  }
+
+  // ── 5. 騎士：嘲諷守護（隊友殘血時）
+  if(role==='騎士' && lowAllies.length && Math.random()<0.45){
+    return {action:'guard'};
+  }
+
+  // ── 6. 戰士：戰吼破防標記（開場或隨機）
+  if(role==='戰士' && !(typeof bbHas==='function' ? bbHas(b,'shout') : b._rivalShout) && Math.random()<0.30){
+    return {action:'war_shout'};
+  }
+
+  // ── 7. 法師：AOE / 點名弱化
+  if(role==='法師'){
+    if(aliveParty.length>=2 && Math.random()<0.32){
+      return {action:'aoe'};
+    }
+    if(Math.random()<0.22){
+      const t = rivalPickHealerTarget(aliveParty) || rivalPickFocusTarget(aliveParty, b);
+      return {action:'hex', target:t}; // 降攻一回合感（skipTurn 低機率或 atk debuff 用 skip）
+    }
+  }
+
+  // ── 8. 盜賊：偷金 / 上毒刺
+  // ── 9. 弓手：狙殺治療 / 低防
+  // 先選定基礎集火目標
+  let target = rivalPickFocusTarget(aliveParty, b);
+  const low = aliveParty.filter(p=> (p.hp/Math.max(1,p.maxHp)) <= execLine);
+  if(low.length){
+    target = low.slice().sort((a,c)=>a.hp-c.hp)[0];
+    // 呼叫集火
+    if(!b._rivalFocusUid && Math.random()<0.50){
+      return {action:'call_focus', target};
+    }
+  }
+
+  if(role==='盜賊'){
+    if(target && (target.hp/target.maxHp)>0.50 && Math.random()<0.18){
+      return {action:'steal', target};
+    }
+    if(target && Math.random()<0.28){
+      return {action:'poison_stab', target};
+    }
+    if(Math.random()<0.20){
+      return {action:'double_strike', target};
+    }
+  }
+
+  if(role==='弓手'){
+    if(!low.length && Math.random()<0.40){
+      target = rivalPickHealerTarget(aliveParty) || rivalPickSoftTarget(aliveParty) || target;
+    } else if(!low.length && Math.random()<0.35){
+      target = rivalPickSoftTarget(aliveParty) || target;
+    }
+    if(target && Math.random()<0.25){
+      return {action:'aimed_shot', target}; // 高傷害單體
+    }
+  }
+
+  if((role==='騎士'||role==='戰士') && !low.length && Math.random()<0.40){
+    target = rivalPickThreatTarget(aliveParty) || target;
+  }
+
+  if(role==='戰士' && target && Math.random()<0.22){
+    return {action:'double_strike', target};
+  }
+
+  // ── 10. 惡名以上：機率壓制殘血（處決一擊）
+  if(target && (tier==='infamous'||tier==='legend') && (target.hp/target.maxHp)<=0.20 && Math.random()<0.35){
+    return {action:'execute', target};
+  }
+
+  return {action:'attack', target};
+}
+
+function rivalAIExecute(mon, decision, aliveParty){
+  const b = S.battle;
+  if(!decision) return false;
+  const atkOf = ()=> Math.max(1, num(typeof effectiveMonAtk==='function' ? effectiveMonAtk(mon) : mon.atk, 1));
+  const hit = (target, coeff, tag)=>{
+    if(!target || target.hp<=0) return 0;
+    const rawM = atkOf() * coeff * (1.00 + Math.random()*0.20);
+    const mitM = rawM - num(statTotal(target,'def'),0)*0.18;
+    let dmg = Math.max(1, Math.round(Math.max(rawM*0.40, mitM)));
+    if(mon._enraged) dmg = Math.round(dmg * 1.25);
+    const shoutMsg = typeof bbGet === 'function' ? bbGet(b, 'shout') : null;
+    if(shoutMsg) dmg = Math.round(dmg * num(shoutMsg.power, 1.10));
+    else if(b._rivalShout) dmg = Math.round(dmg * 1.10);
+    // 玩家守護減傷略過（簡化）
+    target.hp = clamp(target.hp - dmg, 0, target.maxHp);
+    b.turnLog.unshift(mon.name+(tag?(' 的'+tag):'')+' 擊中 '+target.name+'（'+dmg+'）');
+    return dmg;
+  };
+
+  if(decision.action==='flee'){
+    mon.hp = 0; mon.rewarded = true; mon._fled = true;
+    b.turnLog.unshift(mon.name+' 丟下煙霧逃脫了！');
+    return true;
+  }
+  if(decision.action==='enrage'){
+    mon._enraged = true;
+    mon.atk = Math.round(num(mon.atk,1) * 1.30);
+    b.turnLog.unshift('💢 '+mon.name+' 進入狂暴！攻擊大幅提升！');
+    return true;
+  }
+  if(decision.action==='potion'){
+    const heal = Math.max(1, Math.round(mon.maxHp * 0.35));
+    mon.hp = clamp(mon.hp + heal, 0, mon.maxHp);
+    mon._usedPotion = true;
+    b.turnLog.unshift(mon.name+' 使用繃帶，恢復 '+heal+' HP！');
+    return true;
+  }
+  if(decision.action==='potion_ally' && decision.target){
+    const ally = decision.target;
+    const heal = Math.max(1, Math.round(ally.maxHp * 0.30));
+    ally.hp = clamp(ally.hp + heal, 0, ally.maxHp);
+    mon._usedPotion = true;
+    b.turnLog.unshift(mon.name+' 把繃帶丟給 '+ally.name+'，恢復 '+heal+' HP！');
+    return true;
+  }
+  if(decision.action==='heal_ally' && decision.target){
+    const ally = decision.target;
+    const heal = Math.max(1, Math.round(ally.maxHp * 0.22));
+    ally.hp = clamp(ally.hp + heal, 0, ally.maxHp);
+    b.turnLog.unshift(mon.name+' 為 '+ally.name+' 治療了 '+heal+' HP！');
+    return true;
+  }
+  if(decision.action==='cleanse' && decision.target){
+    const ally = decision.target;
+    ally.status = null; ally.statusTurns = 0;
+    ally.stunnedTurns = 0; ally.skipTurn = false;
+    b.turnLog.unshift(mon.name+' 淨化了 '+ally.name+' 的異常！');
+    return true;
+  }
+  if(decision.action==='buff_atk' && decision.target){
+    const ally = decision.target;
+    ally.atk = Math.round(num(ally.atk,1) * 1.15);
+    b.turnLog.unshift(mon.name+' 鼓舞了 '+ally.name+'！（攻擊提升）');
+    return true;
+  }
+  if(decision.action==='guard'){
+    mon._guardTurns = 2;
+    mon.def = Math.round(num(mon.def,0) * 1.25);
+    mon.taunting = true;
+    if(typeof bbDeclareGuard === 'function') bbDeclareGuard(b, mon);
+    b.turnLog.unshift('🛡️ '+mon.name+' 舉起盾牌，嘲諷並守護隊友！');
+    return true;
+  }
+  if(decision.action==='war_shout'){
+    if(typeof bbWarShout === 'function') bbWarShout(b, mon, 1.10);
+    else b._rivalShout = true;
+    b.turnLog.unshift('📣 '+mon.name+' 發出戰吼！敵隊攻擊暫時強化！');
+    return true;
+  }
+  if(decision.action==='aoe'){
+    b.turnLog.unshift(mon.name+' 施放範圍術！');
+    aliveParty.forEach(tg=> hit(tg, 0.70, '範圍術'));
+    return true;
+  }
+  if(decision.action==='hex' && decision.target){
+    const tg = decision.target;
+    hit(tg, 0.55, '咒術');
+    if(Math.random()<0.40){
+      tg.skipTurn = true;
+      b.turnLog.unshift(tg.name+' 被咒術干擾，下回合行動不穩！');
+    }
+    return true;
+  }
+  if(decision.action==='steal' && decision.target){
+    const g = Math.min(num(S.hero.gold,0), rint(Math.random, 8, 22));
+    if(g>0){ S.hero.gold -= g; b.turnLog.unshift(mon.name+' 偷走了 '+g+' 金幣！'); }
+    else b.turnLog.unshift(mon.name+' 想偷金，但你身無分文。');
+    hit(decision.target, 0.50, '順手刺');
+    return true;
+  }
+  if(decision.action==='poison_stab' && decision.target){
+    hit(decision.target, 0.85, '毒刃');
+    decision.target.status = 'poison';
+    decision.target.statusTurns = Math.max(num(decision.target.statusTurns,0), 3);
+    b.turnLog.unshift(decision.target.name+' 中毒了！');
+    return true;
+  }
+  if(decision.action==='double_strike' && decision.target){
+    b.turnLog.unshift(mon.name+' 使出連擊！');
+    hit(decision.target, 0.70, '連擊');
+    if(decision.target.hp>0) hit(decision.target, 0.55, '追擊');
+    return true;
+  }
+  if(decision.action==='aimed_shot' && decision.target){
+    hit(decision.target, 1.25, '瞄準射擊');
+    return true;
+  }
+  if(decision.action==='execute' && decision.target){
+    hit(decision.target, 1.60, '處決');
+    return true;
+  }
+  if(decision.action==='call_focus' && decision.target){
+    if(typeof bbCallFocus === 'function') bbCallFocus(b, decision.target, mon);
+    else b._rivalFocusUid = decision.target.uid;
+    b.turnLog.unshift('🎯 '+mon.name+' 示意集火 → '+decision.target.name+'！');
+    hit(decision.target, 0.90, '起手');
+    return true;
+  }
+  return false; // attack 落到預設普攻
+}
+
 function monsterAct(mon){
   const b=S.battle;
   runBossMechanic(mon, b);
   const aliveParty = S.party.filter(m=>m.hp>0);
   if(aliveParty.length===0) return;
+
+  if(mon.isRival && typeof rivalAIDecide === 'function'){
+    const decision = rivalAIDecide(mon, aliveParty);
+    if(rivalAIExecute(mon, decision, aliveParty)){
+      if(typeof checkBattleEnd==='function') checkBattleEnd();
+      return;
+    }
+    if(decision && decision.target) mon._aiTarget = decision.target;
+  }
 
   const attackOnce = (target)=>{
     let atk = Math.max(1, num(effectiveMonAtk(mon), 1));
@@ -5043,6 +5531,7 @@ function checkBattleEnd(){
       b.turnLog.unshift('=== 戰鬥勝利！ ===');
       let dropped=[];
       b.monsters.forEach(m=>{
+        if(m._fled) return; // 逃脫不掉落
         const affixCount = m.affixes ? m.affixes.length : 0;
         let dropChance = m.boss?1:(m.elite?0.55:(m.tier>=3?0.5:0.28)) + affixCount*0.08;
         if(m.isRival){
@@ -5903,7 +6392,7 @@ function bindBattle(){
   processBattleFx();
   b.monsters.forEach((m,i)=>{
     if(m.isRival){
-      queueSprite('mon-'+i, m.seed||m.name, memberPalette({name:m.name})||PALETTES.beast, 16, {kind:'human'});
+      queueSprite('mon-'+i, m.seed||m.name, memberPalette({name:m.name})||PALETTES.beast, 16, {kind:'human', gender: m.gender || guessGenderFromName(m.name)});
     } else {
       queueSprite('mon-'+i, m.seed||m.name, PALETTES[m.type]||PALETTES.beast, 16, {kind:'monster', type:m.type});
     }
