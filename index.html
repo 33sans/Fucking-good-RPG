@@ -1767,16 +1767,22 @@ function formatMonsterName(rank, baseName){
 function rollMonsterRank(avgLevel, rng){
   rng = rng || Math.random;
   const lv = num(avgLevel, 1);
-  // 5 等前只出普通怪；精英及以上自 5 等起解鎖
+  // 僅用於「非 Boss」普通遇敵的強化階；Boss 戰不走此函式
   if(lv < 5) return 'normal';
-  const w = [
-    {id:'normal', w: 52},
-    {id:'elite',  w: lv>=5  ? (lv>=8 ? 20 : 14) : 0},
-    {id:'veteran',w: lv>=14 ? 12 : 0},
-    {id:'refined',w: lv>=22 ? 9  : 0},
-    {id:'king',   w: lv>=32 ? 4.5: 0},
-    {id:'emperor',w: lv>=42 ? 2.2: 0}
-  ].filter(x=>x.w>0);
+  let w;
+  if(lv <= 7){
+    w = [{id:'normal',w:95},{id:'elite',w:5}];
+  } else if(lv <= 13){
+    w = [{id:'normal',w:80},{id:'elite',w:20}];
+  } else if(lv <= 21){
+    w = [{id:'normal',w:80},{id:'elite',w:15},{id:'veteran',w:5}];
+  } else if(lv <= 31){
+    w = [{id:'normal',w:65},{id:'elite',w:20},{id:'veteran',w:10},{id:'refined',w:5}];
+  } else if(lv <= 41){
+    w = [{id:'normal',w:60},{id:'elite',w:15},{id:'veteran',w:10},{id:'refined',w:12},{id:'king',w:3}];
+  } else {
+    w = [{id:'normal',w:64},{id:'elite',w:15},{id:'veteran',w:9},{id:'refined',w:7},{id:'king',w:4},{id:'emperor',w:1}];
+  }
   return weightedChoice(rng, w.map(x=>({item:x.id, w:x.w})));
 }
 
@@ -1836,10 +1842,11 @@ function makeMonster(tmpl, playerLevel, rng, opts){
   }
   if(boss){
     // Boss：血厚、攻高；靠機制+持續壓力取勝
-    maxHp *= 4.20;
-    atk   *= 1.55;
-    def   *= 1.55;
-    exp   *= 4.50;
+    // 血攻防相對前版再 ×0.65（下降 35%）；經驗 ×1.20（提高 20%）
+    maxHp *= 4.20 * 0.65;
+    atk   *= 1.55 * 0.65;
+    def   *= 1.55 * 0.65;
+    exp   *= 4.50 * 1.20;
     gold  *= 3.80;
     spd    = Math.round(spd * 1.10);
   }
@@ -1889,14 +1896,12 @@ function makeMonster(tmpl, playerLevel, rng, opts){
       mon.hp = Math.min(mon.hp, mon.maxHp);
     }
   } else {
-    // 魔王血量：50 等必須明顯超過 30000，並隨等級再拉高
-    // 曲線：lv50 ≈ 36000+、lv60 ≈ 48000+、lv80 ≈ 78000+
-    const bossFloor = Math.round(12000 + lvl * lvl * 9.6); // 50→36000, 60→46600
-    const scaled = Math.round(num(mon.maxHp, 1) * 8.5);
+    // 魔王血量：再整體 ×0.65（血攻防下降 35%）
+    const bossFloor = Math.round((12000 + lvl * lvl * 9.6) * 0.65);
+    const scaled = Math.round(num(mon.maxHp, 1) * 8.5); // maxHp 已含 0.65
     mon.maxHp = Math.max(bossFloor, scaled);
     mon.hp = mon.maxHp;
-    // Boss 攻防再拉一檔，避免只是血海沙包
-    mon.atk = Math.max(1, Math.round(num(mon.atk, 1) * 1.35));
+    mon.atk = Math.max(1, Math.round(num(mon.atk, 1) * 1.35)); // atk 已含 0.65
     mon.def = Math.max(0, Math.round(num(mon.def, 0) * 1.40));
     mon.baseAtk = num(mon.atk, 1);
     mon.baseDef = num(mon.def, 0);
@@ -3948,6 +3953,103 @@ function routeHome(){
 
 /* ===== 07-combat.js ===== */
 /* ============ 戰鬥系統 ============ */
+
+/* ============ 敵對冒險家 ============ */
+const RIVAL_TIERS = [
+  {id:'nobody',  name:'無名',     mult:1.00, w:50, minLv:5},
+  {id:'known',   name:'聞名',     mult:1.22, w:28, minLv:12},
+  {id:'infamous',name:'惡名',     mult:1.48, w:15, minLv:22},
+  {id:'legend',  name:'傳奇浪人', mult:1.75, w:7,  minLv:35}
+];
+const RIVAL_TEAM_PREFIX = ['灰燼','斷橋','夜行','鏽牙','北風','黑沼','赤刃','沉鷗','棄誓','流灰','刺骨','薄暮'];
+const RIVAL_TEAM_SUFFIX = ['刃','商隊','遊俠','傭兵','獵手','浪客','兄弟','結社','之牙','殘黨','旅團','影'];
+const RIVAL_FIRST = ['凱','羅','艾','瑪','雷','蘇','喬','莉','蓋','安','菲','德','娜','克','露','塔'];
+const RIVAL_SECOND = ['恩','克','拉','莎','德','莉','森','特','爾','娜','克','芙','恩','托','絲','文'];
+
+function rollRivalTier(avgLevel, rng){
+  rng = rng || Math.random;
+  const lv = num(avgLevel, 1);
+  const pool = RIVAL_TIERS.filter(x=> lv >= x.minLv).map(x=>({item:x, w:x.w}));
+  if(!pool.length) return RIVAL_TIERS[0];
+  return weightedChoice(rng, pool);
+}
+function rivalTeamSize(avgLevel, rng){
+  rng = rng || Math.random;
+  const lv = num(avgLevel, 1);
+  if(lv < 15) return 2;
+  if(lv < 30) return rng() < 0.55 ? 2 : 3;
+  if(lv < 45) return rng() < 0.40 ? 3 : 4;
+  return rng() < 0.30 ? 3 : 4;
+}
+function makeRivalName(rng){
+  return choice(rng, RIVAL_FIRST) + choice(rng, RIVAL_SECOND);
+}
+function makeRivalTeamName(rng){
+  return choice(rng, RIVAL_TEAM_PREFIX) + choice(rng, RIVAL_TEAM_SUFFIX);
+}
+function makeRivalAdventurer(avgLevel, rng, tier, teamName){
+  rng = rng || Math.random;
+  tier = tier || RIVAL_TIERS[0];
+  const lv = clamp(num(avgLevel, 1) + rint(rng, -1, 1), 1, MAX_PLAYER_LEVEL);
+  const mult = num(tier.mult, 1);
+  let maxHp = (90 + lv * 20 + lv * lv * 0.04) * mult;
+  let atk   = (12 + lv * 1.60 + 3) * mult;
+  let def   = (6 + lv * 0.90 + 2) * mult;
+  let spd   = Math.round((8 + lv * 0.25) * (0.95 + rng() * 0.12));
+  let exp   = (40 + lv * 7) * mult * 1.35;
+  let gold  = (28 + lv * 4.5) * mult * 1.50;
+  const name = makeRivalName(rng);
+  const roles = ['戰士','盜賊','法師','祭司','弓手','騎士'];
+  const role = choice(rng, roles);
+  if(role==='戰士' || role==='騎士'){ maxHp*=1.15; def*=1.12; atk*=1.05; }
+  if(role==='盜賊' || role==='弓手'){ spd=Math.round(spd*1.15); atk*=1.10; maxHp*=0.90; }
+  if(role==='法師'){ atk*=1.12; def*=0.88; maxHp*=0.92; }
+  if(role==='祭司'){ maxHp*=1.08; def*=1.05; atk*=0.90; }
+  const mon = {
+    name: name, baseName: name, type:'beast', tier:1, boss:false, elite:false, rank:'normal',
+    isRival:true, rivalTier:tier.id, rivalTierName:tier.name, rivalRole:role, rivalTeam:teamName||'',
+    level:lv, hp:0, maxHp:0, atk:0, def:0, spd:0, exp:0, gold:0,
+    seed:'rival_'+name+'_'+Math.floor(rng()*9999),
+    status:null, statusTurns:0, rewarded:false,
+    hasRegen: role==='祭司' && rng()<0.5, regenRate:0.04,
+    affixes:[], affixNames:[tier.name, role], mech:null, bossTurns:0
+  };
+  mon.maxHp = Math.max(30, Math.round(maxHp));
+  mon.hp = mon.maxHp;
+  mon.atk = Math.max(1, Math.round(atk));
+  mon.def = Math.max(0, Math.round(def));
+  mon.spd = Math.max(1, spd);
+  mon.exp = Math.max(1, Math.round(exp));
+  mon.gold = Math.max(0, Math.round(gold));
+  return mon;
+}
+function startRivalBattle(){
+  const rng = Math.random;
+  const avgLevel = avgPartyLevel();
+  if(avgLevel < 5){ startBattle(); return; }
+  const tier = rollRivalTier(avgLevel, rng);
+  const n = rivalTeamSize(avgLevel, rng);
+  const teamName = makeRivalTeamName(rng);
+  const monsters = [];
+  for(let i=0;i<n;i++) monsters.push(makeRivalAdventurer(avgLevel, rng, tier, teamName));
+  if(monsters[0]) monsters[0].name = monsters[0].name + '·長';
+  S.battle = {
+    monsters,
+    turnLog: ['遭遇敵對冒險家「'+teamName+'」（'+tier.name+'）！共 '+n+' 人。'],
+    selectedActor:null, selectedAction:null, over:false, win:null,
+    order: buildTurnOrder(monsters), turnIndex:0, roundNum:1,
+    bossMinionCount:0, lastMinionRefillRound:0,
+    isRivalBattle:true, rivalTeamName:teamName, rivalTierName:tier.name
+  };
+  S.screen = 'battle';
+  S.log.unshift('⚔️ 與敵對冒險家「'+teamName+'」爆發衝突！');
+  const first = S.battle.order[0];
+  if(first && first.type==='monster'){
+    setTimeout(()=>{ if(S.battle && !S.battle.over){ advanceBattleTurn(true); render(); } }, 400);
+  }
+  render();
+}
+
 function startBattle(){
   const rng = Math.random;
   const avgLevel = avgPartyLevel();
@@ -4001,14 +4103,18 @@ function startBattle(){
         monsters.push(makeMonster(tm, avgLevel, rng, { rank:'king' }));
       }
     } else {
+      // 每場最多隻數：1-7→3、8-21→4、22-31→5、32-41→6、42+→上限
       let maxC = 3;
-      if(avgLevel>=6) maxC = 4;
-      if(avgLevel>=14) maxC = 5;
-      if(avgLevel>=26) maxC = 6;
-      if(avgLevel>=38) maxC = Math.max(6, (typeof MAX_MONSTER_PARTY!=='undefined'?MAX_MONSTER_PARTY:6));
+      if(avgLevel>=8) maxC = 4;
+      if(avgLevel>=22) maxC = 5;
+      if(avgLevel>=32) maxC = 6;
+      if(avgLevel>=42) maxC = Math.max(6, (typeof MAX_MONSTER_PARTY!=='undefined'?MAX_MONSTER_PARTY:6));
       const weights = [];
-      for(let c=2;c<=maxC;c++) weights.push({item:c, w: Math.max(1, (maxC-c+2)*2)});
-      weights.forEach(w=>{ if(w.item>=3 && w.item<=4) w.w *= 1.4; });
+      // 至少 1 隻；偏少到中等，不全滿編
+      for(let c=1;c<=maxC;c++) weights.push({item:c, w: Math.max(1, (maxC-c+2)*2)});
+      if(maxC>=3){
+        weights.forEach(w=>{ if(w.item===maxC) w.w *= 0.85; if(w.item===2||w.item===3) w.w *= 1.15; });
+      }
       let count = weightedChoice(rng, weights);
       monsters.push(makeMonster(leadTmpl, avgLevel, rng, { rank: leadRank }));
       for(let i=1;i<count;i++){
@@ -4694,10 +4800,12 @@ function monsterAct(mon){
     }
   };
 
-  // 選目標：嘲諷（鐵志可無視）
+  // 選目標：AI 指定 > 嘲諷（鐵志可無視）> 隨機
   let tauntTarget = aliveParty.find(m=>m.taunting);
   if(tauntTarget && mon.ignoreTaunt && Math.random() < mon.ignoreTaunt) tauntTarget = null;
-  const mainTarget = tauntTarget || choice(Math.random, aliveParty);
+  let aiTarget = mon._aiTarget && mon._aiTarget.hp>0 ? mon._aiTarget : null;
+  mon._aiTarget = null;
+  const mainTarget = aiTarget || tauntTarget || choice(Math.random, aliveParty);
 
   if(mon.aoeAtk && Math.random() < mon.aoeAtk){
     b.turnLog.unshift(mon.name+' 使出橫掃！');
@@ -4928,14 +5036,29 @@ function checkBattleEnd(){
       let dropped=[];
       b.monsters.forEach(m=>{
         const affixCount = m.affixes ? m.affixes.length : 0;
-        const dropChance = m.boss?1:(m.elite?0.55:(m.tier>=3?0.5:0.28)) + affixCount*0.08;
+        let dropChance = m.boss?1:(m.elite?0.55:(m.tier>=3?0.5:0.28)) + affixCount*0.08;
+        if(m.isRival){
+          // 敵對冒險家：每人 35% 掉裝備；檔位越高越高
+          dropChance = 0.35;
+          if(m.rivalTier==='known') dropChance=0.42;
+          if(m.rivalTier==='infamous') dropChance=0.50;
+          if(m.rivalTier==='legend') dropChance=0.60;
+        }
         if(Math.random()<dropChance){
           let floor = m.boss ? 'epic' : (m.elite ? 'rare' : null);
+          if(m.isRival){
+            floor = m.rivalTier==='legend' ? 'epic' : (m.rivalTier==='infamous' ? 'rare' : (m.rivalTier==='known' ? 'uncommon' : null));
+          }
           if(affixCount>=3) floor='legend';
           else if(affixCount>=2) floor= floor || 'epic';
           else if(affixCount>=1 && !floor) floor='rare';
           const item = rollEquip(Math.random, floor, m.level);
-          if(addToInventory(item)) dropped.push(item.name);
+          // 敵對冒險家不掉唯一（避免撞唯一規則）
+          if(item && (item.isUnique || item.rarity==='unique')){
+            /* skip unique, re-roll once as non-unique floor */
+          } else if(item && addToInventory(item)){
+            dropped.push(item.name + (m.isRival ? '（繳獲）' : ''));
+          }
         }
       });
       if(dropped.length) b.turnLog.unshift('掉落裝備：'+dropped.join('、'));
@@ -4957,10 +5080,13 @@ function explore(){
   S.daysSurvived++;
   const rng=Math.random;
   const roll = rng();
-  // 遇敵 52%／事件 33%／平靜 15%
-  if(roll < 0.52){
+  const avgLv = avgPartyLevel();
+  // 遇敵 48%／敵對冒險家 7%（需≥5等）／事件 32%／平靜 13%
+  if(roll < 0.48){
     startBattle();
-  } else if(roll < 0.85){
+  } else if(roll < 0.55 && avgLv >= 5){
+    startRivalBattle();
+  } else if(roll < 0.87){
     const pool = S.party.length>=4 ? EVENTS.filter(e=>e.id!=='wanderer') : EVENTS;
     const ev = choice(rng, pool);
     S.event = ev;
@@ -5590,6 +5716,7 @@ function formatMonsterAffixDisplay(m){
   return { line, full, count: (emp?1:0)+rest.length };
 }
 function formatMonsterRankTag(m){
+  if(m.isRival) return (m.rivalTierName || '敵對') + '冒險家';
   if(m.boss) return 'Boss';
   if(m.isBossMinion) return '眷屬';
   const r = m.rank || (m.elite ? 'elite' : 'normal');
@@ -5615,7 +5742,7 @@ function renderBattle(){
     return `
     <div class="monster-box ${dead?'dead':'target-selectable'}" data-tidx="${i}">
       <canvas class="sprite" id="mon-${i}" width="48" height="48"></canvas>
-      <div class="monster-name">${m.boss?'👑 ':''}${esc(m.name)} Lv.${m.level}</div>
+      <div class="monster-name">${m.boss?'👑 ':(m.isRival?'⚔️ ':'')}${esc(m.name)} Lv.${m.level}</div>
       ${eliteTag}${affixTags}${markTag}
       <div class="bar-wrap" style="width:70px;margin:2px auto;"><div class="bar bar-anim" style="width:${hpPct}%;background:var(--hp)"></div></div>
       <div class="small">${m.hp}/${m.maxHp}</div>
@@ -5738,7 +5865,13 @@ function processBattleFx(){
 function bindBattle(){
   const b=S.battle;
   processBattleFx();
-  b.monsters.forEach((m,i)=> queueSprite('mon-'+i, m.seed||m.name, PALETTES[m.type]||PALETTES.beast, 16, {kind:'monster', type:m.type}));
+  b.monsters.forEach((m,i)=>{
+    if(m.isRival){
+      queueSprite('mon-'+i, m.seed||m.name, memberPalette({name:m.name})||PALETTES.beast, 16, {kind:'human'});
+    } else {
+      queueSprite('mon-'+i, m.seed||m.name, PALETTES[m.type]||PALETTES.beast, 16, {kind:'monster', type:m.type});
+    }
+  });
   S.party.forEach((m,i)=> queueSprite('bp-'+i, (m.name||'hero')+'_'+m.uid, memberPalette(m), 14, {kind:'human'}));
   const backBtn = document.getElementById('back-hub');
   if(backBtn) backBtn.addEventListener('click', ()=>{ routeHome(); render(); });
