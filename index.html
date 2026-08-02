@@ -381,6 +381,14 @@ canvas.sprite{image-rendering:pixelated;background:#0a0807;border:1px solid var(
 .item-modal .im-actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
 .item-modal .im-actions .btn{flex:1; min-width:110px; text-align:center;}
 .item-modal .im-close{position:absolute; right:10px; top:8px;}
+.bp-cell{position:relative;}
+.bp-cell .quick-out{
+  position:absolute;right:2px;bottom:2px;z-index:2;
+  padding:1px 5px;font-size:10px;line-height:1.3;min-height:0;
+  border:1px solid var(--gold-dim);background:rgba(20,14,10,.88);color:var(--gold);
+  border-radius:3px;cursor:pointer;
+}
+.bp-cell .quick-out:active{background:var(--gold);color:#1a1008;}
 .mon-affix-line{max-width:100px;margin:0 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:help;font-size:10px;}
 @media (min-width:600px){
   .item-modal-mask{align-items:center;}
@@ -5172,8 +5180,36 @@ function withdrawFromWarehouse(uid){
   }
   S.warehouse = S.warehouse.filter(i=>i.uid!==uid);
   S.inventory.push(item);
-  if(S.log) S.log.unshift('已從倉庫取出 '+item.name+'。');
+  S.invSelectedItemUid = null;
+  S.itemModalUid = null;
+  if(S.log) S.log.unshift('已從倉庫取出：'+item.name+'。');
   return true;
+}
+/** 一鍵取出：能裝多少拿多少，直到背包滿或倉庫空 */
+function withdrawAllFromWarehouse(){
+  ensureWarehouse();
+  if(!S.warehouse.length){
+    if(S.log) S.log.unshift('倉庫是空的。');
+    return 0;
+  }
+  let n = 0;
+  // 從頭依序取出，背包滿則停
+  while(S.warehouse.length > 0 && backpackHasSpace(1)){
+    const item = S.warehouse[0];
+    S.warehouse.shift();
+    S.inventory.push(item);
+    n++;
+  }
+  S.invSelectedItemUid = null;
+  S.itemModalUid = null;
+  if(n === 0){
+    if(S.log) S.log.unshift('背包已滿（'+BACKPACK_CAP+'），無法取出。');
+  } else if(S.warehouse.length > 0){
+    if(S.log) S.log.unshift('一鍵取出 '+n+' 件；背包已滿，倉庫尚餘 '+S.warehouse.length+' 件。');
+  } else {
+    if(S.log) S.log.unshift('一鍵取出全部 '+n+' 件裝備。');
+  }
+  return n;
 }
 
 /* ============ 裝備 / 背包 ============ */
@@ -6107,10 +6143,14 @@ function renderInventory(){
       const meta = invCompareMeta(selMember, item);
       const tag = filter==='warehouse' ? '<span class="tag fit">倉</span>' : (meta.empty ? '<span class="tag fit">裝</span>' : (meta.upgrade ? '<span class="tag up">↑</span>' : ''));
       const canvasId = filter==='warehouse' ? ('wh-'+i) : ('inv-'+realIdx);
-      const uidAttr = filter==='warehouse' ? `data-invuid="${item.uid}"` : `data-invuid="${item.uid}"`;
+      const uidAttr = `data-invuid="${item.uid}"`;
+      const quickOut = filter==='warehouse'
+        ? `<button type="button" class="quick-out" data-withdraw="${item.uid}" title="一件取出到背包">取</button>`
+        : '';
       cells.push(`<div class="bp-cell ${sel}" ${uidAttr} title="${esc(item.name)}">
         ${tag}
         <canvas class="sprite" id="${canvasId}" width="40" height="40"></canvas>
+        ${quickOut}
       </div>`);
     }
   }
@@ -6152,7 +6192,7 @@ function renderInventory(){
         ${onDoll
           ? `<button class="btn" data-unequip="${selItem.slot}">卸下</button>`
           : (filter==='warehouse'
-              ? `<button class="btn gold" data-withdraw="${selItem.uid}">取出到背包</button>`
+              ? `<button class="btn gold" data-withdraw="${selItem.uid}">一件取出</button>`
               : `<button class="btn gold" data-equip="${selItem.uid}">裝備 → ${esc(selMember.name)}</button>
                  <button class="btn" data-deposit="${selItem.uid}">存入倉庫</button>`)}
       </div>`;
@@ -6196,7 +6236,7 @@ function renderInventory(){
             ${onDoll
               ? `<button class="btn" data-unequip="${mItem.slot}">卸下</button>`
               : (filter==='warehouse'
-                  ? `<button class="btn gold" data-withdraw="${mItem.uid}">取出到背包</button>`
+                  ? `<button class="btn gold" data-withdraw="${mItem.uid}">一件取出</button>`
                   : `<button class="btn gold" data-equip="${mItem.uid}" ${uniqueBlocked?'disabled':''}>裝備 → ${esc(selMember.name)}</button>
                      <button class="btn" data-deposit="${mItem.uid}">存入倉庫</button>`)}
             <button class="btn" id="item-modal-close-2">關閉</button>
@@ -6249,11 +6289,12 @@ function renderInventory(){
           <button class="btn" data-invsort="name">名稱</button>
         </div>
         ${filter==='warehouse' ? `
-        <div class="bp-toolbar" style="justify-content:center;align-items:center;gap:8px;">
+        <div class="bp-toolbar" style="justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;">
           <button class="btn" id="ware-page-prev" ${warePage<=0?'disabled':''}>◀ 上一頁</button>
           <span class="small">倉庫第 <b>${warePage+1}</b> / ${wareTotalPages} 頁</span>
           <span class="small">（${filtered.length}/${WAREHOUSE_CAP}）</span>
           <button class="btn" id="ware-page-next" ${warePage>=wareTotalPages-1?'disabled':''}>下一頁 ▶</button>
+          <button class="btn gold" id="ware-withdraw-all" ${(S.warehouse&&S.warehouse.length)?'' :'disabled'}>一鍵取出</button>
         </div>` : ''}
         <div class="bp-grid">${cells.join('')}</div>
       </div>
@@ -6386,11 +6427,18 @@ function bindInventory(){
     S.invSelectedItemUid = null;
     render();
   }));
-  document.querySelectorAll('[data-withdraw]').forEach(btn=> btn.addEventListener('click', ()=>{
+  document.querySelectorAll('[data-withdraw]').forEach(btn=> btn.addEventListener('click', (e)=>{
+    e.preventDefault(); e.stopPropagation();
     withdrawFromWarehouse(btn.dataset.withdraw);
     S.invSelectedItemUid = null;
+    S.itemModalUid = null;
     render();
   }));
+  const allOut = document.getElementById('ware-withdraw-all');
+  if(allOut) allOut.addEventListener('click', ()=>{
+    withdrawAllFromWarehouse();
+    render();
+  });
   const prevP = document.getElementById('ware-page-prev');
   const nextP = document.getElementById('ware-page-next');
   if(prevP) prevP.addEventListener('click', ()=>{
