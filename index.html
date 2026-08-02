@@ -739,10 +739,10 @@ function pxDot(ctx, cell, x,y, color){ pxRect(ctx, cell, x,y, 1,1, color); }
 
 /** 依名字判斷性別（female / male） */
 const FEMALE_NAME_SET = new Set([
-  '艾莉絲','露娜','薇拉','希兒','陳美蘭','謝金燕','葉玫瑰','春艷','吳卓源','蔡英文',
-  '厚片女孩','女拳主義者','玫','林萌','栗子','芋比','gummy B','KITCAT','小卡比'
+  '艾莉絲','露娜','薇拉','希兒','陳美蘭','謝金燕','葉玫瑰','吳卓源','蔡英文',
+  '厚片女孩','女拳主義者','玫','芋比','KITCAT','駱楓','小翠兒','中壢樹屋','003','早餐吃到飽','王媽媽','LEGGY','LUCY','垮嗑波波','法拉利姊','婉晴','夏沐','BABY CINDY','C.HOLLY'
 ]);
-const MALE_NAME_HINTS = /先生|大叔|大哥|小子|肥哥|哥$|弟$|叔|伯|漢|君|雄|強|偉|傑|俊|鋒|龍|虎|john|jimmy|rex|barry|george/i;
+const MALE_NAME_HINTS = /先生|大叔|大哥|小子|肥哥|哥$|弟$|春艷|林萌|叔|伯|漢|君|雄|強|偉|傑|俊|鋒|龍|虎|john|jimmy|rex|barry|george/i;
 
 function extractNameFromSeed(seed){
   const s = String(seed||'');
@@ -754,11 +754,11 @@ function extractNameFromSeed(seed){
 const MALE_NAME_SET = new Set([
   '凱因','托爾加','布蘭登','葛瑞姆','喬治','史丹利','喬','羅傑','惡魔貓','比利','西薩','熊信寬','Toyz',
   'jay chou','BR','山豬','蝦味先','蛋頭','禁藥王','陳老師','潮州土狗','godone','majin','玉麟','天峰',
-  '王希銘','迪拉胖','YOUND LEE','潤少','趙翊帆','李權哲','YB','有錢人','前人','不公們','沒人能殺死的鬼','費玉清',
+  '王希銘','迪拉胖','YOUNG LEE','潤少','趙翊帆','李權哲','YB','有錢人','前人','不公們','沒人能殺死的鬼','費玉清',
   '阿兄喬治','QUANZO','O.DKIZZYA','REX','macdella','eyeballray','SheATH','yappy','drew','呂士軒','ANBA',
   '林聖夫','約翰','rgry','Barry chen','熱狗','大隻','小人','陳星翰','朱軒羊','公園','凡尼師男孩','馬英九',
   '消防隊的楊先生','水哥DJDIDILONG','DIE4REALLL','NGKE配菜','KAPPERKIRA','LOKI LU','JIMMY','33','死肥胖哥',
-  '修斗','駱楓','林俊傑','6YI7','謝欣達'
+  '修斗','林俊傑','6YI7','謝欣達','gummy B','栗子','林萌','小卡比','春艷','張家航','國棟','力量人','蘇志翔','小六','六嘆','八毛','朱利安','瑞奇','泡泡','拉黑','藍迪','賽勒斯','柯瑞','催佛','砸瓶死小孩','鶴','OZI','周湯豪','雷擎','是GAY','LOSTY','曾國城','古蹟','沈玉琳','潘若迪','保母','超負荷','抽菸'
 ]);
 function guessGenderFromName(name){
   const n = String(name||'').trim();
@@ -767,8 +767,8 @@ function guessGenderFromName(name){
   if(FEMALE_NAME_SET.has(n) || FEMALE_NAME_SET.has(low)) return 'female';
   if(MALE_NAME_SET.has(n) || MALE_NAME_SET.has(low)) return 'male';
   // 明確女關鍵字（整詞／強特徵）
-  if(/女|姐|妹|娘|媽|小姐|女孩|夫人|玫瑰|春艷|女拳/.test(n)) return 'female';
-  if(/^(艾莉|露娜|薇拉|希兒|美蘭|金燕|林萌)/.test(n)) return 'female';
+  if(/女|姐|妹|娘|媽|小姐|女孩|夫人|玫瑰|女拳)/.test(n)) return 'female';
+  if(/^(艾莉|露娜|薇拉|希兒|美蘭|金燕)/.test(n)) return 'female';
   if(/\b(alice|luna|vera|anna|amy|lisa|mary|jenny|lily|rose|gummy)\b/i.test(n)) return 'female';
   // 男關鍵字
   if(MALE_NAME_HINTS.test(n)) return 'male';
