@@ -129,6 +129,125 @@ body{
 .btn:disabled{opacity:.35;cursor:not-allowed;transform:none;}
 .grid{display:grid;gap:10px;}
 .party-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));}
+
+/* 主畫面隊伍卡：預設更緊湊，減少需滑動才能按到的按鈕 */
+
+/* 酒館：8 人兩排 */
+
+/* 商店：酒館風格卡片格 */
+.shop-grid{
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0,1fr));
+  gap:6px;
+  margin:6px 0;
+}
+.shop-card{
+  background:var(--bg-panel-2);
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:6px 4px;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  min-width:0;
+}
+.shop-card.sold{opacity:.4;}
+.shop-card canvas.sprite{width:36px!important;height:36px!important;}
+.shop-icon{font-size:22px;line-height:1.2;}
+.shop-name{font-size:11px;font-weight:bold;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.shop-stats{font-size:9px;color:var(--text-dim);line-height:1.25;max-width:100%;max-height:2.6em;overflow:hidden;word-break:break-all;}
+.shop-card .btn-compact{padding:4px 6px;min-height:28px;font-size:11px;width:100%;}
+
+.tavern-grid{
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0,1fr));
+  gap:6px;
+  margin:6px 0;
+}
+.tavern-card{
+  background:var(--bg-panel-2);
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:6px 4px;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  min-width:0;
+}
+.tavern-card.recruited{opacity:.45;}
+.tavern-card canvas.sprite{width:36px!important;height:36px!important;}
+.tavern-name{font-size:11px;font-weight:bold;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tavern-tend{font-size:9px;color:var(--gold);line-height:1.2;}
+.tavern-card .btn-compact{padding:4px 6px;min-height:28px;font-size:11px;width:100%;}
+
+/* 過肩對話場景 */
+.talk-scene{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  align-items:end;
+  min-height:160px;
+  margin:8px 0;
+  padding:10px;
+  background:linear-gradient(180deg, rgba(20,30,40,.9), rgba(10,14,20,.95));
+  border:1px solid var(--line);
+  border-radius:8px;
+  position:relative;
+  overflow:hidden;
+}
+.talk-scene .talk-hero{
+  display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;
+}
+.talk-scene .talk-partner{
+  display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;
+}
+.talk-scene canvas.sprite{width:72px!important;height:72px!important;image-rendering:pixelated;}
+.talk-scene .talk-hero canvas{transform:scaleX(-1);opacity:.92;} /* 背影感：水平翻轉 */
+.talk-label{font-size:10px;color:var(--text-dim);margin-top:4px;}
+.talk-dialog{
+  background:var(--bg-panel-2);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:10px 12px;
+  margin-top:8px;
+}
+.talk-dialog .line{margin:6px 0;line-height:1.45;}
+.talk-dialog .speaker{color:var(--gold);font-weight:bold;}
+.talk-choices{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;justify-content:center;}
+.complicity-bar{height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin-top:3px;}
+.complicity-bar > i{display:block;height:100%;background:linear-gradient(90deg,#6af,#d6f);width:0%;}
+
+.hub-party-grid{
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:6px;
+  margin:4px 0 2px;
+}
+.hub-party-grid .member-card-compact{
+  padding:4px 6px;
+  gap:6px;
+  border-left-width:2px;
+}
+.hub-party-grid .member-card-compact canvas.sprite{
+  width:28px !important;
+  height:28px !important;
+}
+.hub-party-grid .member-card-compact .member-name{
+  font-size:11px;
+  line-height:1.2;
+}
+.hub-party-grid .member-card-compact .compact-stats{
+  font-size:9px;
+}
+.hub-party-grid .member-card-compact .bar-wrap{height:5px;margin:1px 0;}
+.hub-party-grid .member-card-compact .bar-wrap-mp{height:3px;}
+.hub-panel .btn-primary{margin-bottom:6px;}
+.hub-panel .nav-grid{margin-top:6px;}
+.hub-panel + .panel .log-box{height:88px;}
+
 .class-grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));}
 .class-card{
   background:var(--bg-panel-2);border:1px solid var(--line);border-top:2px solid transparent;
@@ -448,12 +567,81 @@ canvas.sprite{image-rendering:pixelated;background:#0a0807;border:1px solid var(
   }
   .btn-nav .nav-icon{font-size:26px;}
 
-  /* 隊伍卡片單欄（營地） */
-  .party-grid,
+  /* 主畫面隊伍：維持 2 欄緊湊卡，避免佔滿整屏 */
+
+
+  .shop-grid{grid-template-columns:repeat(4, minmax(0,1fr))!important;gap:4px!important;}
+  .shop-card{padding:4px 2px!important;}
+  .shop-card canvas.sprite{width:28px!important;height:28px!important;}
+  .shop-name{font-size:9px!important;}
+  .shop-card .btn-compact{padding:3px 2px!important;min-height:24px!important;font-size:10px!important;}
+
+  .tavern-grid{grid-template-columns:repeat(4, minmax(0,1fr))!important;gap:4px!important;}
+  .tavern-card{padding:4px 2px!important;}
+  .tavern-card canvas.sprite{width:28px!important;height:28px!important;}
+  .tavern-name{font-size:9px!important;}
+  .tavern-tend{font-size:8px!important;}
+  .tavern-card .btn-compact{padding:3px 2px!important;min-height:24px!important;font-size:10px!important;}
+  .talk-scene{min-height:130px;padding:8px;}
+  .talk-scene canvas.sprite{width:56px!important;height:56px!important;}
+
+  .hub-party-grid{
+    grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+    gap:4px !important;
+    margin:2px 0 4px !important;
+  }
+  .hub-party-grid .member-card-compact{
+    padding:3px 4px !important;
+    gap:4px !important;
+    flex-direction:row !important;
+    align-items:center !important;
+  }
+  .hub-party-grid .member-card-compact canvas.sprite{
+    width:24px !important;
+    height:24px !important;
+  }
+  .hub-party-grid .member-card-compact .member-name{font-size:10px !important;}
+  .hub-party-grid .member-card-compact .compact-stats{font-size:8px !important;}
+  .hub-party-grid .member-card-compact .small{font-size:8px !important;}
+
+  /* 非主畫面隊伍格（若有）仍可單欄 */
+  .party-grid:not(.hub-party-grid),
   .grid[style*="minmax(220px"],
   .grid[style*="minmax(200px"]{
     grid-template-columns:1fr !important;
   }
+
+  /* 主畫面按鈕區再壓高度，首屏可點到探索／導航 */
+  .hub-panel{padding:10px 8px !important;margin-bottom:6px !important;}
+  .hub-panel .topbar{margin-bottom:4px !important;gap:4px;}
+  .hub-panel .btn-primary{
+    padding:12px !important;
+    font-size:15px !important;
+    min-height:46px !important;
+    margin-bottom:4px !important;
+  }
+  .hub-panel .nav-grid,
+  .hub-panel .nav-grid-4{
+    gap:6px !important;
+    margin-top:6px !important;
+  }
+  .hub-panel .btn-nav{
+    padding:10px 6px !important;
+    font-size:12px !important;
+    min-height:56px !important;
+  }
+  .hub-panel .btn-nav .nav-icon{font-size:20px !important;}
+  .hub-panel .utility-row{margin-top:6px !important;gap:6px;}
+  .hub-panel .btn-compact{
+    padding:8px 6px !important;
+    font-size:12px !important;
+    min-height:40px !important;
+  }
+  .hub-panel + .panel{padding:10px 8px !important;margin-bottom:6px !important;}
+  .hub-panel + .panel .log-box{height:72px !important;}
+  .hub-panel + .panel .section-title{margin:0 0 4px !important;}
+  .title-bar{margin-bottom:6px !important;}
+
   /* 戰鬥角色卡：手機也盡量 4 欄 */
   .battle-party-grid{
     grid-template-columns:repeat(4, minmax(0, 1fr)) !important;
@@ -647,7 +835,7 @@ canvas.sprite{image-rendering:pixelated;background:#0a0807;border:1px solid var(
 <div id="app">
   <div class="title-bar">
     <h1 class="pixel-font">灰 燼 紀 元</h1>
-    <p>ASHFALL ERA · 像素文字RPG · <span id="game-version-label">v1.5.0</span></p>
+    <p>ASHFALL ERA · 像素文字RPG · <span id="game-version-label">v1.7.1</span></p>
   </div>
   <div id="screens"></div>
 </div>
@@ -1371,9 +1559,8 @@ function drawSprite(canvas, seed, palette, size, opts){
 }
 
 function drawEquipIcon(canvas, seed, kind, rarityColor){
-  const size=12, cell=Math.floor(96/size); // 較小緩衝區，仍保持像素感
+  const size=12, cell=Math.floor(96/size);
   canvas.width=size*cell; canvas.height=size*cell;
-  // 顯示尺寸交給 CSS；順便寫 style 避免被 width/height 屬性撐破格子
   canvas.style.width = '100%';
   canvas.style.height = 'auto';
   canvas.style.maxWidth = '40px';
@@ -1382,19 +1569,93 @@ function drawEquipIcon(canvas, seed, kind, rarityColor){
   canvas.style.imageRendering = 'pixelated';
   const ctx=canvas.getContext('2d');
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  const rng = mulberry32(hashStr(seed));
-  const base = ['#8b7355','#c9c2b0','#5a5470'];
-  const shapes = {
-    weapon: [[5,1],[6,1],[5,2],[6,2],[4,3],[5,3],[6,3],[7,3],[3,4],[4,4],[5,4],[6,4],[7,4],[8,4],[5,5],[6,5],[5,6],[6,6],[5,7],[6,7],[4,8],[5,8],[6,8],[7,8],[4,9],[7,9]],
-    armor: [[3,2],[4,2],[7,2],[8,2],[3,3],[4,3],[5,3],[6,3],[7,3],[8,3],[3,4],[4,4],[5,4],[6,4],[7,4],[8,4],[4,5],[5,5],[6,5],[7,5],[4,6],[5,6],[6,6],[7,6],[4,7],[7,7]],
-    accessory: [[5,2],[6,2],[4,3],[7,3],[4,4],[7,4],[5,5],[6,5],[5,6],[6,6],[4,7],[7,7],[5,8],[6,8]]
+  const rng = mulberry32(hashStr(String(seed||'')+'_'+String(kind||'')));
+  // 部位專用色調
+  const palettes = {
+    weapon:   ['#9a8a6a','#d4c4a0','#6a5a40'],
+    offhand:  ['#7a8a9a','#c0c8d0','#4a5a6a'],
+    head:     ['#b0a070','#e8d8a0','#6a6040'],
+    armor:    ['#6a7a8a','#a0b0c0','#3a4a5a'],
+    chest:    ['#6a7a8a','#a0b0c0','#3a4a5a'],
+    cape:     ['#6a4a7a','#a070b0','#3a2a4a'],
+    hands:    ['#8a7a5a','#c0b090','#5a4a30'],
+    feet:     ['#5a4a3a','#9a7a5a','#3a2a1a'],
+    accessory:['#c9a63f','#f0e0a0','#7a6020']
   };
-  const pts = shapes[kind]||shapes.weapon;
+  const base = palettes[kind] || palettes.weapon;
+  // 12x12 像素剪影（各部位明顯不同）
+  const shapes = {
+    // 長劍：垂直劍身 + 橫格 + 柄
+    weapon: [
+      [5,0],[6,0],[5,1],[6,1],[5,2],[6,2],[5,3],[6,3],[4,4],[5,4],[6,4],[7,4],
+      [3,5],[4,5],[5,5],[6,5],[7,5],[8,5],[5,6],[6,6],[5,7],[6,7],[5,8],[6,8],[5,9],[6,9],[5,10],[6,10]
+    ],
+    // 盾：圓角方盾
+    offhand: [
+      [4,1],[5,1],[6,1],[7,1],[3,2],[4,2],[5,2],[6,2],[7,2],[8,2],
+      [3,3],[4,3],[5,3],[6,3],[7,3],[8,3],[3,4],[4,4],[5,4],[6,4],[7,4],[8,4],
+      [3,5],[4,5],[5,5],[6,5],[7,5],[8,5],[4,6],[5,6],[6,6],[7,6],[5,7],[6,7]
+    ],
+    // 頭盔
+    head: [
+      [4,1],[5,1],[6,1],[7,1],[3,2],[4,2],[5,2],[6,2],[7,2],[8,2],
+      [3,3],[4,3],[7,3],[8,3],[3,4],[4,4],[5,4],[6,4],[7,4],[8,4],
+      [3,5],[4,5],[5,5],[6,5],[7,5],[8,5],[4,6],[7,6]
+    ],
+    // 胸甲
+    armor: [
+      [3,1],[4,1],[7,1],[8,1],[2,2],[3,2],[4,2],[5,2],[6,2],[7,2],[8,2],[9,2],
+      [2,3],[3,3],[4,3],[5,3],[6,3],[7,3],[8,3],[9,3],
+      [3,4],[4,4],[5,4],[6,4],[7,4],[8,4],[3,5],[4,5],[5,5],[6,5],[7,5],[8,5],
+      [3,6],[4,6],[7,6],[8,6],[3,7],[4,7],[7,7],[8,7]
+    ],
+    // 披風：肩+下垂布
+    cape: [
+      [2,1],[3,1],[4,1],[5,1],[6,1],[7,1],[8,1],[9,1],
+      [2,2],[3,2],[8,2],[9,2],[2,3],[3,3],[8,3],[9,3],
+      [2,4],[3,4],[8,4],[9,4],[3,5],[8,5],[3,6],[4,6],[7,6],[8,6],
+      [4,7],[5,7],[6,7],[7,7],[5,8],[6,8]
+    ],
+    // 手套
+    hands: [
+      [3,2],[4,2],[5,2],[6,2],[7,2],[8,2],
+      [2,3],[3,3],[4,3],[5,3],[6,3],[7,3],[8,3],[9,3],
+      [2,4],[3,4],[4,4],[5,4],[6,4],[7,4],[8,4],[9,4],
+      [3,5],[4,5],[5,5],[6,5],[7,5],[8,5],
+      [3,6],[4,6],[7,6],[8,6],[3,7],[4,7],[7,7],[8,7]
+    ],
+    // 靴子（側視）：明顯鞋底與筒
+    feet: [
+      [3,3],[4,3],[5,3],[6,3],[7,3],
+      [3,4],[4,4],[5,4],[6,4],[7,4],[8,4],
+      [3,5],[4,5],[5,5],[6,5],[7,5],[8,5],[9,5],
+      [2,6],[3,6],[4,6],[5,6],[6,6],[7,6],[8,6],[9,6],
+      [2,7],[3,7],[4,7],[5,7],[6,7],[7,7],[8,7],[9,7],[10,7],
+      [2,8],[3,8],[4,8],[5,8],[6,8],[7,8],[8,8],[9,8],[10,8]
+    ],
+    // 飾品：戒指／寶石
+    accessory: [
+      [5,1],[6,1],[4,2],[5,2],[6,2],[7,2],[4,3],[7,3],
+      [3,4],[4,4],[7,4],[8,4],[3,5],[4,5],[5,5],[6,5],[7,5],[8,5],
+      [4,6],[5,6],[6,6],[7,6],[5,7],[6,7]
+    ]
+  };
+  shapes.chest = shapes.armor;
+  let key = kind;
+  if(!shapes[key]){
+    // 相容舊呼叫
+    if(key==='armor'||key==='chest') key='armor';
+    else key='weapon';
+  }
+  const pts = shapes[key];
+  // 稀有色勾邊感：約 20% 像素用 rarity
   pts.forEach(([x,y])=>{
-    ctx.fillStyle = rng()<0.25 ? rarityColor : choice(rng, base);
-    ctx.fillRect(x*cell,y*cell,cell,cell);
+    const edge = (x<=2||x>=9||y<=1||y>=9);
+    ctx.fillStyle = (edge && rng()<0.35) ? (rarityColor||base[2]) : (rng()<0.22 ? (rarityColor||base[1]) : choice(rng, base));
+    ctx.fillRect(x*cell, y*cell, cell, cell);
   });
 }
+
 
 
 
@@ -1415,6 +1676,7 @@ const PALETTES = {
 const PROFESSION_LEVEL = 5;
 const CLASS_LEVEL = 10;
 const BRANCH_LEVEL = 20;
+const MASTER_LEVEL = 30; // 第4階：精通覺醒
 
 /* 第0階：普通人 —— 所有人的起點 */
 const COMMONER = {
@@ -1423,7 +1685,7 @@ const COMMONER = {
   skills:[{name:'拼命揮擊',mp:5,mult:1.15,type:'phys',desc:'物攻×1.15 − 防×0.5。尚未覺醒時的全力一擊'}]
 };
 
-/* 第1階（Lv.5）：4種生活職業，決定未來的成長方向 */
+/* 第1階（Lv.5）：8種生活職業，決定未來的成長方向 */
 const PROFESSIONS = [
   {id:'farmer', name:'農夫', tag:'刻苦耐勞，體魄強健 → 通往戰士／武僧', palette:PALETTES.beast,
     statBonus:{hp:25,mp:0,atk:3,def:5,spd:0}, growBonus:{hp:3,mp:0,atk:0.5,def:0.6,spd:0},
@@ -1440,16 +1702,43 @@ const PROFESSIONS = [
   {id:'apprentice', name:'學徒', tag:'博覽群書，初窺門道 → 通往法師／死靈法師', palette:PALETTES.ice,
     statBonus:{hp:0,mp:20,atk:2,def:0,spd:1}, growBonus:{hp:0,mp:2,atk:0.3,def:0,spd:0.1},
     skill:{name:'魔力衝擊',mp:8,mult:1.25,type:'magic',desc:'魔攻×1.25 − 防×0.25 的魔法傷害'},
-    leadsTo:['mage','necromancer']}
+    leadsTo:['mage','necromancer']},
+  {id:'miner', name:'礦工', tag:'力大無窮，與岩共存 → 通往劍士／重騎士', palette:PALETTES.metal,
+    statBonus:{hp:30,mp:0,atk:4,def:6,spd:-1}, growBonus:{hp:3.5,mp:0,atk:0.6,def:0.7,spd:0},
+    skill:{name:'開山一擊',mp:7,mult:1.35,type:'phys',desc:'物攻×1.35 的重擊'},
+    leadsTo:['bladesman','heavyknight']},
+  {id:'herbalist', name:'藥師', tag:'識草辨性，調和氣血 → 通往薩滿／煉金術師', palette:PALETTES.nature,
+    statBonus:{hp:12,mp:16,atk:1,def:2,spd:2}, growBonus:{hp:1.5,mp:1.8,atk:0.2,def:0.3,spd:0.2},
+    skill:{name:'草藥敷劑',mp:6,type:'self_heal',heal:0.22,desc:'恢復最大HP×22%'},
+    leadsTo:['shaman','alchemist']},
+  {id:'acrobat', name:'雜技人', tag:'身輕如燕，膽大心細 → 通往忍者／吟遊詩人', palette:PALETTES.nature,
+    statBonus:{hp:12,mp:4,atk:3,def:2,spd:8}, growBonus:{hp:1.2,mp:0.3,atk:0.5,def:0.2,spd:0.9},
+    skill:{name:'翻身踢',mp:6,mult:1.2,type:'phys',desc:'物攻×1.2 的靈巧踢擊'},
+    leadsTo:['ninja','bard']},
+  {id:'fisher', name:'漁夫', tag:'逐浪求生，耐性非凡 → 通往召喚師／龍槍', palette:PALETTES.ice,
+    statBonus:{hp:18,mp:8,atk:3,def:3,spd:4}, growBonus:{hp:2,mp:0.8,atk:0.5,def:0.4,spd:0.5},
+    skill:{name:'拋網牽制',mp:6,mult:1.1,type:'phys',desc:'物攻×1.1 的牽制攻擊'},
+    leadsTo:['summoner','dragoon']}
 ];
 
-/* 第2階（Lv.10）：8大職業，各自擁有獨特被動能力 + 專屬技能 */
+/* 第2階（Lv.10）：16大職業（各生活路線獨占2職），各自擁有獨特被動能力 + 專屬技能 */
 const CLASSES = [
-  {id:'warrior', name:'戰士', tag:'前排肉盾，穩定物理輸出', palette:PALETTES.metal,
-    statBonus:{hp:48,mp:5,atk:8,def:14,spd:0}, growBonus:{hp:10,mp:1,atk:1.6,def:2.2,spd:0.6},
+  {id:'warrior', name:'戰士', tag:'前線坦克，格擋減傷，攻守均衡', palette:PALETTES.metal,
+    statBonus:{hp:52,mp:6,atk:8,def:16,spd:1}, growBonus:{hp:9.8,mp:1,atk:1.25,def:2.25,spd:0.45},
     passive:{id:'block', name:'格擋', desc:'受到攻擊時有機率格擋，減少35%傷害'},
-    skills:[{name:'猛力斬',mp:8,mult:1.85,type:'phys',desc:'物攻×1.85 − 防×0.5'},{name:'守護怒吼',mp:12,type:'buff',buffDefRatio:0.22,buffTurns:2,desc:'全隊防禦+22%，2 回合'},{name:'嘲諷怒吼',mp:10,type:'guard',buffDefRatio:0.55,buffTurns:2,desc:'嘲諷；自身防禦+55%，2 回合'}],
-    advancements:[
+    skills:[{name:'猛力斬',mp:8,mult:1.7,type:'phys',desc:'物攻×1.85 − 防×0.5'},{name:'守護怒吼',mp:12,type:'buff',buffDefRatio:0.22,buffTurns:2,desc:'全隊防禦+22%，2 回合'},{name:'嘲諷怒吼',mp:10,type:'guard',buffDefRatio:0.55,buffTurns:2,desc:'嘲諷；自身防禦+55%，2 回合'}],
+        masteries:[
+      {id:'warmaster', name:'戰神', desc:'戰場主宰，攻防一體的終極戰士。',
+        statBonus:{hp:40,mp:5,atk:12,def:10,spd:2}, growBonus:{hp:4,mp:0.3,atk:1.5,def:1.2,spd:0.2},
+        skill:{name:'戰神斬',mp:20,mult:2.6,type:'phys',desc:'物攻×2.6 的毀滅一擊'}},
+      {id:'ironwall', name:'鐵壁統帥', desc:'以絕對防禦守護全軍。',
+        statBonus:{hp:55,mp:8,atk:4,def:18,spd:0}, growBonus:{hp:5,mp:0.5,atk:0.6,def:1.8,spd:0.1},
+        skill:{name:'鐵壁陣',mp:18,mult:1,type:'buff',buffDefRatio:0.30,buffTurns:3,desc:'全隊防禦+30%，3 回合'}},
+      {id:'bladestorm', name:'刀鋒暴君', desc:'無盡斬擊的狂戰巔峰。',
+        statBonus:{hp:25,mp:0,atk:16,def:2,spd:6}, growBonus:{hp:2.5,mp:0,atk:2,def:0.3,spd:0.5},
+        skill:{name:'千刃嵐',mp:22,mult:1.4,type:'phys_multi',desc:'連續斬擊兩次，物攻×1.4／段'}}
+    ],
+advancements:[
       {id:'berserker', name:'狂戰士', desc:'捨棄防禦換取毀滅性輸出，越戰越狂暴。',
         statBonus:{hp:15,mp:0,atk:10,def:-3,spd:3}, growBonus:{hp:3,mp:0,atk:1.8,def:0.5,spd:0.3},
         skill:{name:'血怒連斬',mp:12,mult:2.3,type:'phys_multi',desc:'狂暴狀態下連續揮砍兩次'}},
@@ -1460,11 +1749,22 @@ const CLASSES = [
         statBonus:{hp:18,mp:10,atk:8,def:6,spd:2}, growBonus:{hp:3,mp:1,atk:1.3,def:1,spd:0.3},
         skill:{name:'聖輝斬',mp:16,mult:1.9,type:'magic',holy:true,desc:'魔攻×1.9；對亡靈／暗影再×1.25'}}
     ]},
-  {id:'mage', name:'法師', tag:'高魔法輸出，血脆需保護', palette:PALETTES.fire,
-    statBonus:{hp:5,mp:45,atk:4,def:1,spd:1}, growBonus:{hp:2,mp:6,atk:0.8,def:0.4,spd:0.6},
+  {id:'mage', name:'法師', tag:'極致魔爆，低血高魔力', palette:PALETTES.fire,
+    statBonus:{hp:9,mp:50,atk:4,def:1,spd:2}, growBonus:{hp:1.5,mp:6.4,atk:0.85,def:0.2,spd:0.5},
     passive:{id:'manaRegen', name:'魔力涌動', desc:'每回合開始自動回復少量MP'},
-    skills:[{name:'烈焰爆破',mp:16,mult:2.45,type:'magic',desc:'魔攻×2.45 − 防×0.25'},{name:'烈焰風暴',mp:26,mult:1.35,type:'magic_aoe',desc:'魔攻×1.35／敵'}],
-    advancements:[
+    skills:[{name:'烈焰爆破',mp:16,mult:2.55,type:'magic',desc:'魔攻×2.45 − 防×0.25'},{name:'烈焰風暴',mp:26,mult:1.35,type:'magic_aoe',desc:'魔攻×1.35／敵'}],
+        masteries:[
+      {id:'archmage', name:'大魔導', desc:'魔法領域的至高權威。',
+        statBonus:{hp:10,mp:40,atk:14,def:2,spd:2}, growBonus:{hp:1,mp:3,atk:2,def:0.2,spd:0.2},
+        skill:{name:'終焉術式',mp:36,mult:2.0,type:'magic_aoe',desc:'魔攻×2.0／敵的終末法術'}},
+      {id:'voidsage', name:'虛空賢者', desc:'以虛空改寫戰場規則。',
+        statBonus:{hp:15,mp:35,atk:8,def:6,spd:1}, growBonus:{hp:1.5,mp:2.5,atk:1.2,def:0.6,spd:0.1},
+        skill:{name:'虛空裂縫',mp:28,mult:2.2,type:'magic',desc:'魔攻×2.2 的高傷害單體'}},
+      {id:'runelord', name:'符文宗師', desc:'符文強化自身與盟友。',
+        statBonus:{hp:12,mp:30,atk:6,def:8,spd:2}, growBonus:{hp:1.2,mp:2,atk:0.8,def:0.8,spd:0.2},
+        skill:{name:'符文加持',mp:20,mult:1,type:'heal_aoe',heal:0.28,desc:'全隊恢復最大HP×28%'}}
+    ],
+advancements:[
       {id:'pyromancer', name:'烈焰宗師', desc:'將烈焰之力推向極致的毀滅法師。',
         statBonus:{hp:0,mp:15,atk:12,def:0,spd:0}, growBonus:{hp:0,mp:1.5,atk:1.8,def:0,spd:0},
         skill:{name:'超新星',mp:30,mult:1.7,type:'magic_aoe',desc:'毀滅性的全體火焰爆炸'}},
@@ -1475,11 +1775,22 @@ const CLASSES = [
         statBonus:{hp:0,mp:25,atk:0,def:5,spd:0}, growBonus:{hp:0,mp:2.5,atk:0,def:0.8,spd:0},
         skill:{name:'虛無屏障',mp:22,heal:0.5,type:'heal_aoe',desc:'轉化秘術能量為全隊護盾（恢復HP）'}}
     ]},
-  {id:'archer', name:'弓箭手', tag:'高敏捷單體爆發，先手優勢', palette:PALETTES.nature,
-    statBonus:{hp:18,mp:15,atk:13,def:2,spd:9}, growBonus:{hp:3.5,mp:1.5,atk:2.1,def:0.5,spd:1.3},
+  {id:'archer', name:'弓箭手', tag:'遠程物攻，先手單體爆發', palette:PALETTES.nature,
+    statBonus:{hp:20,mp:14,atk:13,def:3,spd:11}, growBonus:{hp:3.2,mp:1.3,atk:2.0,def:0.4,spd:1.3},
     passive:{id:'pierce', name:'破甲', desc:'普通攻擊與技能皆無視部分敵人防禦'},
     skills:[{name:'精準射擊',mp:10,mult:2.25,type:'phys',desc:'物攻×2.25 − 防×0.5（破甲另算）'},{name:'連射',mp:14,mult:1.05,type:'phys_multi',hits:3,desc:'3 連擊，每段物攻×1.05'}],
-    advancements:[
+        masteries:[
+      {id:'sniper', name:'神射手', desc:'一箭定勝負的究極狙擊。',
+        statBonus:{hp:20,mp:15,atk:16,def:2,spd:10}, growBonus:{hp:1.5,mp:1,atk:2,def:0.2,spd:0.8},
+        skill:{name:'滅世一矢',mp:24,mult:2.8,type:'phys',desc:'物攻×2.8 的必殺狙擊'}},
+      {id:'skyhunter', name:'天穹獵手', desc:'主宰空域的遊獵之王。',
+        statBonus:{hp:25,mp:12,atk:12,def:4,spd:12}, growBonus:{hp:2,mp:0.8,atk:1.5,def:0.3,spd:1},
+        skill:{name:'箭雨天穹',mp:26,mult:1.5,type:'phys_multi',desc:'箭雨連射兩次'}},
+      {id:'windstalker', name:'風踪者', desc:'如風般難以捉摸。',
+        statBonus:{hp:18,mp:10,atk:10,def:3,spd:14}, growBonus:{hp:1.5,mp:0.5,atk:1.2,def:0.2,spd:1.2},
+        skill:{name:'疾風連矢',mp:18,mult:1.35,type:'phys_multi',desc:'高速連射兩箭'}}
+    ],
+advancements:[
       {id:'ranger', name:'遊俠', desc:'精通穿甲箭術，專職單體爆發。',
         statBonus:{hp:0,mp:0,atk:8,def:0,spd:6}, growBonus:{hp:0,mp:0,atk:1.5,def:0,spd:1.2},
         skill:{name:'穿透射擊',mp:14,mult:2.2,type:'phys_crit',desc:'高暴擊率的穿甲箭'}},
@@ -1490,11 +1801,22 @@ const CLASSES = [
         statBonus:{hp:10,mp:0,atk:6,def:6,spd:0}, growBonus:{hp:1.5,mp:0,atk:1,def:1,spd:0},
         skill:{name:'狙擊絕殺',mp:20,mult:2.6,type:'phys',desc:'蓄力後的致命一擊'}}
     ]},
-  {id:'rogue', name:'盜賊', tag:'暴擊與偷竊，機動性極高', palette:PALETTES.shadow,
-    statBonus:{hp:15,mp:10,atk:9,def:1,spd:10}, growBonus:{hp:3,mp:1,atk:1.5,def:0.4,spd:1.4},
+  {id:'rogue', name:'盜賊', tag:'敏系巧手，偷金牽制，穩定物攻', palette:PALETTES.shadow,
+    statBonus:{hp:20,mp:12,atk:12,def:3,spd:12}, growBonus:{hp:3.1,mp:1.1,atk:1.75,def:0.35,spd:1.3},
     passive:{id:'doubleStrike', name:'連攻', desc:'普通攻擊有機率觸發追加攻擊'},
-    skills:[{name:'背刺',mp:9,mult:2.2,type:'phys_crit',crit:0.48,desc:'物攻×2.2，爆擊率 48%'},{name:'掠奪',mp:8,type:'steal',mult:1.15,stealMin:6,stealMax:16,desc:'物攻×1.15 + 偷 6~16 金'}],
-    advancements:[
+    skills:[{name:'背刺',mp:9,mult:2.35,type:'phys_crit',crit:0.50,desc:'物攻×2.35，爆擊率 50%'},{name:'掠奪',mp:8,type:'steal',mult:1.15,stealMin:6,stealMax:16,desc:'物攻×1.15 + 偷 6~16 金'}],
+        masteries:[
+      {id:'nightblade', name:'夜刃', desc:'黑暗中終結一切的影。',
+        statBonus:{hp:18,mp:12,atk:15,def:2,spd:12}, growBonus:{hp:1.5,mp:0.8,atk:1.8,def:0.2,spd:1},
+        skill:{name:'暗殺終結',mp:22,mult:2.7,type:'phys',desc:'物攻×2.7 的暗殺'}},
+      {id:'trickster', name:'詭術大師', desc:'戰鬥與盜取的藝術家。',
+        statBonus:{hp:20,mp:15,atk:10,def:4,spd:10}, growBonus:{hp:1.8,mp:1,atk:1.2,def:0.3,spd:0.8},
+        skill:{name:'黃金一手',mp:14,mult:1.2,type:'steal',stealMin:20,stealMax:45,desc:'傷害並偷取大量金幣'}},
+      {id:'phantom', name:'幽靈步', desc:'來去無蹤的影盜巔峰。',
+        statBonus:{hp:15,mp:10,atk:12,def:1,spd:15}, growBonus:{hp:1.2,mp:0.6,atk:1.4,def:0.1,spd:1.3},
+        skill:{name:'影分身襲',mp:20,mult:1.3,type:'phys_multi',desc:'影分身連續攻擊兩次'}}
+    ],
+advancements:[
       {id:'assassin', name:'刺客', desc:'致命效率的殺戮專家。',
         statBonus:{hp:0,mp:0,atk:10,def:0,spd:5}, growBonus:{hp:0,mp:0,atk:1.8,def:0,spd:1},
         skill:{name:'致命暗殺',mp:14,mult:2.55,type:'phys_crit',crit:0.55,desc:'物攻×2.55，爆擊率 55%'}},
@@ -1505,11 +1827,22 @@ const CLASSES = [
         statBonus:{hp:0,mp:0,atk:4,def:0,spd:8}, growBonus:{hp:0,mp:0,atk:0.8,def:0,spd:1.5},
         skill:{name:'巨額掠奪',mp:10,type:'steal',mult:1.2,stealMin:15,stealMax:35,desc:'物攻×1.2 + 偷 15~35 金'}}
     ]},
-  {id:'cleric', name:'牧師', tag:'治療與淨化，隊伍續航核心', palette:PALETTES.holy,
-    statBonus:{hp:25,mp:35,atk:2,def:3,spd:2}, growBonus:{hp:5,mp:4.5,atk:0.4,def:0.6,spd:0.4},
+  {id:'cleric', name:'牧師', tag:'純治療核心，偏肉輔助', palette:PALETTES.holy,
+    statBonus:{hp:32,mp:42,atk:2,def:7,spd:2}, growBonus:{hp:5.0,mp:5.0,atk:0.3,def:0.9,spd:0.35},
     passive:{id:'mercyHeal', name:'仁慈之心', desc:'治療目標HP過低時，治療量提升'},
     skills:[{name:'治癒之光',mp:14,heal:1.6,type:'heal',desc:'治療＝魔攻×1.6＋智力×0.6＋Lv×2'},{name:'群體祝福',mp:22,heal:0.95,type:'heal_aoe',desc:'全隊治療＝魔攻×0.95＋智力×0.6＋Lv×2'}],
-    advancements:[
+        masteries:[
+      {id:'saint', name:'聖者', desc:'聖光的化身，治癒萬物。',
+        statBonus:{hp:30,mp:35,atk:4,def:8,spd:2}, growBonus:{hp:2.5,mp:2.5,atk:0.4,def:0.8,spd:0.2},
+        skill:{name:'聖光恩典',mp:28,mult:1,type:'heal_aoe',heal:0.40,desc:'全隊恢復最大HP×40%'}},
+      {id:'oracle', name:'神諭者', desc:'預見與淨化的聖職巔峰。',
+        statBonus:{hp:25,mp:40,atk:6,def:6,spd:3}, growBonus:{hp:2,mp:3,atk:0.6,def:0.5,spd:0.3},
+        skill:{name:'神諭審判',mp:24,mult:2.0,type:'magic',holy:true,desc:'魔攻×2.0；對邪惡再強化'}},
+      {id:'seraph', name:'熾天使', desc:'攻守一體的聖戰聖職。',
+        statBonus:{hp:35,mp:25,atk:8,def:10,spd:2}, growBonus:{hp:3,mp:1.5,atk:1,def:1,spd:0.2},
+        skill:{name:'熾翼衝擊',mp:22,mult:1.9,type:'magic',holy:true,desc:'聖光衝擊，魔攻×1.9'}}
+    ],
+advancements:[
       {id:'bishop', name:'聖光主教', desc:'掌握強大群體聖光術的教會高階聖職者。',
         statBonus:{hp:0,mp:20,atk:0,def:6,spd:0}, growBonus:{hp:0,mp:2,atk:0,def:1,spd:0},
         skill:{name:'神聖庇護',mp:25,heal:1.2,type:'heal_aoe',desc:'強力的全體治療術'}},
@@ -1520,11 +1853,22 @@ const CLASSES = [
         statBonus:{hp:10,mp:25,atk:0,def:0,spd:0}, growBonus:{hp:1.2,mp:2.5,atk:0,def:0,spd:0},
         skill:{name:'甘露之泉',mp:18,heal:2.2,type:'heal',desc:'對單一隊友的超強治療'}}
     ]},
-  {id:'paladin', name:'聖騎士', tag:'攻防兼備的混合坦克', palette:PALETTES.holy,
-    statBonus:{hp:42,mp:20,atk:5,def:12,spd:1}, growBonus:{hp:8,mp:2.5,atk:1,def:1.9,spd:0.5},
+  {id:'paladin', name:'聖騎士', tag:'聖盾坦克，能抗能奶', palette:PALETTES.holy,
+    statBonus:{hp:48,mp:24,atk:5,def:14,spd:1}, growBonus:{hp:8.8,mp:2.5,atk:0.9,def:2.0,spd:0.4},
     passive:{id:'guardianAngel', name:'守護天使', desc:'每場戰鬥一次，隊友瀕死時保留1HP'},
     skills:[{name:'聖光審判',mp:15,mult:1.75,type:'magic',holy:true,desc:'魔攻×1.75；對邪惡×1.25'},{name:'守護誓約',mp:16,type:'guard',buffDefRatio:0.65,buffTurns:2,desc:'嘲諷；自身防禦+65%，2 回合'}],
-    advancements:[
+        masteries:[
+      {id:'highlord', name:'大領主', desc:'聖騎士團的最高統帥。',
+        statBonus:{hp:45,mp:20,atk:10,def:14,spd:1}, growBonus:{hp:4,mp:1.2,atk:1.2,def:1.5,spd:0.2},
+        skill:{name:'聖裁之劍',mp:24,mult:2.3,type:'phys',holy:true,desc:'物攻×2.3 的聖裁一擊'}},
+      {id:'templar', name:'聖殿騎士', desc:'絕對防禦的聖盾。',
+        statBonus:{hp:50,mp:15,atk:6,def:18,spd:0}, growBonus:{hp:4.5,mp:1,atk:0.8,def:1.8,spd:0.1},
+        skill:{name:'聖殿壁壘',mp:20,mult:1,type:'guard',buffDefRatio:0.65,buffTurns:2,desc:'嘲諷並大幅提升防禦'}},
+      {id:'crusader', name:'十字軍', desc:'聖戰遠征的先鋒。',
+        statBonus:{hp:35,mp:18,atk:14,def:10,spd:4}, growBonus:{hp:3,mp:1,atk:1.6,def:1,spd:0.4},
+        skill:{name:'十字轟擊',mp:22,mult:2.1,type:'phys',desc:'物攻×2.1 的十字重擊'}}
+    ],
+advancements:[
       {id:'inquisitor', name:'審判者', desc:'專精聖光攻擊，追獵邪惡的裁決者。',
         statBonus:{hp:0,mp:10,atk:10,def:0,spd:0}, growBonus:{hp:0,mp:1,atk:1.6,def:0,spd:0},
         skill:{name:'神罰審判',mp:20,mult:2.1,type:'magic',holy:true,desc:'魔攻×2.1；對邪惡×1.25'}},
@@ -1535,11 +1879,22 @@ const CLASSES = [
         statBonus:{hp:10,mp:10,atk:6,def:6,spd:0}, growBonus:{hp:1.2,mp:1,atk:1,def:1,spd:0},
         skill:{name:'曙光祝禱',mp:20,heal:1.0,type:'heal_aoe',desc:'戰場中的治癒之光'}}
     ]},
-  {id:'monk', name:'武僧', tag:'連擊型輸出，恢復自身氣力', palette:PALETTES.beast,
-    statBonus:{hp:26,mp:12,atk:7,def:4,spd:5}, growBonus:{hp:5,mp:1.2,atk:1.2,def:0.6,spd:1},
+  {id:'monk', name:'武僧', tag:'體術均衡，中速中攻續戰', palette:PALETTES.beast,
+    statBonus:{hp:32,mp:14,atk:10,def:7,spd:6}, growBonus:{hp:5.6,mp:1.4,atk:1.45,def:0.85,spd:0.9},
     passive:{id:'combatFlow', name:'氣勁循環', desc:'攻擊命中後回復少量MP'},
     skills:[{name:'連環腿',mp:10,mult:1.15,type:'phys_multi2',hits:2,desc:'2 連擊，每段物攻×1.15'},{name:'內功調息',mp:0,heal:0.28,mpGain:14,type:'self_heal',desc:'最大HP×28% + 14 MP'}],
-    advancements:[
+        masteries:[
+      {id:'buddha', name:'金剛羅漢', desc:'肉體成聖的武道極致。',
+        statBonus:{hp:40,mp:15,atk:12,def:12,spd:6}, growBonus:{hp:3.5,mp:1,atk:1.4,def:1.2,spd:0.5},
+        skill:{name:'金剛碎',mp:20,mult:2.4,type:'phys',desc:'物攻×2.4 的體術絕技'}},
+      {id:'ascetic', name:'苦行宗師', desc:'以苦行換取無上氣勁。',
+        statBonus:{hp:30,mp:25,atk:10,def:8,spd:8}, growBonus:{hp:2.5,mp:1.5,atk:1.2,def:0.8,spd:0.7},
+        skill:{name:'氣勁波',mp:18,mult:2.0,type:'magic',desc:'以氣化刃，魔攻×2.0'}},
+      {id:'drunken', name:'醉拳宗師', desc:'步法飄忽的戰鬥藝術。',
+        statBonus:{hp:28,mp:12,atk:14,def:6,spd:12}, growBonus:{hp:2,mp:0.8,atk:1.6,def:0.5,spd:1},
+        skill:{name:'醉狂連打',mp:16,mult:1.35,type:'phys_multi',desc:'飄忽連擊兩次'}}
+    ],
+advancements:[
       {id:'fistsaint', name:'拳聖', desc:'將連擊拳法練至巔峰的武學宗師。',
         statBonus:{hp:0,mp:0,atk:12,def:0,spd:4}, growBonus:{hp:0,mp:0,atk:2,def:0,spd:0.8},
         skill:{name:'千烈連拳',mp:14,mult:0.95,type:'phys_multi',desc:'更強力的三連擊拳法'}},
@@ -1550,11 +1905,22 @@ const CLASSES = [
         statBonus:{hp:0,mp:15,atk:6,def:0,spd:4}, growBonus:{hp:0,mp:1.5,atk:1,def:0,spd:0.8},
         skill:{name:'破魔氣彈',mp:18,mult:1.8,type:'magic',desc:'凝聚氣勁的遠距衝擊波'}}
     ]},
-  {id:'necromancer', name:'死靈法師', tag:'詛咒與腐蝕，持續傷害流', palette:PALETTES.undead,
-    statBonus:{hp:8,mp:40,atk:4,def:1,spd:0}, growBonus:{hp:2,mp:5,atk:0.7,def:0.3,spd:0.3},
+  {id:'necromancer', name:'死靈法師', tag:'毒傷消耗，穩過爆發', palette:PALETTES.undead,
+    statBonus:{hp:16,mp:44,atk:5,def:3,spd:2}, growBonus:{hp:2.6,mp:5.4,atk:0.95,def:0.5,spd:0.35},
     passive:{id:'virulence', name:'致病之息', desc:'普通攻擊有機率附加中毒效果'},
-    skills:[{name:'腐蝕詛咒',mp:15,mult:1.25,type:'magic_dot',poisonTurns:3,desc:'魔攻×1.25／敵 + 中毒 3 回合'},{name:'亡者低語',mp:20,mult:1.6,type:'magic_aoe',desc:'魔攻×1.6／敵'}],
-    advancements:[
+    skills:[{name:'腐蝕詛咒',mp:15,mult:1.45,type:'magic_dot',poisonTurns:3,desc:'魔攻×1.25／敵 + 中毒 3 回合'},{name:'亡者低語',mp:20,mult:1.75,type:'magic_aoe',desc:'魔攻×1.6／敵'}],
+        masteries:[
+      {id:'deathlord', name:'死神君王', desc:'統御生死的終極死靈。',
+        statBonus:{hp:25,mp:40,atk:12,def:6,spd:2}, growBonus:{hp:2,mp:3,atk:1.6,def:0.5,spd:0.2},
+        skill:{name:'死神宣告',mp:32,mult:1.9,type:'magic_aoe',desc:'魔攻×1.9／敵的死亡宣告'}},
+      {id:'soulbinder', name:'縛魂者', desc:'禁錮靈魂的咒術大師。',
+        statBonus:{hp:20,mp:35,atk:10,def:4,spd:3}, growBonus:{hp:1.5,mp:2.5,atk:1.4,def:0.3,spd:0.3},
+        skill:{name:'靈魂束縛',mp:24,mult:2.3,type:'magic',desc:'魔攻×2.3 的靈魂傷害'}},
+      {id:'carrion', name:'腐骸先知', desc:'以腐朽吞噬戰場。',
+        statBonus:{hp:22,mp:30,atk:8,def:5,spd:1}, growBonus:{hp:1.8,mp:2,atk:1.2,def:0.4,spd:0.1},
+        skill:{name:'腐朽之地',mp:26,mult:1.4,type:'magic_dot',poisonTurns:3,desc:'全體腐蝕並附加中毒'}}
+    ],
+advancements:[
       {id:'plaguelord', name:'瘟疫使者', desc:'散播無盡瘟疫，讓戰場逐漸腐朽。',
         statBonus:{hp:0,mp:15,atk:6,def:0,spd:0}, growBonus:{hp:0,mp:1.8,atk:1,def:0,spd:0},
         skill:{name:'瘟疫蔓延',mp:22,mult:1.5,type:'magic_dot',desc:'強力的持續毒傷擴散全場'}},
@@ -1565,6 +1931,121 @@ const CLASSES = [
         statBonus:{hp:15,mp:0,atk:8,def:0,spd:0}, growBonus:{hp:1.8,mp:0,atk:1.4,def:0,spd:0},
         skill:{name:'噬血詛咒',mp:18,mult:1.7,type:'magic',desc:'吸取生命的黑暗咒術'}}
     ]},
+
+  /* ===== 新增戰鬥職業（各生活路線獨占，互不共用） ===== */
+  {id:'bladesman', name:'劍士', tag:'高速劍術輸出，高攻低防', palette:PALETTES.metal,
+    statBonus:{hp:24,mp:8,atk:13,def:4,spd:10}, growBonus:{hp:3.8,mp:0.9,atk:1.75,def:0.45,spd:1.05},
+    passive:{id:'riposte', name:'反擊架勢', desc:'受擊後反擊，追加一次較弱的物理傷害'},
+    skills:[{name:'居合斬',mp:10,mult:2.0,type:'phys',desc:'物攻×2.0'},{name:'劍氣波動',mp:16,mult:1.45,type:'phys_multi',desc:'劍氣連斬兩次'}],
+    masteries:[
+      {id:'sword_saint', name:'劍聖', desc:'劍道極致。', statBonus:{hp:30,mp:10,atk:16,def:6,spd:8}, growBonus:{hp:2.5,mp:0.8,atk:2,def:0.5,spd:0.8}, skill:{name:'天劍一閃',mp:26,mult:2.9,type:'phys',desc:'物攻×2.9'}},
+      {id:'iaido_master', name:'居合宗師', desc:'拔刀決勝負。', statBonus:{hp:22,mp:8,atk:14,def:4,spd:12}, growBonus:{hp:2,mp:0.5,atk:1.7,def:0.3,spd:1.1}, skill:{name:'無想閃',mp:20,mult:1.5,type:'phys_multi',desc:'連斬兩次'}},
+      {id:'blade_dancer', name:'劍舞宗師', desc:'以劍為舞。', statBonus:{hp:25,mp:12,atk:12,def:5,spd:10}, growBonus:{hp:2.2,mp:1,atk:1.5,def:0.4,spd:0.9}, skill:{name:'迴旋劍舞',mp:22,mult:1.55,type:'phys_multi',desc:'迴旋連擊'}}
+    ],
+    advancements:[
+      {id:'ronin', name:'浪人劍客', desc:'孤高劍士。', statBonus:{hp:12,mp:0,atk:9,def:2,spd:5}, growBonus:{hp:2,mp:0,atk:1.5,def:0.3,spd:0.5}, skill:{name:'無式斬',mp:14,mult:2.2,type:'phys',desc:'物攻×2.2'}},
+      {id:'kensai', name:'劍豪', desc:'一劍破法。', statBonus:{hp:10,mp:5,atk:11,def:3,spd:4}, growBonus:{hp:1.5,mp:0.5,atk:1.7,def:0.4,spd:0.4}, skill:{name:'破軍劍',mp:18,mult:2.4,type:'phys',desc:'物攻×2.4'}},
+      {id:'wardancer', name:'劍舞士', desc:'步劍合一。', statBonus:{hp:8,mp:6,atk:8,def:2,spd:7}, growBonus:{hp:1.5,mp:0.6,atk:1.3,def:0.2,spd:0.7}, skill:{name:'流麗劍舞',mp:16,mult:1.4,type:'phys_multi',desc:'兩段劍舞'}}
+    ]},
+  {id:'heavyknight', name:'重騎士', tag:'超重甲純坦，血防最高、輸出最低', palette:PALETTES.metal,
+    statBonus:{hp:68,mp:6,atk:4,def:20,spd:-3}, growBonus:{hp:11.0,mp:0.7,atk:0.7,def:2.8,spd:0.12},
+    passive:{id:'armored', name:'重裝', desc:'受到傷害固定減少約 12%'},
+    skills:[{name:'盾擊',mp:10,mult:1.2,type:'phys',desc:'物攻×1.5'},{name:'要塞姿態',mp:12,type:'guard',buffDefRatio:0.5,buffTurns:2,desc:'嘲諷；防禦+50%，2 回合'}],
+    masteries:[
+      {id:'fortress', name:'要塞統帥', desc:'移動堡壘。', statBonus:{hp:50,mp:10,atk:6,def:20,spd:0}, growBonus:{hp:4.5,mp:0.8,atk:0.8,def:2,spd:0.1}, skill:{name:'絕對防壁',mp:22,type:'guard',buffDefRatio:0.7,buffTurns:2,desc:'超高防禦嘲諷'}},
+      {id:'crush_lord', name:'碎甲領主', desc:'以力破防。', statBonus:{hp:40,mp:8,atk:14,def:12,spd:1}, growBonus:{hp:3.5,mp:0.5,atk:1.6,def:1.2,spd:0.2}, skill:{name:'碎甲重擊',mp:20,mult:2.4,type:'phys',desc:'物攻×2.4'}},
+      {id:'aegis', name:'聖盾督軍', desc:'盾牆指揮。', statBonus:{hp:45,mp:12,atk:8,def:16,spd:1}, growBonus:{hp:4,mp:1,atk:1,def:1.6,spd:0.2}, skill:{name:'督軍令',mp:18,type:'buff',buffDefRatio:0.25,buffTurns:3,desc:'全隊防禦+25%，3 回合'}}
+    ],
+    advancements:[
+      {id:'bulwark', name:'壁壘騎', desc:'不動如山。', statBonus:{hp:25,mp:4,atk:2,def:12,spd:-1}, growBonus:{hp:4,mp:0.3,atk:0.5,def:1.5,spd:0}, skill:{name:'壁壘',mp:14,type:'guard',buffDefRatio:0.6,buffTurns:2,desc:'高防嘲諷'}},
+      {id:'shock_trooper', name:'突擊重騎', desc:'重裝衝鋒。', statBonus:{hp:18,mp:4,atk:10,def:8,spd:2}, growBonus:{hp:3,mp:0.3,atk:1.4,def:0.8,spd:0.3}, skill:{name:'衝鋒擊',mp:16,mult:2.1,type:'phys',desc:'物攻×2.1'}},
+      {id:'tower_shield', name:'塔盾衛', desc:'專精防禦。', statBonus:{hp:22,mp:6,atk:3,def:14,spd:-2}, growBonus:{hp:3.5,mp:0.4,atk:0.4,def:1.7,spd:0}, skill:{name:'塔盾牆',mp:15,type:'buff',buffDefRatio:0.2,buffTurns:2,desc:'全隊防禦+20%'}}
+    ]},
+  {id:'shaman', name:'薩滿', tag:'自然輔助，能奶能點', palette:PALETTES.nature,
+    statBonus:{hp:26,mp:38,atk:5,def:6,spd:3}, growBonus:{hp:3.6,mp:4.1,atk:0.75,def:0.7,spd:0.4},
+    passive:{id:'spirit_link', name:'魂契', desc:'自身施放的治療效果 +15%'},
+    skills:[{name:'自然之握',mp:14,mult:1.55,type:'magic',desc:'魔攻×1.6'},{name:'癒合圖騰',mp:16,heal:0.28,type:'heal_aoe',desc:'全隊恢復最大HP×28%'}],
+    masteries:[
+      {id:'spirit_chief', name:'大巫', desc:'部族之靈。', statBonus:{hp:25,mp:35,atk:8,def:6,spd:3}, growBonus:{hp:2,mp:2.5,atk:1,def:0.5,spd:0.3}, skill:{name:'祖靈降臨',mp:28,mult:1.8,type:'magic_aoe',desc:'魔攻×1.8／敵'}},
+      {id:'storm_caller', name:'喚雷者', desc:'雷霆薩滿。', statBonus:{hp:18,mp:38,atk:12,def:3,spd:4}, growBonus:{hp:1.5,mp:2.8,atk:1.5,def:0.2,spd:0.4}, skill:{name:'雷霆審判',mp:26,mult:2.3,type:'magic',desc:'魔攻×2.3'}},
+      {id:'life_keeper', name:'生靈守', desc:'治癒極致。', statBonus:{hp:28,mp:40,atk:4,def:6,spd:2}, growBonus:{hp:2.2,mp:3,atk:0.4,def:0.5,spd:0.2}, skill:{name:'生命涌泉',mp:30,heal:0.38,type:'heal_aoe',desc:'全隊恢復最大HP×38%'}}
+    ],
+    advancements:[
+      {id:'totemist', name:'圖騰師', desc:'圖騰輔助。', statBonus:{hp:10,mp:12,atk:2,def:3,spd:1}, growBonus:{hp:1.5,mp:1.5,atk:0.3,def:0.3,spd:0.2}, skill:{name:'守護圖騰',mp:14,type:'buff',buffDefRatio:0.18,buffTurns:2,desc:'全隊防禦+18%'}},
+      {id:'hexer', name:'咒術薩滿', desc:'詛咒敵人。', statBonus:{hp:8,mp:14,atk:6,def:2,spd:2}, growBonus:{hp:1,mp:1.6,atk:1,def:0.2,spd:0.2}, skill:{name:'衰弱咒',mp:16,mult:1.55,type:'magic_dot',poisonTurns:2,desc:'魔攻×1.55+毒'}},
+      {id:'rainmaker', name:'祈雨師', desc:'治療與滋養。', statBonus:{hp:12,mp:15,atk:1,def:3,spd:1}, growBonus:{hp:1.5,mp:1.8,atk:0.2,def:0.3,spd:0.1}, skill:{name:'甘霖',mp:18,heal:0.32,type:'heal_aoe',desc:'全隊恢復最大HP×32%'}}
+    ]},
+  {id:'alchemist', name:'煉金術師', tag:'藥劑爆破，AOE 魔傷', palette:PALETTES.fire,
+    statBonus:{hp:18,mp:34,atk:7,def:3,spd:5}, growBonus:{hp:2.7,mp:3.6,atk:1.2,def:0.4,spd:0.55},
+    passive:{id:'catalyst', name:'催化', desc:'魔法技能有 20% 機率傷害 +25%'},
+    skills:[{name:'燃燒瓶',mp:14,mult:1.95,type:'magic',desc:'魔攻×1.85'},{name:'酸液噴灑',mp:18,mult:1.3,type:'magic_aoe',desc:'魔攻×1.3／敵'}],
+    masteries:[
+      {id:'blast_adept', name:'爆裂師', desc:'爆炸藝術。', statBonus:{hp:15,mp:30,atk:14,def:2,spd:4}, growBonus:{hp:1.2,mp:2,atk:1.8,def:0.2,spd:0.4}, skill:{name:'高能爆破',mp:28,mult:2.0,type:'magic_aoe',desc:'魔攻×2.0／敵'}},
+      {id:'panacea', name:'萬靈師', desc:'藥劑大師。', statBonus:{hp:22,mp:35,atk:4,def:5,spd:3}, growBonus:{hp:2,mp:2.5,atk:0.5,def:0.5,spd:0.3}, skill:{name:'萬靈藥',mp:24,heal:0.36,type:'heal_aoe',desc:'全隊恢復最大HP×36%'}},
+      {id:'transmuter', name:'點金者', desc:'物質轉化。', statBonus:{hp:18,mp:28,atk:10,def:4,spd:5}, growBonus:{hp:1.5,mp:1.8,atk:1.3,def:0.3,spd:0.5}, skill:{name:'點金術',mp:16,mult:1.2,type:'steal',stealMin:15,stealMax:35,desc:'傷害並偷取金幣'}}
+    ],
+    advancements:[
+      {id:'bomber', name:'爆破手', desc:'火力全開。', statBonus:{hp:6,mp:10,atk:8,def:1,spd:2}, growBonus:{hp:0.8,mp:1.2,atk:1.4,def:0.1,spd:0.3}, skill:{name:'烈性炸彈',mp:18,mult:2.15,type:'magic',desc:'魔攻×2.15'}},
+      {id:'apothecary', name:'調劑師', desc:'戰鬥補給。', statBonus:{hp:10,mp:14,atk:2,def:3,spd:1}, growBonus:{hp:1.5,mp:1.6,atk:0.3,def:0.3,spd:0.2}, skill:{name:'恢復藥劑',mp:14,heal:0.3,type:'heal_aoe',desc:'全隊恢復最大HP×30%'}},
+      {id:'venomist', name:'毒劑師', desc:'劇毒調配。', statBonus:{hp:8,mp:12,atk:6,def:2,spd:3}, growBonus:{hp:1,mp:1.4,atk:1,def:0.2,spd:0.3}, skill:{name:'毒霧彈',mp:16,mult:1.4,type:'magic_dot',poisonTurns:3,desc:'魔攻×1.4+毒'}}
+    ]},
+  {id:'ninja', name:'忍者', tag:'極速暗殺，最高敏、低血防', palette:PALETTES.shadow,
+    statBonus:{hp:15,mp:12,atk:12,def:2,spd:15}, growBonus:{hp:2.1,mp:1.1,atk:1.75,def:0.2,spd:1.4},
+    passive:{id:'vanish', name:'隱匿', desc:'速度判定更優，暴擊率提高'},
+    skills:[{name:'手里劍',mp:10,mult:1.9,type:'phys',desc:'物攻×1.7'},{name:'影斬',mp:16,mult:1.4,type:'phys_multi',desc:'影斬兩次'}],
+    masteries:[
+      {id:'shadow_hanzo', name:'影之半藏', desc:'忍道巔峰。', statBonus:{hp:20,mp:14,atk:15,def:3,spd:14}, growBonus:{hp:1.5,mp:1,atk:1.8,def:0.2,spd:1.2}, skill:{name:'終焉忍法',mp:24,mult:2.75,type:'phys',desc:'物攻×2.75'}},
+      {id:'saboteur', name:'破壞師', desc:'戰場破壞。', statBonus:{hp:22,mp:12,atk:12,def:4,spd:11}, growBonus:{hp:1.8,mp:0.8,atk:1.4,def:0.3,spd:0.9}, skill:{name:'爆炎玉',mp:20,mult:1.6,type:'magic_aoe',desc:'魔攻×1.6／敵'}},
+      {id:'ghost_step', name:'鬼步', desc:'無影無蹤。', statBonus:{hp:16,mp:10,atk:13,def:2,spd:16}, growBonus:{hp:1.2,mp:0.6,atk:1.5,def:0.1,spd:1.4}, skill:{name:'瞬殺',mp:18,mult:1.45,type:'phys_multi',desc:'連續兩擊'}}
+    ],
+    advancements:[
+      {id:'assassin_nin', name:'暗殺忍', desc:'一擊必殺。', statBonus:{hp:8,mp:6,atk:10,def:1,spd:6}, growBonus:{hp:1,mp:0.5,atk:1.6,def:0.1,spd:0.6}, skill:{name:'暗殺',mp:15,mult:2.3,type:'phys',desc:'物攻×2.3'}},
+      {id:'scout_nin', name:'偵伺忍', desc:'情報與牽制。', statBonus:{hp:10,mp:8,atk:6,def:2,spd:7}, growBonus:{hp:1.2,mp:0.6,atk:1,def:0.2,spd:0.7}, skill:{name:'煙幕',mp:12,type:'buff',buffDefRatio:0.12,buffTurns:2,desc:'全隊防禦+12%'}},
+      {id:'blade_nin', name:'刀忍', desc:'近戰連擊。', statBonus:{hp:12,mp:5,atk:8,def:3,spd:5}, growBonus:{hp:1.5,mp:0.4,atk:1.3,def:0.3,spd:0.5}, skill:{name:'連刃',mp:14,mult:1.35,type:'phys_multi',desc:'連刃兩次'}}
+    ]},
+  {id:'bard', name:'吟遊詩人', tag:'戰歌輔助，弱輸出偏速', palette:PALETTES.holy,
+    statBonus:{hp:26,mp:34,atk:4,def:6,spd:7}, growBonus:{hp:3.5,mp:3.5,atk:0.5,def:0.65,spd:0.75},
+    passive:{id:'anthem', name:'戰歌餘韻', desc:'每回合全隊回復少量 MP'},
+    skills:[{name:'激勵之歌',mp:12,type:'buff',buffDefRatio:0.18,buffTurns:2,desc:'全隊防禦+18%，2 回合'},{name:'嘈雜和弦',mp:14,mult:1.05,type:'magic_aoe',desc:'魔攻×1.3／敵'}],
+    masteries:[
+      {id:'maestro', name:'樂聖', desc:'音樂宗師。', statBonus:{hp:25,mp:35,atk:6,def:6,spd:4}, growBonus:{hp:2,mp:2.5,atk:0.6,def:0.5,spd:0.4}, skill:{name:'終章頌歌',mp:28,heal:0.35,type:'heal_aoe',desc:'全隊恢復最大HP×35%'}},
+      {id:'dirge_singer', name:'輓歌者', desc:'動搖敵心。', statBonus:{hp:20,mp:32,atk:10,def:4,spd:5}, growBonus:{hp:1.5,mp:2.2,atk:1.2,def:0.3,spd:0.5}, skill:{name:'死亡小夜曲',mp:26,mult:1.75,type:'magic_aoe',desc:'魔攻×1.75／敵'}},
+      {id:'skald', name:'戰吟者', desc:'士氣核心。', statBonus:{hp:28,mp:25,atk:8,def:8,spd:4}, growBonus:{hp:2.2,mp:1.5,atk:0.9,def:0.8,spd:0.3}, skill:{name:'奮戰狂詩',mp:20,type:'buff',buffDefRatio:0.28,buffTurns:3,desc:'全隊防禦+28%，3 回合'}}
+    ],
+    advancements:[
+      {id:'troubadour', name:'遊唱詩人', desc:'鼓舞人心。', statBonus:{hp:10,mp:12,atk:2,def:3,spd:3}, growBonus:{hp:1.5,mp:1.5,atk:0.3,def:0.3,spd:0.3}, skill:{name:'治療謠',mp:16,heal:0.3,type:'heal_aoe',desc:'全隊恢復最大HP×30%'}},
+      {id:'war_chanter', name:'戰歌者', desc:'強化前線。', statBonus:{hp:14,mp:10,atk:4,def:4,spd:2}, growBonus:{hp:2,mp:1,atk:0.5,def:0.5,spd:0.2}, skill:{name:'破陣鼓',mp:14,type:'buff',buffDefRatio:0.2,buffTurns:2,desc:'全隊防禦+20%'}},
+      {id:'siren', name:'惑音使', desc:'干擾敵人。', statBonus:{hp:8,mp:15,atk:6,def:2,spd:4}, growBonus:{hp:1,mp:1.8,atk:0.8,def:0.2,spd:0.4}, skill:{name:'迷亂旋律',mp:18,mult:1.6,type:'magic',desc:'魔攻×1.6'}}
+    ]},
+  {id:'summoner', name:'召喚師', tag:'契約召喚，群傷魔力厚', palette:PALETTES.ice,
+    statBonus:{hp:16,mp:48,atk:4,def:3,spd:3}, growBonus:{hp:2.4,mp:5.6,atk:0.75,def:0.45,spd:0.45},
+    passive:{id:'contract', name:'契約增幅', desc:'召喚／魔法技能傷害 +12%'},
+    skills:[{name:'召喚精靈',mp:18,mult:1.85,type:'magic',desc:'魔攻×1.9'},{name:'元素奔流',mp:24,mult:1.25,type:'magic_aoe',desc:'魔攻×1.25／敵'}],
+    masteries:[
+      {id:'spirit_king', name:'精靈王使', desc:'精靈王契約。', statBonus:{hp:20,mp:40,atk:12,def:4,spd:3}, growBonus:{hp:1.5,mp:3,atk:1.6,def:0.3,spd:0.3}, skill:{name:'精靈王降臨',mp:34,mult:2.1,type:'magic_aoe',desc:'魔攻×2.1／敵'}},
+      {id:'demonologist', name:'惡魔學者', desc:'危險契約。', statBonus:{hp:18,mp:30,atk:14,def:2,spd:4}, growBonus:{hp:1.5,mp:2,atk:1.9,def:0.2,spd:0.4}, skill:{name:'惡魔之吻',mp:28,mult:2.5,type:'magic',desc:'魔攻×2.5'}},
+      {id:'beastcaller', name:'百獸使', desc:'統御魔獸。', statBonus:{hp:24,mp:28,atk:10,def:6,spd:5}, growBonus:{hp:2,mp:1.8,atk:1.3,def:0.5,spd:0.5}, skill:{name:'百獸奔騰',mp:26,mult:1.45,type:'phys_multi',desc:'連擊兩次'}}
+    ],
+    advancements:[
+      {id:'element_caller', name:'元素使', desc:'元素精靈。', statBonus:{hp:5,mp:15,atk:6,def:1,spd:1}, growBonus:{hp:0.8,mp:1.8,atk:1.1,def:0.2,spd:0.2}, skill:{name:'元素砲',mp:20,mult:2.1,type:'magic',desc:'魔攻×2.1'}},
+      {id:'phantom_tamer', name:'幻靈師', desc:'幻靈干擾。', statBonus:{hp:8,mp:12,atk:4,def:3,spd:3}, growBonus:{hp:1,mp:1.5,atk:0.8,def:0.3,spd:0.3}, skill:{name:'幻靈群',mp:22,mult:1.35,type:'magic_aoe',desc:'魔攻×1.35／敵'}},
+      {id:'reaper_pact', name:'冥契師', desc:'冥界契約。', statBonus:{hp:10,mp:14,atk:5,def:2,spd:2}, growBonus:{hp:1.2,mp:1.6,atk:1,def:0.2,spd:0.2}, skill:{name:'冥爪',mp:18,mult:1.55,type:'magic_dot',poisonTurns:2,desc:'魔攻×1.55+毒'}}
+    ]},
+  {id:'dragoon', name:'龍槍', tag:'跳躍槍術，高攻中肉', palette:PALETTES.fire,
+    statBonus:{hp:30,mp:10,atk:13,def:6,spd:6}, growBonus:{hp:5.0,mp:1.1,atk:1.7,def:0.85,spd:0.65},
+    passive:{id:'leap', name:'躍擊', desc:'對 HP>50% 的敵人物傷 +18%'},
+    skills:[{name:'龍槍突刺',mp:12,mult:2.05,type:'phys',desc:'物攻×2.05'},{name:'墮龍擊',mp:18,mult:1.5,type:'phys_multi',desc:'躍擊兩段'}],
+    masteries:[
+      {id:'dragonlord', name:'龍騎將', desc:'龍之盟約。', statBonus:{hp:35,mp:12,atk:16,def:8,spd:6}, growBonus:{hp:3,mp:1,atk:1.9,def:0.8,spd:0.5}, skill:{name:'龍牙滅殺',mp:28,mult:2.8,type:'phys',desc:'物攻×2.8'}},
+      {id:'sky_lancer', name:'蒼穹槍', desc:'天翔槍術。', statBonus:{hp:28,mp:10,atk:14,def:6,spd:10}, growBonus:{hp:2.2,mp:0.8,atk:1.6,def:0.5,spd:0.9}, skill:{name:'天翔連槍',mp:22,mult:1.5,type:'phys_multi',desc:'連槍兩次'}},
+      {id:'wyrm_hunter', name:'屠龍者', desc:'專精屠龍。', statBonus:{hp:30,mp:8,atk:15,def:7,spd:7}, growBonus:{hp:2.5,mp:0.6,atk:1.8,def:0.6,spd:0.6}, skill:{name:'屠龍閃',mp:24,mult:2.5,type:'phys',desc:'物攻×2.5'}}
+    ],
+    advancements:[
+      {id:'jumper', name:'飛槍士', desc:'高空落下。', statBonus:{hp:12,mp:4,atk:9,def:3,spd:5}, growBonus:{hp:2,mp:0.3,atk:1.4,def:0.3,spd:0.5}, skill:{name:'落鳳槍',mp:16,mult:2.2,type:'phys',desc:'物攻×2.2'}},
+      {id:'spear_guard', name:'槍陣衛', desc:'槍陣防禦。', statBonus:{hp:16,mp:6,atk:6,def:8,spd:2}, growBonus:{hp:2.5,mp:0.4,atk:0.9,def:1,spd:0.2}, skill:{name:'槍陣',mp:14,type:'guard',buffDefRatio:0.4,buffTurns:2,desc:'嘲諷並提升防禦'}},
+      {id:'wyrm_knight', name:'龍盟騎', desc:'龍息加持。', statBonus:{hp:14,mp:8,atk:8,def:5,spd:3}, growBonus:{hp:2,mp:0.6,atk:1.2,def:0.5,spd:0.3}, skill:{name:'龍息突',mp:18,mult:1.9,type:'magic',desc:'魔攻×1.9'}}
+    ]},
+
 ];
 
 
@@ -3629,14 +4110,117 @@ function restorePartyFull(s){ s.party.forEach(m=>{ m.hp=m.maxHp; m.mp=m.maxMp; }
 /* ============ NPC 隊友池 ============ */
 // 相容舊程式：合併名單（實際抽選請用 pickNpcNameAndGender）
 const NPC_NAMES = NPC_FEMALE_NAMES.concat(NPC_MALE_NAMES);
+
+/* ============ 共犯／轉職傾向／對話 ============ */
+const JOB_AFFINITY_POOLS = {
+  str: ['warrior','bladesman','dragoon','monk','heavyknight'],
+  agi: ['ninja','rogue','archer','bard'],
+  con: ['heavyknight','warrior','paladin','monk'],
+  int: ['mage','necromancer','summoner','alchemist','shaman','cleric']
+};
+function primaryAttrKey(m){
+  const s=num(m.str,0), c=num(m.con,0), a=num(m.agi,0), i=num(m.int,0);
+  const arr=[{k:'str',v:s},{k:'con',v:c},{k:'agi',v:a},{k:'int',v:i}];
+  arr.sort((x,y)=>y.v-x.v || x.k.localeCompare(y.k));
+  return arr[0].k;
+}
+function jobTendencyLabel(m){
+  let pair = (m && m.seedJobs && m.seedJobs.length>=2) ? m.seedJobs : null;
+  if(!pair && typeof suggestJobPair==='function'){
+    pair = suggestJobPair(m, Math.random);
+    if(m && pair && pair.length>=2) m.seedJobs = pair.slice(0,2);
+  }
+  if(!pair || !pair.length) return '—';
+  return pair.map(id=>classNameById(id)).join('／');
+}
+/** 依屬性推兩條建議戰鬥職業（可轉職目標） */
+function suggestJobPair(m, rng){
+  rng = rng || Math.random;
+  const k=primaryAttrKey(m);
+  let pool=(JOB_AFFINITY_POOLS[k]||JOB_AFFINITY_POOLS.str).slice();
+  // 若已有生活職業，優先其 leadsTo
+  if(m.professionId){
+    const prof=PROFESSIONS.find(p=>p.id===m.professionId);
+    if(prof && prof.leadsTo && prof.leadsTo.length){
+      const filtered=pool.filter(id=>prof.leadsTo.includes(id));
+      if(filtered.length>=2) pool=filtered;
+      else if(filtered.length===1){
+        const extra=prof.leadsTo.filter(id=>id!==filtered[0]);
+        pool=filtered.concat(extra);
+      } else {
+        pool=prof.leadsTo.slice();
+      }
+    }
+  }
+  // 若已有 class，改推三轉分支名稱不在此；仍推 class 層供未轉職前累積
+  pool = pool.filter((id,i,arr)=>arr.indexOf(id)===i);
+  while(pool.length<2){
+    const all=CLASSES.map(c=>c.id);
+    const add=all[Math.floor(rng()*all.length)];
+    if(!pool.includes(add)) pool.push(add);
+  }
+  // 物攻向：隨機兩職；其他向也隨機抽 2
+  const shuffled=pool.slice().sort(()=>rng()-0.5);
+  const a=shuffled[0], b=shuffled[1]===a?shuffled[2]||pool.find(x=>x!==a):shuffled[1];
+  return [a,b].filter(Boolean).slice(0,2);
+}
+function classNameById(id){
+  const c=CLASSES.find(x=>x.id===id);
+  return c?c.name:id;
+}
+function gainComplicity(amount, log){
+  log = log || S.log;
+  amount = Math.max(0, Math.round(num(amount,0)));
+  if(amount<=0) return;
+  (S.party||[]).forEach(m=>{
+    if(!m || m.isHero) return;
+    if(m.complicity==null) m.complicity=0;
+    if(m.jobBias==null) m.jobBias={};
+    const before=num(m.complicity,0);
+    m.complicity=Math.min(COMPLICITY_MAX, before+amount);
+    if(before<COMPLICITY_MAX && m.complicity>=COMPLICITY_MAX && log){
+      log.unshift(m.name+' 的「共犯」情誼已滿，可以到隊伍中與他對話了。');
+    }
+  });
+}
+function weightedClassChoice(opts, biasMap, rng){
+  rng=rng||Math.random;
+  biasMap=biasMap||{};
+  if(!opts||!opts.length) return null;
+  const weights=opts.map(c=>{
+    const id=typeof c==='string'?c:c.id;
+    return 1 + num(biasMap[id],0);
+  });
+  let total=weights.reduce((a,b)=>a+b,0);
+  let r=rng()*total;
+  for(let i=0;i<opts.length;i++){
+    r-=weights[i];
+    if(r<=0) return opts[i];
+  }
+  return opts[opts.length-1];
+}
+
+
 function makeRandomAlly(){
   const rng = Math.random;
   const picked = (typeof pickNpcNameAndGender === 'function')
     ? pickNpcNameAndGender(rng)
     : { name: choice(rng, NPC_NAMES), gender: 'male' };
-  const m = buildMember(picked.name, 1);
+  const heroLv = S && S.hero ? num(S.hero.level,1) : 1;
+  const minLv = Math.max(1, heroLv - 25);
+  const maxLv = Math.max(minLv, heroLv);
+  const lv = minLv + Math.floor(rng() * (maxLv - minLv + 1));
+  const m = buildMember(picked.name, lv);
   m.isNpc = true;
   m.gender = picked.gender || guessGenderFromName(picked.name);
+  const biasKey = ['str','con','agi','int'][Math.floor(rng()*4)];
+  m.attrBias = {str:0, con:0, agi:0, int:0};
+  m.attrBias[biasKey] = 5 + Math.floor(rng()*6);
+  applyComputedStats(m);
+  m.hp=m.maxHp; m.mp=m.maxMp;
+  m.complicity=0;
+  m.jobBias={};
+  m.seedJobs = (typeof suggestJobPair==='function') ? suggestJobPair(m, rng) : [];
   return m;
 }
 
@@ -3696,6 +4280,12 @@ function computeStats(m){
   let con = 5 + Math.floor((lv-1)*0.4);
   let agi = 5 + Math.floor((lv-1)*0.4);
   let intel = 5 + Math.floor((lv-1)*0.4); // int 是保留字，用 intel
+  if(m.attrBias && typeof m.attrBias==='object'){
+    str += num(m.attrBias.str,0);
+    con += num(m.attrBias.con,0);
+    agi += num(m.attrBias.agi,0);
+    intel += num(m.attrBias.int,0);
+  }
 
   const layers = [];
   if(m.professionId){
@@ -3708,6 +4298,10 @@ function computeStats(m){
     if(c && m.advId){
       const a = c.advancements.find(x=>x.id===m.advId);
       if(a) layers.push({def:a, atLevel:m.advLevel||lv});
+    }
+    if(c && m.masterId && c.masteries){
+      const ms = c.masteries.find(x=>x.id===m.masterId);
+      if(ms) layers.push({def:ms, atLevel:m.masterLevel||lv});
     }
   }
   layers.forEach(({def:d, atLevel})=>{
@@ -3786,6 +4380,17 @@ function setAdvancement(m, advId){
   m.advLevel = m.level;
   applyComputedStats(m);
 }
+function setMastery(m, masterId){
+  m.masterId = masterId;
+  m.masterLevel = m.level;
+  applyComputedStats(m);
+}
+function getMasteryDef(m){
+  if(!m || !m.classId || !m.masterId) return null;
+  const cls = CLASSES.find(c=>c.id===m.classId);
+  if(!cls || !cls.masteries) return null;
+  return cls.masteries.find(x=>x.id===m.masterId) || null;
+}
 function classPassive(m){
   if(!m.classId) return null;
   const cls = CLASSES.find(c=>c.id===m.classId);
@@ -3796,6 +4401,10 @@ function hasPassive(m, id){
   return !!(p && p.id===id);
 }
 function displayClassName(m){
+  if(m.masterId && m.classId){
+    const ms = typeof getMasteryDef==='function' ? getMasteryDef(m) : null;
+    if(ms) return ms.name;
+  }
   if(m.advId && m.classId){
     const cls = CLASSES.find(c=>c.id===m.classId);
     const adv = cls && cls.advancements ? cls.advancements.find(a=>a.id===m.advId) : null;
@@ -3812,10 +4421,17 @@ function displayClassName(m){
   return COMMONER.name;
 }
 function getSkills(m){
-  let skills = COMMONER.skills.slice();
-  if(m.professionId){
-    const prof = PROFESSIONS.find(p=>p.id===m.professionId);
-    if(prof && prof.skill) skills.push(prof.skill);
+  let skills = [];
+  // 第四階（傳奇轉職）完成後：不再帶普通人／生活職業技能，避免技能欄過長
+  const postLegend = !!(m && m.masterId);
+  if(!postLegend){
+    if(COMMONER.skills && COMMONER.skills.length){
+      skills = skills.concat(COMMONER.skills);
+    }
+    if(m.professionId){
+      const prof = PROFESSIONS.find(p=>p.id===m.professionId);
+      if(prof && prof.skill) skills.push(prof.skill);
+    }
   }
   if(m.classId){
     const cls = CLASSES.find(c=>c.id===m.classId);
@@ -3823,6 +4439,10 @@ function getSkills(m){
     if(cls && m.advId){
       const adv = cls.advancements.find(a=>a.id===m.advId);
       if(adv && adv.skill) skills.push(adv.skill);
+    }
+    if(cls && m.masterId && cls.masteries){
+      const ms = cls.masteries.find(a=>a.id===m.masterId);
+      if(ms && ms.skill) skills.push(ms.skill);
     }
   }
   // 已裝備唯一：附加專屬技能
@@ -3846,7 +4466,9 @@ function buildMember(name, level){
     str:0, con:0, agi:0, int:0,
     equip:emptyEquip(),
     buffDef:0, buffTurns:0, guarding:false, taunting:false,
-    usedGuardianAngel:false
+    usedGuardianAngel:false,
+    complicity:0, // 共犯值：滿了可與主角對話強化轉職傾向
+    jobBias:{}   // classId -> 額外權重（每次對話 +0.10）
   };
   applyComputedStats(m);
   m.hp = m.maxHp; m.mp = m.maxMp;
@@ -3890,6 +4512,7 @@ function evaluateEvolution(m){
   if(m.level>=PROFESSION_LEVEL && !m.professionId){ S.pendingStage='profession'; return; }
   if(m.level>=CLASS_LEVEL && m.professionId && !m.classId){ S.pendingStage='class'; return; }
   if(m.level>=BRANCH_LEVEL && m.classId && !m.advId){ S.pendingStage='branch'; return; }
+  if(m.level>=MASTER_LEVEL && m.advId && !m.masterId){ S.pendingStage='legend'; return; }
 }
 function autoEvolveAll(m, log){
   if(m.level>=PROFESSION_LEVEL && !m.professionId){
@@ -3902,7 +4525,9 @@ function autoEvolveAll(m, log){
     if(prof && prof.leadsTo){
       const opts = CLASSES.filter(c=>prof.leadsTo.includes(c.id));
       if(opts.length){
-        const cls = choice(Math.random, opts);
+        const cls = (typeof weightedClassChoice==='function')
+          ? weightedClassChoice(opts, m.jobBias||{}, Math.random)
+          : choice(Math.random, opts);
         setClass(m, cls.id);
         log.push(m.name+' 覺醒為 ['+cls.name+']！');
       }
@@ -3914,6 +4539,14 @@ function autoEvolveAll(m, log){
       const adv = choice(Math.random, cls.advancements);
       setAdvancement(m, adv.id);
       log.push(m.name+' 進一步覺醒為 ['+adv.name+']！');
+    }
+  }
+  if(m.level>=MASTER_LEVEL && m.advId && !m.masterId){
+    const cls = CLASSES.find(c=>c.id===m.classId);
+    if(cls && cls.masteries && cls.masteries.length){
+      const ms = choice(Math.random, cls.masteries);
+      setMastery(m, ms.id);
+      log.push(m.name+' 傳奇轉職為 ['+ms.name+']！');
     }
   }
 }
@@ -3984,6 +4617,7 @@ function routeHome(){
   if(S.pendingStage==='profession') S.screen='evolve-profession';
   else if(S.pendingStage==='class') S.screen='evolve-class';
   else if(S.pendingStage==='branch') S.screen='evolve-branch';
+  else if(S.pendingStage==='legend') S.screen='evolve-legend';
   else S.screen='hub';
 }
 
@@ -4316,7 +4950,8 @@ function advanceBattleTurn(first){
       if(m.hp>0 && m.maxMp>0 && m.mp < m.maxMp){
         const baseRegen = Math.max(1, Math.round(m.maxMp*0.04));
         const bonusRegen = hasPassive(m,'manaRegen') ? Math.max(1, Math.round(m.maxMp*0.06)) : 0;
-        const regen = baseRegen + bonusRegen;
+        const anthemBonus = (typeof hasPassive==='function' && S.party.some(p=>p.hp>0 && hasPassive(p,'anthem'))) ? Math.max(1, Math.round(m.maxMp*0.03)) : 0;
+        const regen = baseRegen + bonusRegen + anthemBonus;
         m.mp = clamp(m.mp+regen, 0, m.maxMp);
         if(bonusRegen>0) b.turnLog.unshift(m.name+' 的魔力自然涌動，回復 '+regen+' MP。');
       }
@@ -4721,7 +5356,8 @@ function calcPhysDmg(actor, target, opts){
   if(opts.variance){
     variance = CF.ATK_VAR_MIN + Math.random() * (CF.ATK_VAR_MAX - CF.ATK_VAR_MIN);
   }
-  const raw = atk * mult * variance;
+  let raw = atk * mult * variance;
+  if(typeof hasPassive==='function' && hasPassive(actor,'leap') && target && target.hp>target.maxHp*0.5) raw *= 1.18;
   const mitigated = raw - (def - ignore) * CF.PHYS_DEF;
   const floor = raw * (CF.PHYS_FLOOR != null ? CF.PHYS_FLOOR : 0.28);
   let dmg = Math.max(1, Math.round(Math.max(floor, mitigated)));
@@ -4737,6 +5373,8 @@ function calcMagicDmg(actor, target, opts){
   const matk = Math.max(1, num(statTotal(actor,'matk'), 1));
   const def = Math.max(0, num(target && target.def, 0));
   let raw = matk * mult;
+  if(typeof hasPassive==='function' && hasPassive(actor,'contract')) raw *= 1.12;
+  if(typeof hasPassive==='function' && hasPassive(actor,'catalyst') && Math.random()<0.20) raw *= 1.25;
   if(typeof sumUniqueEffect === 'function'){
     const burn = sumEquipSpecial(actor, 'burnBonus');
     if(burn > 0) raw *= (1 + burn);
@@ -5203,7 +5841,11 @@ function monsterAct(mon){
     }
     // 唯一：受傷減免
     if(typeof sumUniqueEffect === 'function'){
-      const dr = sumEquipSpecial(target, 'dmgReduce');
+      // 重騎士：重裝減傷
+    if(typeof hasPassive==='function' && hasPassive(target,'armored')){
+      dmg = Math.max(1, Math.round(dmg * 0.88));
+    }
+    const dr = sumEquipSpecial(target, 'dmgReduce');
       if(dr > 0) dmg = Math.max(1, Math.round(dmg * (1 - Math.min(0.4, dr))));
     }
     target.hp = clamp(target.hp-dmg,0,target.maxHp);
@@ -5529,6 +6171,7 @@ function checkBattleEnd(){
     if(!b.over){
       b.over=true; b.win=true;
       b.turnLog.unshift('=== 戰鬥勝利！ ===');
+      if(typeof gainComplicity==='function') gainComplicity(COMPLICITY_GAIN_BATTLE, b.turnLog);
       let dropped=[];
       b.monsters.forEach(m=>{
         if(m._fled) return; // 逃脫不掉落
@@ -5575,6 +6218,7 @@ function checkBattleEnd(){
 /* ============ 探索 / 事件 ============ */
 function explore(){
   S.daysSurvived++;
+  if(typeof gainComplicity==='function') gainComplicity(COMPLICITY_GAIN_EXPLORE, S.log);
   const rng=Math.random;
   const roll = rng();
   const avgLv = avgPartyLevel();
@@ -5814,7 +6458,7 @@ let uiTab = 'inv';
 /* ============ 存檔系統（localStorage） ============ */
 const SAVE_KEY = 'ashfall_era_save_v1';
 /** 遊戲顯示版本號（給玩家看） */
-const GAME_VERSION = '1.5.0';
+const GAME_VERSION = '1.7.4';
 const SAVE_VERSION = 2;
 function saveGame(manual){
   if(!S) return false;
@@ -5965,10 +6609,16 @@ function loadGame(){
       m.spd = Math.max(1, Number(m.spd)||1);
       if(m.matk != null) m.matk = Math.max(1, Number(m.matk)||1);
     });
+
+    (S.party||[]).forEach(m=>{
+      if(m.complicity==null) m.complicity=0;
+      if(!m.jobBias||typeof m.jobBias!=='object') m.jobBias={};
+    });
     evaluateEvolution(S.hero);
     if(S.pendingStage==='profession') S.screen='evolve-profession';
     else if(S.pendingStage==='class') S.screen='evolve-class';
     else if(S.pendingStage==='branch') S.screen='evolve-branch';
+    else if(S.pendingStage==='legend') S.screen='evolve-legend';
     return true;
   }catch(e){ S=null; return false; }
 }
@@ -6008,9 +6658,11 @@ function render(){
   else if(S.screen==='shop') { root.innerHTML = renderShop(); bindShop(); }
   else if(S.screen==='tavern') { root.innerHTML = renderTavern(); bindTavern(); }
   else if(S.screen==='party') { root.innerHTML = renderParty(); bindParty(); }
+  else if(S.screen==='ally-talk') { root.innerHTML = renderAllyTalk(); bindAllyTalk(); }
   else if(S.screen==='evolve-profession') { root.innerHTML = renderEvolveProfession(); bindEvolveProfession(); }
   else if(S.screen==='evolve-class') { root.innerHTML = renderEvolveClass(); bindEvolveClass(); }
   else if(S.screen==='evolve-branch') { root.innerHTML = renderEvolveBranch(); bindEvolveBranch(); }
+  else if(S.screen==='evolve-legend') { root.innerHTML = renderEvolveMaster(); bindEvolveMaster(); }
   requestAnimationFrame(paintSprites);
   // 存檔安全範圍：除了「戰鬥中」(battle.order[].ref 需要維持物件參照一致性)
   // 跟「事件選擇中」(event.choices[].act 是函式，無法被JSON序列化)以外，
@@ -6086,6 +6738,7 @@ function memberCardHtml(m, idx, opts){
         <div class="bar-wrap"><div class="bar" style="width:${hpPct}%;background:var(--hp)"></div></div>
         <div class="compact-stats"><span>HP ${m.hp}/${m.maxHp}</span>${m.maxMp? `<span>MP ${m.mp}/${m.maxMp}</span>`:''}</div>
         ${m.maxMp? `<div class="bar-wrap bar-wrap-mp"><div class="bar" style="width:${mpPct}%;background:var(--mp)"></div></div>`:''}
+        ${!m.isHero?`<div class="small" style="font-size:9px;color:var(--gold);line-height:1.2;">共犯 ${num(m.complicity,0)}/${typeof COMPLICITY_MAX!=='undefined'?COMPLICITY_MAX:100}</div>`:''}
       </div>
     </div>`;
   }
@@ -6130,20 +6783,20 @@ function restMP(){
 }
 function renderHub(){
   const hero=S.hero;
-  const partyHtml = S.party.map((m,i)=>memberCardHtml(m,i,{prefix:'hub', showExp:true})).join('');
-  const recentLog = S.log.slice(0,5).map(l=>`<div>${esc(l)}</div>`).join('') || '<div class="small">尚無紀錄……</div>';
+  const partyHtml = S.party.map((m,i)=>memberCardHtml(m,i,{prefix:'hub', compact:true, showExp:false})).join('');
+  const recentLog = S.log.slice(0,4).map(l=>`<div>${esc(l)}</div>`).join('') || '<div class="small">尚無紀錄……</div>';
   const costHP = restCostHP();
   const costMP = restCostMP();
   const canAffordHP = hero.gold >= costHP;
   const canAffordMP = hero.gold >= costMP;
   return `
-  <div class="panel">
+  <div class="panel hub-panel">
     <div class="topbar">
       <span class="pixel-font" style="font-size:11px;color:var(--gold);">💰 ${hero.gold} 金幣</span>
       <span class="small">已探索 ${S.daysSurvived} 次</span>
       <span class="small version-tag">v${typeof GAME_VERSION!=='undefined'?GAME_VERSION:'?'}</span>
     </div>
-    <div class="grid party-grid">${partyHtml}</div>
+    <div class="grid party-grid hub-party-grid">${partyHtml}</div>
     <hr class="divider">
     <button class="btn gold btn-primary" id="explore-btn">🧭 前往探索</button>
     <div class="nav-grid nav-grid-4">
@@ -6173,7 +6826,7 @@ function renderHub(){
   </div>`;
 }
 function bindHub(){
-  S.party.forEach((m,i)=> queueSprite('hub-'+i, (m.name||'hero')+'_'+m.uid, memberPalette(m), 14, {kind:'human'}));
+  S.party.forEach((m,i)=> queueSprite('hub-'+i, (m.name||'hero')+'_'+m.uid, memberPalette(m), 12, {kind:'human'}));
   document.getElementById('explore-btn').addEventListener('click', explore);
   document.getElementById('inv-btn').addEventListener('click', ()=>{ S.screen='inventory'; render(); });
   const wareBtn = document.getElementById('ware-btn');
@@ -6542,7 +7195,8 @@ function renderInventory(){
   const memberTabs = S.party.map(m=>`
     <button class="btn ${m.uid===selMember.uid?'active':''}" data-selmember="${m.uid}">
       ${esc(m.name)}${m.isHero?' ★':''}
-    </button>`).join('');
+    </button>`).join('') + `
+    <button class="btn btn-compact" id="back-hub2" style="margin-left:auto;">返回營地</button>`;
 
   const hpPct = Math.max(0, Math.min(100, Math.round((selMember.hp/Math.max(1,selMember.maxHp))*100)));
   const mpPct = Math.max(0, Math.min(100, Math.round((selMember.mp/Math.max(1,selMember.maxMp||1))*100)));
@@ -6789,7 +7443,6 @@ function renderInventory(){
       </div>
     </div>
     <div class="bp-detail">${detailHtml}</div>
-    <div style="text-align:center;margin-top:4px;"><button class="btn" id="back-hub2">返回營地</button></div>
   </div>
   ${modalHtml}`;
 }
@@ -6859,16 +7512,14 @@ function bindInventory(){
     const item = selMember.equip[slot];
     const cv = document.getElementById('eq-'+slot);
     if(item && cv){
-      const kind = (slot==='weapon'||slot==='offhand') ? 'weapon' : (slot==='accessory' ? 'accessory' : 'armor');
-      drawEquipIcon(cv, item.seed, kind, item.rarityHex);
+      drawEquipIcon(cv, item.seed, slot, item.rarityHex);
     }
   });
   S.inventory.forEach((item,i)=>{
     if(item.slot==='potion') return;
     const el = document.getElementById('inv-'+i);
     if(el){
-      const kind = (item.slot==='weapon'||item.slot==='offhand') ? 'weapon' : (item.slot==='accessory' ? 'accessory' : 'armor');
-      drawEquipIcon(el, item.seed, kind, item.rarityHex);
+      drawEquipIcon(el, item.seed, item.slot, item.rarityHex);
     }
   });
 
@@ -6958,8 +7609,7 @@ function bindInventory(){
       if(!item || item.slot==='potion') return;
       const el = document.getElementById('wh-'+i);
       if(el){
-        const kind = (item.slot==='weapon'||item.slot==='offhand') ? 'weapon' : (item.slot==='accessory' ? 'accessory' : 'armor');
-        drawEquipIcon(el, item.seed, kind, item.rarityHex);
+        drawEquipIcon(el, item.seed, item.slot, item.rarityHex);
       }
     });
   }
@@ -6971,7 +7621,7 @@ function bindInventory(){
 
 /* ===== 10-shop-tavern.js ===== */
 /* ============ 商店系統 ============ */
-const SHOP_SIZE = 6;
+const SHOP_SIZE = 12;
 const SHOP_REROLL_COST = 25;
 function potionPrice(kind){ return kind==='mp' ? 25 : 30; }
 function generateShopStock(){
@@ -6994,56 +7644,73 @@ function generateShopStock(){
 }
 function renderShop(){
   if(!S.shopStock) generateShopStock();
+  if(S.shopStock && S.shopStock.length < SHOP_SIZE){
+    const lvl = typeof avgPartyLevel==='function' ? avgPartyLevel() : (S.hero?S.hero.level:1);
+    while(S.shopStock.length < SHOP_SIZE){
+      if(Math.random() < 0.35){
+        const kind = Math.random()<0.5 ? 'hp' : 'mp';
+        S.shopStock.push({item:{uid:'pot_shop_'+Math.floor(Math.random()*1e9),slot:'potion',kind,name:kind==='mp'?'魔力藥水':'治療藥水',value:kind==='mp'?40:60}, price:potionPrice(kind), sold:false});
+      } else {
+        const item = rollEquip(Math.random, null, lvl);
+        S.shopStock.push({item, price:equipPrice(item), sold:false});
+      }
+    }
+  }
   const hero = S.hero;
   const tab = S.shopTab || 'buy';
   let body = '';
   if(tab==='buy'){
-    const rows = S.shopStock.map((entry,i)=>{
+    const cards = S.shopStock.map((entry,i)=>{
       const it = entry.item;
       const isPotion = it.slot==='potion';
       if(entry.sold){
-        return `<div class="item-row" style="opacity:.4;">
-          <div><span class="${isPotion?'':'rarity-'+it.rarity}">${esc(it.name)}</span> <span class="meta">已售出</span></div>
-        </div>`;
+        return `<div class="shop-card sold"><div class="shop-name">${esc(it.name)}</div><div class="meta">已售出</div></div>`;
       }
       const canAfford = hero.gold >= entry.price;
       if(isPotion){
         const icon = it.kind==='mp' ? '💧' : '🧪';
-        const statName = it.kind==='mp' ? 'MP' : 'HP';
-        return `<div class="item-row">
-          <div><span>${icon} ${esc(it.name)}</span> <span class="meta">恢復 ${it.value} ${statName}</span></div>
-          <button class="btn ${canAfford?'gold':''}" data-buy="${i}" ${canAfford?'':'disabled'}>💰 ${entry.price}</button>
+        return `<div class="shop-card">
+          <div class="shop-icon">${icon}</div>
+          <div class="shop-name">${esc(it.name)}</div>
+          <div class="meta">+${it.value} ${it.kind==='mp'?'MP':'HP'}</div>
+          <button class="btn btn-compact ${canAfford?'gold':''}" data-buy="${i}" ${canAfford?'':'disabled'}>💰${entry.price}</button>
         </div>`;
       }
-      const label = slotLabelOf(it.slot);
-      return `<div class="item-row">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <canvas class="sprite" id="shop-${i}" width="40" height="40"></canvas>
-          <div><div class="rarity-${it.rarity}">${esc(it.name)}</div><div class="meta">${label} ${equipAffixText(it)} · Lv.${it.itemLevel}</div></div>
-        </div>
-        <button class="btn ${canAfford?'gold':''}" data-buy="${i}" ${canAfford?'':'disabled'}>💰 ${entry.price}</button>
+      const label = typeof slotLabelOf==='function' ? slotLabelOf(it.slot) : (it.slot||'');
+      const stats = typeof equipAffixText==='function' ? equipAffixText(it) : '';
+      return `<div class="shop-card">
+        <canvas class="sprite" id="shop-${i}" width="36" height="36"></canvas>
+        <div class="shop-name rarity-${it.rarity}">${esc(it.name)}</div>
+        <div class="meta">${esc(label)} · Lv.${it.itemLevel||1}</div>
+        <div class="shop-stats">${esc(stats)}</div>
+        <button class="btn btn-compact ${canAfford?'gold':''}" data-buy="${i}" ${canAfford?'':'disabled'}>💰${entry.price}</button>
       </div>`;
     }).join('');
-    body = rows;
+    body = `<div class="shop-grid">${cards}</div>`;
   } else {
-    const equipItems = S.inventory.filter(i=>i.slot!=='potion');
-    body = equipItems.map(it=>{
-      const label = slotLabelOf(it.slot);
+    const equipItems = S.inventory.filter(x=>x.slot!=='potion');
+    const cards = equipItems.map(it=>{
+      const label = typeof slotLabelOf==='function' ? slotLabelOf(it.slot) : '';
       const sellPrice = Math.round(equipPrice(it)*0.4);
-      const lockNote = it.locked ? ' · 🔒已鎖定' : '';
-      return `<div class="item-row">
-        <div><div class="rarity-${it.rarity}">${esc(it.name)}</div><div class="meta">${label} ${equipAffixText(it)} · Lv.${it.itemLevel||1}${lockNote}</div></div>
-        <button class="btn danger" data-sell="${it.uid}" ${it.locked?'disabled':''}>${it.locked?'已鎖定':'賣出 💰'+sellPrice}</button>
+      const stats = typeof equipAffixText==='function' ? equipAffixText(it) : '';
+      return `<div class="shop-card">
+        <div class="shop-name rarity-${it.rarity}">${esc(it.name)}</div>
+        <div class="meta">${esc(label)}${it.locked?' · 🔒':''}</div>
+        <div class="shop-stats">${esc(stats)}</div>
+        <button class="btn btn-compact danger" data-sell="${it.uid}" ${it.locked?'disabled':''}>${it.locked?'鎖定中':'賣 💰'+sellPrice}</button>
       </div>`;
-    }).join('') || '<p class="small">背包裡沒有可以出售的裝備。</p>';
+    }).join('') || '<p class="small">背包沒有可出售裝備。</p>';
+    body = `<div class="shop-grid">${cards}</div>`;
   }
   const rerollAfford = hero.gold >= SHOP_REROLL_COST;
-  const sellCount = S.inventory.filter(i=>i.slot!=='potion' && !i.locked).length;
+  const hasPrecious = (S.shopStock||[]).some(e=>!e.sold && e.item && (e.item.rarity==='ancient'||e.item.rarity==='unique'));
   return `
   <div class="panel">
     <div class="topbar">
       <span class="pixel-font" style="font-size:11px;color:var(--gold);">💰 ${hero.gold} 金幣</span>
+      <span class="small">商店貨架</span>
     </div>
+    <p class="section-title">🏪 商店</p>
     <div class="segmented">
       <button class="btn ${tab==='buy'?'active':''}" data-tab="buy">🛒 購買</button>
       <button class="btn ${tab==='sell'?'active':''}" data-tab="sell">💸 販賣</button>
@@ -7051,10 +7718,10 @@ function renderShop(){
     ${body}
     <hr class="divider">
     <div class="action-row" style="justify-content:center;">
-      ${tab==='buy'?`<button class="btn ${rerollAfford?'':'danger'}" id="reroll-btn" ${rerollAfford?'':'disabled'}>🔄 更新商品（${SHOP_REROLL_COST} 金幣）</button>`:''}
-      ${tab==='sell' && sellCount>0?`<button class="btn danger" id="sell-all-btn">💸 一鍵賣出全部（${sellCount}件）</button>`:''}
+      <button class="btn ${rerollAfford?'':'danger'}" id="shop-reroll-btn" ${rerollAfford?'':'disabled'}>🔄 刷新貨架（${SHOP_REROLL_COST}）${hasPrecious?' ⚠':''}</button>
       <button class="btn" id="back-hub4">返回營地</button>
     </div>
+    ${hasPrecious?'<p class="small" style="text-align:center;color:var(--gold);margin-top:6px;">貨架上有千古／唯一，刷新前會再確認。</p>':''}
   </div>`;
 }
 function bindShop(){
@@ -7098,9 +7765,15 @@ function bindShop(){
     S.log.unshift('賣出了 '+item.name+'，獲得 '+sellPrice+' 金幣。');
     render();
   }));
-  const rerollBtn = document.getElementById('reroll-btn');
+  const rerollBtn = document.getElementById('shop-reroll-btn') || document.getElementById('reroll-btn');
   if(rerollBtn) rerollBtn.addEventListener('click', ()=>{
     if(S.hero.gold < SHOP_REROLL_COST) return;
+    const precious = (S.shopStock||[]).filter(e=>!e.sold && e.item && (e.item.rarity==='ancient'||e.item.rarity==='unique'));
+    if(precious.length){
+      const names = precious.map(e=>e.item.name).slice(0,5).join('、');
+      const ok = confirm('貨架上還有千古／唯一裝備：\n'+names+(precious.length>5?'…':'')+'\n\n確定要刷新嗎？刷新後這些商品會消失。');
+      if(!ok) return;
+    }
     S.hero.gold -= SHOP_REROLL_COST;
     generateShopStock();
     S.log.unshift('花費 '+SHOP_REROLL_COST+' 金幣，更新了商店的商品。');
@@ -7123,8 +7796,12 @@ function bindShop(){
 }
 
 /* ============ 酒館招募系統 ============ */
-const TAVERN_SIZE = 4;
+const TAVERN_SIZE = 8;
 const TAVERN_REROLL_COST = 15;
+const COMPLICITY_MAX = 100;
+const COMPLICITY_GAIN_BATTLE = 9;
+const COMPLICITY_GAIN_EXPLORE = 3;
+const JOB_BIAS_STEP = 0.10; // 每次對話 +10% 傾向
 function recruitCost(){
   return Math.round(40 + avgPartyLevel()*3);
 }
@@ -7137,23 +7814,32 @@ function generateTavernStock(){
 }
 function renderTavern(){
   if(!S.tavernStock) generateTavernStock();
+  // 若舊存檔是 4 人，補到 8
+  if(S.tavernStock.length < TAVERN_SIZE){
+    while(S.tavernStock.length < TAVERN_SIZE){
+      S.tavernStock.push({npc: makeRandomAlly(), price: recruitCost(), recruited:false});
+    }
+  }
   const hero = S.hero;
   const full = S.party.length>=4;
-  const rows = S.tavernStock.map((entry,i)=>{
+  const cards = S.tavernStock.map((entry,i)=>{
     const npc = entry.npc;
+    const tend = typeof jobTendencyLabel==='function' ? jobTendencyLabel(npc) : '';
     if(entry.recruited){
-      return `<div class="item-row" style="opacity:.4;">
-        <div><span>${esc(npc.name)}</span> <span class="meta">已加入隊伍</span></div>
+      return `<div class="tavern-card recruited">
+        <canvas class="sprite" id="tavern-${i}" width="36" height="36"></canvas>
+        <div class="tavern-name">${esc(npc.name)}</div>
+        <div class="meta">已加入</div>
       </div>`;
     }
     const canAfford = hero.gold >= entry.price;
     const disabled = full || !canAfford;
-    return `<div class="item-row">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <canvas class="sprite" id="tavern-${i}" width="44" height="44"></canvas>
-        <div><b>${esc(npc.name)}</b><div class="meta">普通人 · 待覺醒 · Lv.${npc.level}</div></div>
-      </div>
-      <button class="btn ${disabled?'':'gold'}" data-recruit="${i}" ${disabled?'disabled':''}>💰 ${entry.price}</button>
+    return `<div class="tavern-card">
+      <canvas class="sprite" id="tavern-${i}" width="36" height="36"></canvas>
+      <div class="tavern-name">${esc(npc.name)}</div>
+      <div class="meta">Lv.${npc.level}</div>
+      <div class="tavern-tend" title="建議職業">${esc(tend)}</div>
+      <button class="btn btn-compact ${disabled?'':'gold'}" data-recruit="${i}" ${disabled?'disabled':''}>💰${entry.price}</button>
     </div>`;
   }).join('');
   const rerollAfford = hero.gold >= TAVERN_REROLL_COST;
@@ -7163,9 +7849,9 @@ function renderTavern(){
       <span class="pixel-font" style="font-size:11px;color:var(--gold);">💰 ${hero.gold} 金幣</span>
       <span class="small">隊伍 ${S.party.length}/4 人</span>
     </div>
-    <p class="section-title">🍺 酒館 — 可招募的旅人</p>
-    ${full ? '<p class="event-text">隊伍已經滿員了，無法再招募新的夥伴。</p>' : ''}
-    ${rows}
+    <p class="section-title">🍺 酒館 — 旅人（一次 8 人）</p>
+    ${full ? '<p class="event-text" style="margin:4px 0;">隊伍已滿員。</p>' : ''}
+    <div class="tavern-grid">${cards}</div>
     <hr class="divider">
     <div class="action-row" style="justify-content:center;">
       <button class="btn ${rerollAfford?'':'danger'}" id="tavern-reroll-btn" ${rerollAfford?'':'disabled'}>🔄 更換旅人（${TAVERN_REROLL_COST} 金幣）</button>
@@ -7174,7 +7860,7 @@ function renderTavern(){
   </div>`;
 }
 function bindTavern(){
-  S.tavernStock.forEach((entry,i)=>{ if(!entry.recruited) queueSprite('tavern-'+i, (entry.npc.name||'npc')+'_'+entry.npc.uid, memberPalette(entry.npc), 14, {kind:'human'}); });
+  S.tavernStock.forEach((entry,i)=>{ queueSprite('tavern-'+i, (entry.npc.name||'npc')+'_'+entry.npc.uid, memberPalette(entry.npc), 11, {kind:'human'}); });
   document.querySelectorAll('[data-recruit]').forEach(btn=> btn.addEventListener('click', ()=>{
     const idx = parseInt(btn.dataset.recruit);
     const entry = S.tavernStock[idx];
@@ -7202,6 +7888,10 @@ function bindTavern(){
 function renderParty(){
   const cards = S.party.map((m,i)=>{
     const canDismiss = !m.isHero && S.party.length>1;
+    if(m.complicity==null) m.complicity=0;
+    if(!m.jobBias) m.jobBias={};
+    const compPct = Math.max(0, Math.min(100, Math.round(num(m.complicity,0)/(typeof COMPLICITY_MAX!=='undefined'?COMPLICITY_MAX:100)*100)));
+    const canTalk = !m.isHero && num(m.complicity,0)>=(typeof COMPLICITY_MAX!=='undefined'?COMPLICITY_MAX:100);
     return `<div class="hero-slot">
       <canvas class="sprite" id="pty-${i}" width="52" height="52"></canvas>
       <div style="flex:1;">
@@ -7209,8 +7899,13 @@ function renderParty(){
         <div class="small">HP ${m.hp}/${m.maxHp} ・ MP ${m.mp}/${m.maxMp} ・ EXP ${m.exp}/${m.nextExp}</div>
         <div class="small">物攻 ${statTotal(m,'atk')} / 魔攻 ${statTotal(m,'matk')} / 防 ${statTotal(m,'def')} / 速 ${statTotal(m,'spd')}</div>
         <div class="small">力${m.str||0} 體${m.con||0} 敏${m.agi||0} 智${m.int||0}</div>
+        ${!m.isHero?`<div class="small" style="color:var(--gold);">共犯 ${num(m.complicity,0)}/${typeof COMPLICITY_MAX!=='undefined'?COMPLICITY_MAX:100}</div>
+        <div class="complicity-bar"><i style="width:${compPct}%"></i></div>`:''}
       </div>
-      ${canDismiss?`<button class="btn danger" data-dismiss="${m.uid}">遣散</button>`:''}
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        ${canTalk?`<button class="btn gold btn-compact" data-talk="${m.uid}">對話</button>`:''}
+        ${canDismiss?`<button class="btn danger btn-compact" data-dismiss="${m.uid}">遣散</button>`:''}
+      </div>
     </div>`;
   }).join('');
   return `
@@ -7229,8 +7924,91 @@ function renderParty(){
     <div style="text-align:center;"><button class="flee-link" id="restart-game-btn">🗑️ 放棄進度，重新開始遊戲</button></div>
   </div>`;
 }
+
+/* --- 夥伴轉職對話（過肩鏡頭） --- */
+function renderAllyTalk(){
+  const hero=S.hero;
+  const ally=S.party.find(m=>m.uid===S.talkTargetUid);
+  if(!ally){
+    setTimeout(()=>{ S.screen='party'; render(); },0);
+    return `<div class="panel"><p class="event-text">找不到對話對象…</p></div>`;
+  }
+  if(!S.talkChoices || S.talkChoices.length<2){
+    S.talkChoices=suggestJobPair(ally, Math.random);
+  }
+  const j1=S.talkChoices[0], j2=S.talkChoices[1];
+  const n1=classNameById(j1), n2=classNameById(j2);
+  return `
+  <div class="panel">
+    <p class="section-title">💬 夥伴對話</p>
+    <div class="talk-scene">
+      <div class="talk-hero">
+        <canvas class="sprite" id="talk-hero" width="72" height="72"></canvas>
+        <div class="talk-label">${esc(hero.name)}（背影）</div>
+      </div>
+      <div class="talk-partner">
+        <canvas class="sprite" id="talk-ally" width="72" height="72"></canvas>
+        <div class="talk-label">${esc(ally.name)}</div>
+      </div>
+    </div>
+    <div class="talk-dialog" id="talk-dialog-box">
+      <div class="line"><span class="speaker">${esc(hero.name)}：</span>嗨，${esc(ally.name)}，我知道你的力量在最近又增強了許多，如果可能，也許你進化成
+        <button class="btn gold btn-compact" data-job-pick="${j1}" style="margin:0 4px;">${esc(n1)}</button>
+        <button class="btn gold btn-compact" data-job-pick="${j2}" style="margin:0 4px;">${esc(n2)}</button>
+        會在殺掉謊言之人時更有幫助。</div>
+      <div class="line small" style="color:var(--text-dim);">（選擇一個職業建議，將使對方往該職業轉職的機率 +10%）</div>
+    </div>
+    <div style="text-align:center;margin-top:10px;">
+      <button class="btn" id="talk-cancel">稍後再說</button>
+    </div>
+  </div>`;
+}
+function bindAllyTalk(){
+  const hero=S.hero;
+  const ally=S.party.find(m=>m.uid===S.talkTargetUid);
+  if(!ally) return;
+  queueSprite('talk-hero', (hero.name||'hero')+'_'+hero.uid+'_back', memberPalette(hero), 16, {kind:'human'});
+  queueSprite('talk-ally', (ally.name||'ally')+'_'+ally.uid, memberPalette(ally), 16, {kind:'human'});
+  const finishPick=(jobId)=>{
+    if(!ally.jobBias) ally.jobBias={};
+    ally.jobBias[jobId]=num(ally.jobBias[jobId],0)+JOB_BIAS_STEP;
+    ally.complicity=0;
+    const jn=classNameById(jobId);
+    const pct=Math.round(num(ally.jobBias[jobId],0)*100);
+    S.log.unshift(ally.name+' 往「'+jn+'」走的決心更堅定了一些。（傾向 +10%，目前 +'+pct+'%）');
+    // 對話回覆
+    const box=document.getElementById('talk-dialog-box');
+    if(box){
+      box.innerHTML=`
+        <div class="line"><span class="speaker">${esc(hero.name)}：</span>嗨，${esc(ally.name)}，我知道你的力量在最近又增強了許多，如果可能，也許你進化成「${esc(jn)}」會在殺掉謊言之人時更有幫助。</div>
+        <div class="line"><span class="speaker">${esc(ally.name)}：</span>這樣啊，我會把你的建議納入考量的。</div>
+        <div class="line" style="color:var(--gold);">夥伴往「${esc(jn)}」走的決心更堅定了一些。（轉職傾向 +10%）</div>`;
+    }
+    document.querySelectorAll('[data-job-pick]').forEach(b=>b.remove());
+    const cancel=document.getElementById('talk-cancel');
+    if(cancel){ cancel.textContent='返回隊伍'; cancel.onclick=()=>{ S.screen='party'; S.talkTargetUid=null; S.talkChoices=null; render(); }; }
+  };
+  document.querySelectorAll('[data-job-pick]').forEach(btn=>{
+    btn.addEventListener('click', ()=> finishPick(btn.dataset.jobPick));
+  });
+  const cancel=document.getElementById('talk-cancel');
+  if(cancel) cancel.addEventListener('click', ()=>{
+    S.screen='party'; S.talkTargetUid=null; S.talkChoices=null; render();
+  });
+}
+
+
 function bindParty(){
   S.party.forEach((m,i)=> queueSprite('pty-'+i, (m.name||'hero')+'_'+m.uid, memberPalette(m), 14, {kind:'human'}));
+  document.querySelectorAll('[data-talk]').forEach(btn=> btn.addEventListener('click', ()=>{
+    const uid=btn.dataset.talk;
+    const ally=S.party.find(m=>m.uid===uid);
+    if(!ally || num(ally.complicity,0)<COMPLICITY_MAX) return;
+    S.talkTargetUid=uid;
+    S.talkChoices=suggestJobPair(ally, Math.random);
+    S.screen='ally-talk';
+    render();
+  }));
   document.querySelectorAll('[data-dismiss]').forEach(btn=> btn.addEventListener('click', ()=>{
     S.party = S.party.filter(m=>m.uid!==btn.dataset.dismiss);
     render();
@@ -7283,7 +8061,7 @@ function renderEvolveProfession(){
   return `
   <div class="panel">
     <p class="section-title pixel-font" style="font-size:12px;">🌱 生活覺醒 — Lv.${hero.level}</p>
-    <p class="event-text">${esc(hero.name)} 已成長到足以選擇人生方向的年紀！請從 4 種生活職業中選擇一個，這將決定你未來能踏上哪些冒險職業之路。</p>
+    <p class="event-text">${esc(hero.name)} 已成長到足以選擇人生方向的年紀！請從下列生活職業中選擇一個，這將決定你未來能踏上哪些冒險職業之路。</p>
     <div class="grid class-grid">${cards}</div>
   </div>`;
 }
@@ -7328,7 +8106,7 @@ function renderEvolveClass(){
   return `
   <div class="panel">
     <p class="section-title pixel-font" style="font-size:12px;">⚔️ 職業覺醒 — Lv.${hero.level}</p>
-    <p class="event-text">身為 ${esc(prof.name)} 的 ${esc(hero.name)}，已經達到正式踏上冒險職業的等級！請從以下 2 條道路中選擇一個，永久決定你的戰鬥風格與專屬被動能力。</p>
+    <p class="event-text">身為 ${esc(prof.name)} 的 ${esc(hero.name)}，已經達到正式踏上冒險職業的等級！請從以下道路中選擇一個，永久決定你的戰鬥風格與專屬被動能力。</p>
     <div class="grid class-grid">${cards}</div>
   </div>`;
 }
@@ -7389,6 +8167,49 @@ function bindEvolveBranch(){
     });
   });
 }
+
+
+/* --- 第4階：精通覺醒（Lv.30） --- */
+function renderEvolveMaster(){
+  const hero = S.hero;
+  const cls = CLASSES.find(c=>c.id===hero.classId);
+  if(!cls || !cls.masteries || !cls.masteries.length){
+    setTimeout(()=>{ S.pendingStage=null; S.screen='hub'; render(); }, 0);
+    return `<div class="panel"><p class="event-text">精通資料異常，正在返回營地…</p></div>`;
+  }
+  const cards = cls.masteries.map((ms,i)=>`
+    <div class="class-card" data-master="${ms.id}">
+      <canvas class="sprite" id="master-${i}" width="64" height="64"></canvas>
+      <h3>${esc(ms.name)}</h3>
+      <p>${esc(ms.desc)}</p>
+      <div class="small" style="color:var(--gold);margin-top:4px;">${esc(bonusSummary(ms.statBonus||{}))}</div>
+      <hr class="divider">
+      <div class="small"><b style="color:var(--text)">傳奇技能：${esc(ms.skill.name)}</b><br>${esc(ms.skill.desc)}</div>
+    </div>`).join('');
+  return `
+  <div class="panel">
+    <p class="section-title pixel-font" style="font-size:12px;">👑 傳奇轉職 — Lv.${hero.level}</p>
+    <p class="event-text">${esc(hero.name)} 已達第4次轉職門檻！請從 ${esc(cls.name)} 的傳奇職階中選擇一條新道路，獲得專屬傳奇技能與成長。</p>
+    <div class="grid class-grid">${cards}</div>
+  </div>`;
+}
+function bindEvolveMaster(){
+  const hero = S.hero;
+  const cls = CLASSES.find(c=>c.id===hero.classId);
+  if(!cls || !cls.masteries) return;
+  cls.masteries.forEach((ms,i)=> queueSprite('master-'+i, 'master_'+ms.id+'_face', cls.palette, 14, {kind:'human'}));
+  document.querySelectorAll('[data-master]').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      setMastery(hero, card.dataset.master);
+      const ms = getMasteryDef(hero);
+      S.log.unshift(esc(hero.name)+' 傳奇轉職為 ['+displayClassName(hero)+']！'+(ms&&ms.skill?'習得「'+ms.skill.name+'」。':''));
+      S.pendingStage = null;
+      routeHome();
+      render();
+    });
+  });
+}
+
 
 loadGame();
 render();
